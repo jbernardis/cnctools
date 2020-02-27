@@ -1,0 +1,24 @@
+
+angle to rectangle grid
+
+add ability to see tool parameters, perhaps even to modify them inside the app
+
+ability to save in non-g code format and then load/edit later???
+
+add images to buttons - main screen?????
+	
+
+
+
+	
+closely inspect flow for merge
+
+
+
+
+
+
+	carve: diamonds, grid, hatch
+	contour: arc, circle, polygon, rectangle, rounded slot, polyline
+	drills: circle, linear, rectangle
+	simple: line

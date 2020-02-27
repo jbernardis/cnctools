@@ -1,0 +1,94 @@
+{
+	"115": {
+	    "diameter": 1.5,
+	    "name": "1.5mm endmill",
+	    "speeds": {
+	        "MDF": {
+	            "G0XY": 600,
+	            "G1XY": 330,
+	            "G0Z": 300,
+	            "G1Z": 55,
+	            "depthperpass": 0.33,
+	            "stepover": 0.75
+	        },
+	        "basswood": {
+	            "G0XY": 600,
+	            "G1XY": 330,
+	            "G0Z": 300,
+	            "G1Z": 55,
+	            "depthperpass": 0.33,
+	            "stepover": 0.75
+	        }
+	    }
+	},
+	
+	"118": {
+	    "diameter": 1.8,
+	    "name": "1.8mm endmill",
+	    "speeds": {
+	        "MDF": {
+	            "G0XY": 600,
+	            "G1XY": 330,
+	            "G0Z": 300,
+	            "G1Z": 55,
+	            "depthperpass": 0.4,
+	            "stepover": 0.9
+	        },
+	        "basswood": {
+	            "G0XY": 600,
+	            "G1XY": 330,
+	            "G0Z": 300,
+	            "G1Z": 55,
+	            "depthperpass": 0.4,
+	            "stepover": 0.9
+	        }
+	    }
+	},
+	
+	"110": {
+	    "diameter": 1,
+	    "name": "1mm End Mill",
+	    "speeds": {
+	        "MDF": {
+	            "G0XY": 600,
+	            "G1XY": 330,
+	            "G0Z": 300,
+	            "G1Z": 55,
+	            "depthperpass": 0.25,
+	            "stepover": 0.5
+	        },
+	        "basswood": {
+	            "G0XY": 600,
+	            "G1XY": 330,
+	            "G0Z": 300,
+	            "G1Z": 55,
+	            "depthperpass": 0.25,
+	            "stepover": 0.5
+	        }
+	    }
+	},
+	
+	"120": {
+	    "diameter": 2,
+	    "name": "2mm End Mill",
+	    "speeds": {
+	        "MDF": {
+	            "G0XY": 600,
+	            "G1XY": 330,
+	            "G0Z": 300,
+	            "G1Z": 55,
+	            "depthperpass": 0.25,
+	            "stepover": 0.9
+	        },
+	        "basswood": {
+	            "G0XY": 600,
+	            "G1XY": 330,
+	            "G0Z": 300,
+	            "G1Z": 55,
+	            "depthperpass": 0.25,
+	            "stepover": 0.9
+	        }
+	    }
+	}
+}
+
