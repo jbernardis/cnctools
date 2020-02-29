@@ -75,7 +75,12 @@ def intersection(sp):
 
 def offsetPath(pts, d, closePath = False):
 	if len(pts) == 2:
-		return offsetSegment(pts[0], pts[1], d), True
+		try:
+			s = offsetSegment(pts[0], pts[1], d)			
+		except ZeroDivisionError:
+			return None
+		
+		return s
 	
 	if closePath:
 		segments = [offsetSegment(pts[-1], pts[0], d)]
@@ -85,7 +90,11 @@ def offsetPath(pts, d, closePath = False):
 	for i in range(len(pts) - 1):
 		p1 = pts[i]
 		p2 = pts[i+1]
-		segments.append(offsetSegment(p1, p2, d))
+		try:
+			s= offsetSegment(p1, p2, d)			
+			segments.append(s)
+		except ZeroDivisionError:
+			return None
 	
 	if not closePath:
 		# save the initial offsets for the first and last points
@@ -104,15 +113,14 @@ def offsetPath(pts, d, closePath = False):
 	else:
 		newPoints = []
 
-	rc = True		
 	for sp in segpairs:
 		np = intersection(sp)
 		if np is None:
-			rc = False
+			return None
 		else:
 			newPoints.append(np)
 
 	if not closePath:
 		newPoints.append(saveEnd)
 		
-	return newPoints, rc
+	return newPoints

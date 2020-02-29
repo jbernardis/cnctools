@@ -3,7 +3,6 @@ import math
 from gcodelist import GCodeList
 from cncobject import CNCObject
 from validators import ValidateRange, ValidateMinLength, ValidateNoEntryErrors
-from settings import BTNDIM
 
 class MainFrame(wx.Frame):
 	def __init__(self, toolInfo, speedInfo, parent):
@@ -32,9 +31,7 @@ class MainFrame(wx.Frame):
 class PolyPanel(wx.Panel, CNCObject):
 	seqNo = 1
 	def __init__(self, toolInfo, speedInfo, parent):
-		self.parent = parent
-		self.settings = parent.settings
-		self.images = self.parent.images
+		CNCObject.__init__(self, parent, "contour:polygon")
 		self.toolInfo = toolInfo
 		
 		self.modified = False
@@ -54,61 +51,72 @@ class PolyPanel(wx.Panel, CNCObject):
 		t = wx.StaticText(self, wx.ID_ANY, "Side length")
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teSLength = wx.TextCtrl(self, wx.ID_ANY, "10", style=wx.TE_RIGHT)
+		self.addWidget(self.teSLength, "sidelength")
 		sizer.Add(self.teSLength, pos=(ln, 1), flag=wx.LEFT, border=10)
 
 		t = wx.StaticText(self, wx.ID_ANY, "Number of Sides")
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teSides = wx.TextCtrl(self, wx.ID_ANY, "6", style=wx.TE_RIGHT)
+		self.addWidget(self.teSides, "numbersides")
 		sizer.Add(self.teSides, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
 
 		t = wx.StaticText(self, wx.ID_ANY, "Rotation Angle")
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teAngle = wx.TextCtrl(self, wx.ID_ANY, "0", style=wx.TE_RIGHT)
+		self.addWidget(self.teAngle, "angle")
 		sizer.Add(self.teAngle, pos=(ln, 1), flag=wx.LEFT, border=10)
 
 		t = wx.StaticText(self, wx.ID_ANY, "Tool Diameter")
 		td = "%6.3f" % toolInfo["diameter"]
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teToolDiam = wx.TextCtrl(self, wx.ID_ANY, td, style=wx.TE_RIGHT)
+		self.addWidget(self.teToolDiam, "tooldiameter")
 		sizer.Add(self.teToolDiam, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
 
 		t = wx.StaticText(self, wx.ID_ANY, "Total Depth")
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teTotalDepth = wx.TextCtrl(self, wx.ID_ANY, "1", style=wx.TE_RIGHT)
+		self.addWidget(self.teTotalDepth, "depth")
 		sizer.Add(self.teTotalDepth, pos=(ln, 1), flag=wx.LEFT, border=10)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Depth/Pass")
 		dpp = "%6.3f" % speedInfo["depthperpass"]
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.tePassDepth = wx.TextCtrl(self, wx.ID_ANY, dpp, style=wx.TE_RIGHT)
+		self.addWidget(self.tePassDepth, "passdepth")
 		sizer.Add(self.tePassDepth, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
 
 		t = wx.StaticText(self, wx.ID_ANY, "Center X")
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teStartX = wx.TextCtrl(self, wx.ID_ANY, "0", style=wx.TE_RIGHT)
+		self.addWidget(self.teStartX, "centerx")
 		sizer.Add(self.teStartX, pos=(ln, 1), flag=wx.LEFT, border=10)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Center Y")
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teStartY = wx.TextCtrl(self, wx.ID_ANY, "0", style=wx.TE_RIGHT)
+		self.addWidget(self.teStartY, "centery")
 		sizer.Add(self.teStartY, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
 
 		t = wx.StaticText(self, wx.ID_ANY, "Center Z")
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teStartZ = wx.TextCtrl(self, wx.ID_ANY, "0", style=wx.TE_RIGHT)
+		self.addWidget(self.teStartZ, "centerz")
 		sizer.Add(self.teStartZ, pos=(ln, 1), flag=wx.LEFT, border=10)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Safe Z above surface")
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teSafeZ = wx.TextCtrl(self, wx.ID_ANY, "0.5", style=wx.TE_RIGHT)
+		self.addWidget(self.teSafeZ, "safez")
 		sizer.Add(self.teSafeZ, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
 		
 		self.cbAddSpeed = wx.CheckBox(self, wx.ID_ANY, "Add Speed Parameter")
+		self.addWidget(self.cbAddSpeed, "addspeed")
 		sizer.Add(self.cbAddSpeed, pos=(ln, 0), span=(1,4),
 				flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_HORIZONTAL, border=5)
 		self.Bind(wx.EVT_CHECKBOX, self.onCbAddSpeed, self.cbAddSpeed)
@@ -119,12 +127,14 @@ class PolyPanel(wx.Panel, CNCObject):
 		g0xy = "%7.2f" % speedInfo["G0XY"]
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teFeedXYG0 = wx.TextCtrl(self, wx.ID_ANY, g0xy, style=wx.TE_RIGHT)
+		self.addWidget(self.teFeedXYG0, "feedXYG0")
 		sizer.Add(self.teFeedXYG0, pos=(ln, 1), flag=wx.LEFT, border=10)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Feed Rate XY (G1)")
 		g1xy = "%7.2f" % speedInfo["G1XY"]
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teFeedXYG1 = wx.TextCtrl(self, wx.ID_ANY, g1xy, style=wx.TE_RIGHT)
+		self.addWidget(self.teFeedXYG1, "feedXYG1")
 		sizer.Add(self.teFeedXYG1, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
 
@@ -132,12 +142,14 @@ class PolyPanel(wx.Panel, CNCObject):
 		g0z = "%7.2f" % speedInfo["G0Z"]
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teFeedZG0 = wx.TextCtrl(self, wx.ID_ANY, g0z, style=wx.TE_RIGHT)
+		self.addWidget(self.teFeedZG0, "feedZG0")
 		sizer.Add(self.teFeedZG0, pos=(ln, 1), flag=wx.LEFT, border=10)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Feed Rate Z (G1)")
 		g1z = "%7.2f" % speedInfo["G1Z"]
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teFeedZG1 = wx.TextCtrl(self, wx.ID_ANY, g1z, style=wx.TE_RIGHT)
+		self.addWidget(self.teFeedZG1, "feedZG1")
 		sizer.Add(self.teFeedZG1, pos=(ln, 3), flag=wx.LEFT, border=10)
 
 		self.teFeedXYG0.Enable(self.settings.addspeed)
@@ -156,6 +168,7 @@ class PolyPanel(wx.Panel, CNCObject):
 		ln += 1
 
 		self.cbPocket = wx.CheckBox(self, wx.ID_ANY, "Pocket")
+		self.addWidget(self.cbPocket, "pocket")
 		sizer.Add(self.cbPocket, pos=(ln, 0), span=(1,2),
 				flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_HORIZONTAL, border=5)
 		self.Bind(wx.EVT_CHECKBOX, self.onChange, self.cbPocket)
@@ -164,8 +177,10 @@ class PolyPanel(wx.Panel, CNCObject):
 		so = "%6.3f" % speedInfo["stepover"]
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teStepOver = wx.TextCtrl(self, wx.ID_ANY, so, style=wx.TE_RIGHT)
+		self.addWidget(self.teStepOver, "stepover")
 		sizer.Add(self.teStepOver, pos=(ln, 3), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=10)
 		ln += 1
+		
 		t = wx.StaticText(self, wx.ID_ANY, "Measurement System")
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		sizer.Add(self.getMeasurementSystem(), pos=(ln, 1), border=5, flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_VERTICAL)	
@@ -173,34 +188,14 @@ class PolyPanel(wx.Panel, CNCObject):
 		t = wx.StaticText(self, wx.ID_ANY, "Decimal Places")
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teDecimals = wx.TextCtrl(self, wx.ID_ANY, "4", style=wx.TE_RIGHT)
+		self.addWidget(self.teDecimals, "decimals")
 		sizer.Add(self.teDecimals, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
 
 		sizer.Add(20, 20, wx.GBPosition(ln, 0))
 		ln += 1
 		
-		bsz = wx.BoxSizer(wx.HORIZONTAL)
-		
-		self.bGenerate = wx.BitmapButton(self, wx.ID_ANY, self.images.pngGcode, size=BTNDIM)
-		self.bGenerate.SetToolTip("Generate G Code")
-		bsz.Add(self.bGenerate)
-		self.Bind(wx.EVT_BUTTON, self.bGeneratePressed, self.bGenerate)
-		
-		bsz.AddSpacer(20)
-		
-		self.bSave = wx.BitmapButton(self, wx.ID_ANY, self.images.pngFilesaveas, size=BTNDIM)
-		self.bSave.SetToolTip("Save G Code")
-		bsz.Add(self.bSave)
-		self.Bind(wx.EVT_BUTTON, self.bSavePressed, self.bSave)
-		self.bSave.Disable()
-		
-		bsz.AddSpacer(20)
-		
-		self.bVisualize = wx.BitmapButton(self, wx.ID_ANY, self.images.pngView, size=BTNDIM)
-		self.bVisualize.SetToolTip("Visualize G Code")
-		bsz.Add(self.bVisualize)
-		self.Bind(wx.EVT_BUTTON, self.bVisualizePressed, self.bVisualize)
-		self.bVisualize.Disable()
+		bsz = self.buttons()
 		
 		sizer.Add(bsz, pos=(ln, 0), span=(1,4),
 				flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_HORIZONTAL, border=5)
@@ -222,20 +217,6 @@ class PolyPanel(wx.Panel, CNCObject):
 		self.Layout()
 		self.Fit();
 		
-	def getStartingPoints(self):
-		labels = ["Lower Left", "Upper Left", "Lower Right", "Upper Right", "Center"]
-		self.rbStartPoints = []
-		sz = wx.BoxSizer(wx.VERTICAL)
-		for i in range(len(labels)):
-			if i == 0:
-				style = wx.RB_GROUP
-			else:
-				style = 0
-			r = wx.RadioButton(self, wx.ID_ANY, labels[i], style=style)
-			sz.Add(r)
-			self.rbStartPoints.append(r)
-		return sz
-		
 	def getToolMovement(self):
 		labels = ["On Polygon", "Outside Polygon", "Inside Polygon"]
 		self.rbToolMove = []
@@ -246,6 +227,7 @@ class PolyPanel(wx.Panel, CNCObject):
 			else:
 				style = 0
 			r = wx.RadioButton(self, wx.ID_ANY, labels[i], style=style)
+			self.addWidget(r, labels[i])
 			sz.Add(r)
 			self.rbToolMove.append(r)
 		return sz
@@ -260,6 +242,7 @@ class PolyPanel(wx.Panel, CNCObject):
 			else:
 				style = 0
 			r = wx.RadioButton(self, wx.ID_ANY, labels[i], style=style)
+			self.addWidget(r, labels[i])
 			sz.Add(r)
 			self.rbCutDir.append(r)
 		return sz
@@ -274,6 +257,7 @@ class PolyPanel(wx.Panel, CNCObject):
 			else:
 				style = 0
 			r = wx.RadioButton(self, wx.ID_ANY, labels[i], style=style)
+			self.addWidget(r, labels[i])
 			sz.Add(r)
 			self.rbMeas.append(r)
 		if self.settings.metric:

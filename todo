@@ -4,8 +4,11 @@ angle to rectangle grid
 add ability to see tool parameters, perhaps even to modify them inside the app
 
 ability to save in non-g code format and then load/edit later???
+	contour: rounded slot
 
-add images to buttons - main screen?????
+add images to buttons - main screen?????, point edit
+
+better images for load/save raw
 	
 
 
@@ -18,7 +21,6 @@ closely inspect flow for merge
 
 
 
-	carve: diamonds, grid, hatch
-	contour: arc, circle, polygon, rectangle, rounded slot, polyline
+	carve: grid, hatch
+	contour: line, arc, circle, polygon, rectangle, rounded slot, polyline
 	drills: circle, linear, rectangle
-	simple: line

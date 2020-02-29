@@ -9,8 +9,7 @@ from settings import Settings
 from tools import Tools
 from materials import Materials
 
-import simple.line as line
-
+import contours.line as line
 import contours.rectangle as rect
 import contours.circle as circ
 import contours.arc as arc
@@ -137,21 +136,13 @@ class MainFrame(wx.Frame):
 		
 		sizer = wx.BoxSizer(wx.HORIZONTAL)
 		msizer = wx.BoxSizer(wx.VERTICAL)
-
-		szSimple = wx.BoxSizer(wx.HORIZONTAL)
+		
+		szContours = wx.BoxSizer(wx.HORIZONTAL)
 		
 		self.bLine = wx.Button(self, wx.ID_ANY, "Straight\nLine", size=(60, 60))
 		self.bLine.SetToolTip("Generate G Code for a straight line")
-		szSimple.Add(self.bLine)
+		szContours.Add(self.bLine)
 		self.Bind(wx.EVT_BUTTON, self.bLinePressed, self.bLine)
-
-		box = wx.StaticBox(self, -1, "Simple Shapes:")
-		box.SetBackgroundColour("white")
-		bsizer = wx.StaticBoxSizer(box, wx.VERTICAL)
-		bsizer.Add(szSimple)
-		msizer.Add(bsizer, weightSingle, wx.EXPAND|wx.ALL, 10)
-		
-		szContours = wx.BoxSizer(wx.HORIZONTAL)
 		
 		self.bRect = wx.Button(self, wx.ID_ANY, "Rectangle", size=(60, 60))
 		self.bRect.SetToolTip("Generate G Code for a rectangle")

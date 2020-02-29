@@ -25,6 +25,7 @@ class Settings:
 		
 		self.lastsavedir = "."
 		self.lastloaddir = "."
+		self.lastjsondir = "."
 		self.annotate = False
 		self.addspeed = False
 		self.metric = True
@@ -46,6 +47,8 @@ class Settings:
 					self.lastsavedir = value
 				elif opt == 'lastloaddir':
 					self.lastloaddir = value
+				elif opt == 'lastjsondir':
+					self.lastjsondir = value
 				elif opt == "tool":
 					self.tool = value;
 				elif opt == "material":
@@ -77,6 +80,7 @@ class Settings:
 			
 			self.cfg.set(self.section, "lastsavedir", str(self.lastsavedir))
 			self.cfg.set(self.section, "lastloaddir", str(self.lastloaddir))
+			self.cfg.set(self.section, "lastjsondir", str(self.lastjsondir))
 			self.cfg.set(self.section, "tool", str(self.tool))
 			self.cfg.set(self.section, "material", str(self.material))
 			self.cfg.set(self.section, "annotate", str(self.annotate))
