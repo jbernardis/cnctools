@@ -3,15 +3,7 @@ import math
 from gcodelist import GCodeList
 from cncobject import CNCObject
 from validators import ValidateToolSize, ValidateRange, ValidateNoEntryErrors
-
-class Rotater:
-	def __init__(self, angle):
-		self.cosv = math.cos(math.radians(angle))
-		self.sinv = math.sin(math.radians(angle))
-		
-	def rotate(self, x, y):		
-		return x*self.cosv-y*self.sinv, x*self.sinv+y*self.cosv
-
+from rotator import Rotator
 
 class MainFrame(wx.Frame):
 	def __init__(self, toolInfo, speedInfo, parent):
@@ -393,7 +385,7 @@ class RectanglePanel(wx.Panel, CNCObject):
 		if not ValidateNoEntryErrors(self, errs):
 			return
 			
-		rot = Rotater(angle)
+		rot = Rotator(angle)
 			
 		if not ValidateToolSize(self, tdiam, height, "Height"):
 			return

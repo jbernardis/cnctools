@@ -3,6 +3,7 @@ import math
 from gcodelist import GCodeList
 from cncobject import CNCObject
 from validators import ValidateToolSize, ValidateMinLength, ValidateNoEntryErrors
+from rotator import Rotator 
 
 class MainFrame(wx.Frame):
 	def __init__(self, toolInfo, speedInfo, parent):
@@ -61,26 +62,37 @@ class RecDrillPanel(wx.Panel, CNCObject):
 		sizer.Add(self.teWidth, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
 
-		t = wx.StaticText(self, wx.ID_ANY, "Tool Diameter")
-		td = "%6.3f" % toolInfo["diameter"]
+		t = wx.StaticText(self, wx.ID_ANY, "Start X")
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teToolDiam = wx.TextCtrl(self, wx.ID_ANY, td, style=wx.TE_RIGHT)
-		self.addWidget(self.teToolDiam, "tooldiameter")
-		sizer.Add(self.teToolDiam, pos=(ln, 1), flag=wx.LEFT, border=10)
-
-		t = wx.StaticText(self, wx.ID_ANY, "Hole Diameter")
+		self.teStartX = wx.TextCtrl(self, wx.ID_ANY, "0", style=wx.TE_RIGHT)
+		self.addWidget(self.teStartX, "startx")
+		sizer.Add(self.teStartX, pos=(ln, 1), flag=wx.LEFT, border=10)
+		
+		t = wx.StaticText(self, wx.ID_ANY, "Start Y")
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teHoleDiam = wx.TextCtrl(self, wx.ID_ANY, "3", style=wx.TE_RIGHT)
-		self.addWidget(self.teHoleDiam, "holediameter")
-		sizer.Add(self.teHoleDiam, pos=(ln, 3), flag=wx.LEFT, border=10)
+		self.teStartY = wx.TextCtrl(self, wx.ID_ANY, "0", style=wx.TE_RIGHT)
+		self.addWidget(self.teStartY, "starty")
+		sizer.Add(self.teStartY, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
 
-		t = wx.StaticText(self, wx.ID_ANY, "Stepover")
-		so = "%6.3f" % speedInfo["stepover"]
+		t = wx.StaticText(self, wx.ID_ANY, "Start Z")
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teStepover = wx.TextCtrl(self, wx.ID_ANY, so, style=wx.TE_RIGHT)
-		self.addWidget(self.teStepover, "stepover")
-		sizer.Add(self.teStepover, pos=(ln, 1), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=10)
+		self.teStartZ = wx.TextCtrl(self, wx.ID_ANY, "0", style=wx.TE_RIGHT)
+		self.addWidget(self.teStartZ, "startz")
+		sizer.Add(self.teStartZ, pos=(ln, 1), flag=wx.LEFT, border=10)
+
+		t = wx.StaticText(self, wx.ID_ANY, "Angle")
+		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		self.teAngle = wx.TextCtrl(self, wx.ID_ANY, "0", style=wx.TE_RIGHT)
+		self.addWidget(self.teAngle, "angle")
+		sizer.Add(self.teAngle, pos=(ln, 3), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=10)
+		ln += 1
+
+		t = wx.StaticText(self, wx.ID_ANY, "Hole Diameter")
+		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		self.teHoleDiam = wx.TextCtrl(self, wx.ID_ANY, "3", style=wx.TE_RIGHT)
+		self.addWidget(self.teHoleDiam, "holediameter")
+		sizer.Add(self.teHoleDiam, pos=(ln, 1), flag=wx.LEFT, border=10)
 
 		t = wx.StaticText(self, wx.ID_ANY, "Minimum space between")
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
@@ -142,30 +154,26 @@ class RecDrillPanel(wx.Panel, CNCObject):
 		ln += 1
 		self.Bind(wx.EVT_CHECKBOX, self.onChange, self.cbRetract)
 
-		t = wx.StaticText(self, wx.ID_ANY, "Start X")
+		t = wx.StaticText(self, wx.ID_ANY, "Tool Diameter")
+		td = "%6.3f" % toolInfo["diameter"]
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teStartX = wx.TextCtrl(self, wx.ID_ANY, "0", style=wx.TE_RIGHT)
-		self.addWidget(self.teStartX, "startx")
-		sizer.Add(self.teStartX, pos=(ln, 1), flag=wx.LEFT, border=10)
-		
-		t = wx.StaticText(self, wx.ID_ANY, "Start Y")
-		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teStartY = wx.TextCtrl(self, wx.ID_ANY, "0", style=wx.TE_RIGHT)
-		self.addWidget(self.teStartY, "starty")
-		sizer.Add(self.teStartY, pos=(ln, 3), flag=wx.LEFT, border=10)
-		ln += 1
-
-		t = wx.StaticText(self, wx.ID_ANY, "Start Z")
-		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teStartZ = wx.TextCtrl(self, wx.ID_ANY, "0", style=wx.TE_RIGHT)
-		self.addWidget(self.teStartZ, "startz")
-		sizer.Add(self.teStartZ, pos=(ln, 1), flag=wx.LEFT, border=10)
+		self.teToolDiam = wx.TextCtrl(self, wx.ID_ANY, td, style=wx.TE_RIGHT)
+		self.addWidget(self.teToolDiam, "tooldiameter")
+		sizer.Add(self.teToolDiam, pos=(ln, 1), flag=wx.LEFT, border=10)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Safe Z above surface")
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teSafeZ = wx.TextCtrl(self, wx.ID_ANY, "0.5", style=wx.TE_RIGHT)
 		self.addWidget(self.teSafeZ, "safez")
 		sizer.Add(self.teSafeZ, pos=(ln, 3), flag=wx.LEFT, border=10)
+		ln += 1
+
+		t = wx.StaticText(self, wx.ID_ANY, "Stepover")
+		so = "%6.3f" % speedInfo["stepover"]
+		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		self.teStepover = wx.TextCtrl(self, wx.ID_ANY, so, style=wx.TE_RIGHT)
+		self.addWidget(self.teStepover, "stepover")
+		sizer.Add(self.teStepover, pos=(ln, 1), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=10)
 		ln += 1
 		
 		self.cbAddSpeed = wx.CheckBox(self, wx.ID_ANY, "Add Speed Parameter")
@@ -334,6 +342,10 @@ class RecDrillPanel(wx.Panel, CNCObject):
 		except:
 			errs.append("Start Z")		
 		try:
+			angle = float(self.teAngle.GetValue())
+		except:
+			errs.append("Angle")		
+		try:
 			safez = float(self.teSafeZ.GetValue())
 		except:
 			errs.append("Safe Z")		
@@ -452,6 +464,10 @@ class RecDrillPanel(wx.Panel, CNCObject):
 		
 		cx = minx
 		cy = miny
+
+		rot = None		
+		if angle != 0:
+			rot = Rotator(angle)
 		
 		if self.settings.annotate:
 			self.gcode.append("(Rectangular drill pattern start (%6.2f,%6.2f) height %6.2f width %6.2f depth from %6.2f to %6.2f)" % (sx, sy, height, width, sz, depth))
@@ -479,7 +495,13 @@ class RecDrillPanel(wx.Panel, CNCObject):
 						includeHole = True
 						
 				if includeHole:
-					self.gcode.append(("G0 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG0)) % (cx, cy))
+					if rot is None:
+						nx = cx
+						ny = cy
+					else:
+						nx, ny = rot.rotate(cx, cy)
+						
+					self.gcode.append(("G0 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG0)) % (nx, ny))
 					cz = sz
 					for i in range(passes):
 						cz -= passdepth
@@ -494,13 +516,13 @@ class RecDrillPanel(wx.Panel, CNCObject):
 							while True:
 								if yoff > maxyoff:
 									yoff = maxyoff
-								self.gcode.append(("G1 Y"+self.fmt+self.speedTerm(addspeed, feedxyG0)) % (cy-yoff))
-								self.gcode.append((cmd+" J"+self.fmt+" X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG23)) % (yoff, cx, cy-yoff))
+								self.gcode.append(("G1 Y"+self.fmt+self.speedTerm(addspeed, feedxyG0)) % (ny-yoff))
+								self.gcode.append((cmd+" J"+self.fmt+" X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG23)) % (yoff, nx, ny-yoff))
 								if yoff >= maxyoff:
 									break
 								yoff += stepover
 								
-							self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG23)) % (cx, cy))
+							self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG23)) % (nx, ny))
 							
 						if retract:
 							self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
