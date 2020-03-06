@@ -11,6 +11,7 @@ class PointListEditDialog(wx.Dialog):
 	def __init__(self, parent, data, minvals, title=DEFAULT_TITLE):
 		self.title = "%s (minimum %d points)" % (title, minvals)
 		wx.Dialog.__init__(self, parent, wx.ID_ANY, self.title)
+		self.images = parent.images
 		
 		if data is None:
 			self.data = [[0, 0], [10, 0]]
@@ -39,7 +40,7 @@ class PointListEditDialog(wx.Dialog):
 		hsizer.AddSpacer(10)
 		
 		vsz = wx.BoxSizer(wx.VERTICAL)
-		self.bScrollUp = wx.Button(self, wx.ID_ANY, "up", size=BTNDIM)
+		self.bScrollUp = wx.BitmapButton(self, wx.ID_ANY, self.images.pngScrollup, size=BTNDIM)
 		self.Bind(wx.EVT_BUTTON, self.onBScrollUp, self.bScrollUp)
 		self.bScrollUp.SetToolTip("Move the selection cursor up 1 line")
 		self.bScrollUp.Enable(False)
@@ -47,7 +48,7 @@ class PointListEditDialog(wx.Dialog):
 
 		vsz.AddSpacer(50)
 
-		self.bScrollDown = wx.Button(self, wx.ID_ANY, "down", size=BTNDIM)
+		self.bScrollDown = wx.BitmapButton(self, wx.ID_ANY, self.images.pngScrolldown, size=BTNDIM)
 		self.Bind(wx.EVT_BUTTON, self.onBScrollDown, self.bScrollDown)
 		self.bScrollDown.SetToolTip("Move the selection cursor down 1 line")
 		self.bScrollDown.Enable(False)
@@ -57,7 +58,7 @@ class PointListEditDialog(wx.Dialog):
 		hsizer.AddSpacer(10)
 
 		vsz = wx.BoxSizer(wx.VERTICAL)
-		self.bMoveUp = wx.Button(self, wx.ID_ANY, "mup", size=BTNDIM)
+		self.bMoveUp = wx.BitmapButton(self, wx.ID_ANY, self.images.pngMoveup, size=BTNDIM)
 		self.Bind(wx.EVT_BUTTON, self.onBMoveUp, self.bMoveUp)
 		self.bMoveUp.SetToolTip("Move the selected point up 1 line")
 		self.bMoveUp.Enable(False)
@@ -65,7 +66,7 @@ class PointListEditDialog(wx.Dialog):
 
 		vsz.AddSpacer(50)
 
-		self.bMoveDown = wx.Button(self, wx.ID_ANY, "mdown", size=BTNDIM)
+		self.bMoveDown = wx.BitmapButton(self, wx.ID_ANY, self.images.pngMovedown, size=BTNDIM)
 		self.Bind(wx.EVT_BUTTON, self.onBMoveDown, self.bMoveDown)
 		self.bMoveDown.SetToolTip("Move the selected point down 1 line")
 		self.bMoveDown.Enable(False)
@@ -98,14 +99,14 @@ class PointListEditDialog(wx.Dialog):
 		
 		box.AddSpacer(10)
 		
-		self.bAdd = wx.Button(self, wx.ID_ANY, "add", size=BTNDIM)
+		self.bAdd = wx.BitmapButton(self, wx.ID_ANY, self.images.pngAdd, size=BTNDIM)
 		self.Bind(wx.EVT_BUTTON, self.onBAdd, self.bAdd)
 		self.bAdd.SetToolTip("Add a new point to the bottom of the list")
 		box.Add(self.bAdd)
 		
 		box.AddSpacer(10)
 		
-		self.bRepl = wx.Button(self, wx.ID_ANY, "repl", size=BTNDIM)
+		self.bRepl = wx.BitmapButton(self, wx.ID_ANY, self.images.pngReplace, size=BTNDIM)
 		self.Bind(wx.EVT_BUTTON, self.onBRepl, self.bRepl)
 		self.bRepl.SetToolTip("Replace the current point")
 		self.bRepl.Enable(False)
@@ -113,7 +114,7 @@ class PointListEditDialog(wx.Dialog):
 
 		box.AddSpacer(10)
 
-		self.bDel = wx.Button(self, wx.ID_ANY, "del", size=BTNDIM)
+		self.bDel = wx.BitmapButton(self, wx.ID_ANY, self.images.pngDelete, size=BTNDIM)
 		self.Bind(wx.EVT_BUTTON, self.onBDel, self.bDel)
 		self.bDel.SetToolTip("Delete the selected object")
 		self.bDel.Enable(False)
@@ -123,7 +124,7 @@ class PointListEditDialog(wx.Dialog):
 
 		btnsizer = wx.BoxSizer(wx.HORIZONTAL)
 
-		btn = wx.Button(self, wx.ID_ANY, "OK", size=BTNDIM)
+		btn = wx.BitmapButton(self, wx.ID_ANY, self.images.pngOk, size=BTNDIM)
 		self.Bind(wx.EVT_BUTTON, self.onBOk, btn)
 		btn.SetToolTip("Complete dialog")
 		btnsizer.Add(btn)
@@ -131,7 +132,7 @@ class PointListEditDialog(wx.Dialog):
 		
 		btnsizer.AddSpacer(50)
 
-		btn = wx.Button(self, wx.ID_ANY, "cancel", size=BTNDIM)
+		btn = wx.BitmapButton(self, wx.ID_ANY, self.images.pngCancel, size=BTNDIM)
 		self.Bind(wx.EVT_BUTTON, self.onBCancel, btn)
 		btn.SetToolTip("Cancel dialog")
 		btnsizer.Add(btn)

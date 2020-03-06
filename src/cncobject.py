@@ -47,14 +47,14 @@ class CNCObject:
         bsz.AddSpacer(60)
         
         self.bSaveData = wx.BitmapButton(self, wx.ID_ANY, self.images.pngTojson, size=BTNDIM)
-        self.bSaveData.SetToolTip("Save raw data")
+        self.bSaveData.SetToolTip("Export values to file")
         bsz.Add(self.bSaveData)
         self.Bind(wx.EVT_BUTTON, self.bSaveDataPressed, self.bSaveData)
         
         bsz.AddSpacer(20)
         
         self.bLoadData = wx.BitmapButton(self, wx.ID_ANY, self.images.pngFromjson, size=BTNDIM)
-        self.bLoadData.SetToolTip("Load raw data")
+        self.bLoadData.SetToolTip("Import values from file")
         bsz.Add(self.bLoadData)
         self.Bind(wx.EVT_BUTTON, self.bLoadDataPressed, self.bLoadData)
         
