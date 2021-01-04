@@ -21,7 +21,7 @@ class GCodeList(wx.ListCtrl):
 		self.gcode = []
 		self.SetItemCount(0)
 
-		self.attr2 = wx.ListItemAttr()
+		self.attr2 = wx.ItemAttr()
 		self.attr2.SetBackgroundColour("light blue")
 
 	def updateList(self, gcode):
