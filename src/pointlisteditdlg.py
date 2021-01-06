@@ -120,7 +120,8 @@ class PointListEditDialog(wx.Dialog):
 		self.bDel.Enable(False)
 		box.Add(self.bDel)
 
-		sizer.Add(box, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+		sizer.AddSpacer(10)
+		sizer.Add(box, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
 
 		btnsizer = wx.BoxSizer(wx.HORIZONTAL)
 
