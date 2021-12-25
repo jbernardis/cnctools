@@ -1,0 +1,18 @@
+{
+    "MDF": {
+        "G0XY": 600,
+        "G0Z": 300,
+        "G1XY": 330,
+        "G1Z": 55,
+        "depthperpass": 0.33,
+        "stepover": 0.75
+    },
+    "basswood": {
+        "G0XY": 600,
+        "G0Z": 300,
+        "G1XY": 330,
+        "G1Z": 55,
+        "depthperpass": 0.33,
+        "stepover": 0.75
+    }
+}

@@ -42,7 +42,9 @@ MENU_OPTS_ADD_SPEED = 203
 MENU_OPTS_METRIC = 204
 
 MENU_MATERIALS_BASE = 300
-MENU_TOOLS_BASE = 400
+MENU_MATERIALS_MANAGE = 1300
+MENU_TOOLS_BASE = 500
+MENU_TOOLS_MANAGE = 1500
 
 class MainFrame(wx.Frame):
 	def __init__(self):
@@ -67,7 +69,14 @@ class MainFrame(wx.Frame):
 		self.SetBackgroundColour("white")
 		
 		self.settings = Settings(self, cmdFolder)
-		self.tools = Tools("tools.json")
+		
+		self.materials = Materials("materials.json")
+		self.materialList = self.materials.getMaterials()
+		if self.settings.material not in self.materialList:
+			self.settings.material = self.materialList[0]
+			self.settings.setModified()
+			
+		self.tools = Tools("tools.json", self.settings)
 		self.toolList = self.tools.getTools()
 		if self.settings.tool not in self.toolList:
 			self.settings.tool = self.toolList[0]
@@ -76,12 +85,7 @@ class MainFrame(wx.Frame):
 		
 		self.images = Images(os.path.join(cmdFolder, "images"))
 			
-		self.materials = Materials()
-		self.materialList = self.materials.getMaterials()
-		if self.settings.material not in self.materialList:
-			self.settings.material = self.materialList[0]
-			self.settings.setModified()
-		self.speedInfo = self.tools.getToolSpeeds(self.settings.tool, self.settings.material)
+		self.speedInfo = self.tools.getToolSpeeds(self.settings.tool, self.settings.material, self.materials)
 			
 		self.CreateStatusBar()
 		
@@ -97,33 +101,15 @@ class MainFrame(wx.Frame):
 		self.menuOpts.Append(MENU_OPTS_ADD_SPEED, "A&dd Speed Term", "Default setting for add speed term", wx.ITEM_CHECK)
 		self.menuOpts.Append(MENU_OPTS_METRIC, "&Metric", "Use Metric Measurement System", wx.ITEM_CHECK)
 		menuBar.Append(self.menuOpts, "&Options")
-		
-		self.menuMaterials = wx.Menu()
-		mx = 0
-		for m in self.materialList:
-			mid = MENU_MATERIALS_BASE + mx
-			self.menuMaterials.Append(mid, m, "Material: {}".format(m), wx.ITEM_RADIO)
-			if m == self.settings.material:
-				self.menuMaterials.Check(mid, True)
-			self.Bind(wx.EVT_MENU, self.onMenuMaterials, id=mid)
-			mx += 1
-			
+
+		self.createMaterialsMenu()					
 		menuBar.Append(self.menuMaterials, "&Material")
-		
-		self.menuTools = wx.Menu()
-		tx = 0
-		for t in self.toolList:
-			tinfo = self.tools.getTool(t)
-			tid = MENU_TOOLS_BASE + tx
-			self.menuTools.Append(tid, t, "{}".format(tinfo["name"]), wx.ITEM_RADIO)
-			if t == self.settings.tool:
-				self.menuTools.Check(tid, True)
-			self.Bind(wx.EVT_MENU, self.onMenuTools, id=tid)
-			tx += 1
-			
+
+		self.createToolsMenu()		
 		menuBar.Append(self.menuTools, "&Tool")
 				
 		self.SetMenuBar(menuBar)
+		self.menuBar = menuBar
 		self.Bind(wx.EVT_MENU, self.onMenuFileView, id=MENU_FILE_VIEW)
 		self.Bind(wx.EVT_MENU, self.onMenuFileMerge, id=MENU_FILE_MERGE)
 		self.Bind(wx.EVT_MENU, self.onMenuOptsAnnotate, id=MENU_OPTS_ANNOTATE)
@@ -254,6 +240,74 @@ class MainFrame(wx.Frame):
 		self.Layout()
 		self.Fit();
 		
+	def createMaterialsMenu(self):		
+		self.menuMaterials = wx.Menu()
+		mx = 0
+		for m in self.materialList:
+			mid = MENU_MATERIALS_BASE + mx
+			self.menuMaterials.Append(mid, m, "Material: {}".format(m), wx.ITEM_RADIO)
+			if m == self.settings.material:
+				self.menuMaterials.Check(mid, True)
+			self.Bind(wx.EVT_MENU, self.onMenuMaterials, id=mid)
+			mx += 1
+			
+		self.menuMaterials.AppendSeparator()
+		
+		self.menuMaterials.Append(MENU_MATERIALS_MANAGE, "Manage materials")
+		self.Bind(wx.EVT_MENU, self.onMenuManageMaterials, id=MENU_MATERIALS_MANAGE)
+		
+	def rebuildMaterialsMenu(self):
+		menu = self.menuMaterials
+		mid = MENU_MATERIALS_BASE
+		while self.menuBar.FindItemById(mid):
+			menu.Remove(mid)
+			mid += 1
+			
+		self.materialList = self.materials.getMaterials()
+		mx = 0
+		for m in self.materialList:
+			mid = MENU_MATERIALS_BASE + mx
+			self.menuMaterials.InsertRadioItem(mx, mid, m, "Material: {}".format(m))
+			if m == self.settings.material:
+				self.menuMaterials.Check(mid, True)
+			self.Bind(wx.EVT_MENU, self.onMenuMaterials, id=mid)
+			mx += 1
+		
+	def createToolsMenu(self):
+		self.menuTools = wx.Menu()
+		tx = 0
+		for t in self.toolList:
+			tinfo = self.tools.getTool(t)
+			tid = MENU_TOOLS_BASE + tx
+			self.menuTools.Append(tid, t, "{}".format(tinfo["name"]), wx.ITEM_RADIO)
+			if t == self.settings.tool:
+				self.menuTools.Check(tid, True)
+			self.Bind(wx.EVT_MENU, self.onMenuTools, id=tid)
+			tx += 1
+			
+		self.menuTools.AppendSeparator()
+		
+		self.menuTools.Append(MENU_TOOLS_MANAGE, "Manage tools")
+		self.Bind(wx.EVT_MENU, self.onMenuManageTools, id=MENU_TOOLS_MANAGE)
+			
+	def rebuildToolsMenu(self):
+		menu = self.menuTools
+		mid = MENU_TOOLS_BASE
+		while self.menuBar.FindItemById(mid):
+			menu.Remove(mid)
+			mid += 1
+			
+		self.toolList = self.tools.getTools()
+		tx = 0
+		for t in self.toolList:
+			mid = MENU_TOOLS_BASE + tx
+			self.menuTools.InsertRadioItem(tx, mid, t, "Tool: {}".format(t))
+			if t == self.settings.tool:
+				self.menuTools.Check(mid, True)
+			self.Bind(wx.EVT_MENU, self.onMenuTools, id=mid)
+			tx += 1
+		
+		
 	def onMenuFileView(self, _):
 		dlg = wx.FileDialog(
 			self, message="Choose a file",
@@ -301,14 +355,22 @@ class MainFrame(wx.Frame):
 	def onMenuMaterials(self, evt):
 		self.settings.material = self.menuMaterials.GetLabel(evt.GetId())
 		self.settings.setModified()
-		self.speedInfo = self.tools.getToolSpeeds(self.settings.tool, self.settings.material)
+		self.speedInfo = self.tools.getToolSpeeds(self.settings.tool, self.settings.material, self.materials)
+		
+	def onMenuManageMaterials(self, evt):
+		if self.materials.manage(self):
+			self.rebuildMaterialsMenu()
+			self.tools.pruneMaterials(self.materials.getMaterials())
 		
 	def onMenuTools(self, evt):
 		self.settings.tool = self.menuTools.GetLabel(evt.GetId())
 		self.settings.setModified()
 		self.toolInfo = self.tools.getTool(self.settings.tool)
-		self.speedInfo = self.tools.getToolSpeeds(self.settings.tool, self.settings.material)
-
+		self.speedInfo = self.tools.getToolSpeeds(self.settings.tool, self.settings.material, self.materials)
+		
+	def onMenuManageTools(self, evt):
+		if self.tools.manage(self, self.materials.getMaterials()):
+			self.rebuildToolsMenu()
 		
 	def onClose(self, _):
 		if not self.closeIfOkay(self.wline):
@@ -363,7 +425,7 @@ class MainFrame(wx.Frame):
 			return
 		self.whatch = None
 
-		self.settings.cleanUp()
+		self.settings.save()
 			
 		self.Destroy()
 	

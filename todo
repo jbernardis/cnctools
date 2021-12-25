@@ -1,14 +1,8 @@
-
-add ability to see tool parameters, perhaps even to modify them inside the app
-
-
-closely inspect flow for merge
-
-
-
-
+allow for lowest layer to leave some material behind
 
 
 	carve: grid, hatch
 	contour: line, arc, circle, polygon, rectangle, rounded slot, polyline
 	drills: circle, linear, rectangle
+	
+	integrate cnc boxes???

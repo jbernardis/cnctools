@@ -31,6 +31,12 @@ class Settings:
 		self.metric = True
 		self.tool = "110"
 		self.material = "MDF"
+		self.speedG0XY = 600
+		self.speedG1XY = 330
+		self.speedG0Z = 300
+		self.speedG1Z = 55
+		self.depthperpass = 0.33
+		self.stepover = 0.75
 		
 		self.cfg = configparser.ConfigParser()
 		self.cfg.optionxform = str
@@ -59,6 +65,18 @@ class Settings:
 					self.addspeed = parseBoolean(value, False)
 				elif opt == 'metric':
 					self.metric = parseBoolean(value, False)
+				elif opt == 'speedG0XY':
+					self.speedG0XY = int(float(value))
+				elif opt == 'speedG1XY':
+					self.speedG1XY = int(float(value))
+				elif opt == 'speedG0Z':
+					self.speedG0Z = int(float(value))
+				elif opt == 'speedG1Z':
+					self.speedG1Z = int(float(value))
+				elif opt == 'depthperpass':
+					self.depthperpass = float(value)
+				elif opt == 'stepover':
+					self.stepover = float(value)
 				else:
 					print("Unknown %s option: %s - ignoring" % (self.section, opt))
 		else:
@@ -71,27 +89,34 @@ class Settings:
 	def checkModified(self):
 		return self.modified
 		
-	def cleanUp(self):
-		if self.checkModified():
-			try:
-				self.cfg.add_section(self.section)
-			except configparser.DuplicateSectionError:
-				pass
-			
-			self.cfg.set(self.section, "lastsavedir", str(self.lastsavedir))
-			self.cfg.set(self.section, "lastloaddir", str(self.lastloaddir))
-			self.cfg.set(self.section, "lastjsondir", str(self.lastjsondir))
-			self.cfg.set(self.section, "tool", str(self.tool))
-			self.cfg.set(self.section, "material", str(self.material))
-			self.cfg.set(self.section, "annotate", str(self.annotate))
-			self.cfg.set(self.section, "addspeed", str(self.addspeed))
-			self.cfg.set(self.section, "metric", str(self.metric))
+	def save(self):
+		try:
+			self.cfg.add_section(self.section)
+		except configparser.DuplicateSectionError:
+			pass
+		
+		self.cfg.set(self.section, "lastsavedir", str(self.lastsavedir))
+		self.cfg.set(self.section, "lastloaddir", str(self.lastloaddir))
+		self.cfg.set(self.section, "lastjsondir", str(self.lastjsondir))
+		self.cfg.set(self.section, "tool", str(self.tool))
+		self.cfg.set(self.section, "material", str(self.material))
+		self.cfg.set(self.section, "annotate", str(self.annotate))
+		self.cfg.set(self.section, "addspeed", str(self.addspeed))
+		self.cfg.set(self.section, "metric", str(self.metric))
+		self.cfg.set(self.section, "speedG0XY", "%d" % self.speedG0XY)
+		self.cfg.set(self.section, "speedG1XY", "%d" % self.speedG1XY)
+		self.cfg.set(self.section, "speedG0Z", "%d" % self.speedG0Z)
+		self.cfg.set(self.section, "speedG1Z", "%d" % self.speedG1Z)
+		self.cfg.set(self.section, "depthperpass", "%.2f" % self.depthperpass)
+		self.cfg.set(self.section, "stepover", "%.2f" % self.stepover)
 
-			try:		
-				cfp = open(self.inifile, 'w')
-			except:
-				print("Unable to open settings file %s for writing" % self.inifile)
-				return
-			self.cfg.write(cfp)
-			cfp.close()
+		try:		
+			cfp = open(self.inifile, 'w')
+		except:
+			print("Unable to open settings file %s for writing" % self.inifile)
+			return
+		self.cfg.write(cfp)
+		cfp.close()
+		
+		self.modified = False
 

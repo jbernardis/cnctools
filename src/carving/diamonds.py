@@ -221,7 +221,6 @@ class DiaPattPanel(wx.Panel, CNCObject):
 		return sz
 	
 	def xcheckEnable(self):
-		print("instance")
 		CNCObject.checkEnable(self)
 		
 	def getMeasurementSystem(self):
