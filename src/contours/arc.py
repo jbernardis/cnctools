@@ -278,12 +278,6 @@ class ArcPanel(wx.Panel, CNCObject):
 		self.teFeedXYG1.Enable(flag)
 		self.teFeedZG0.Enable(flag)
 		self.teFeedZG1.Enable(flag)
-	
-	def IJTerm(self, label, val):
-		if val == 0.0:
-			return ""
-		else:
-			return " " + label + self.fmt % val
 		
 	def bGeneratePressed(self, _):
 		self.bSave.Enable(False)

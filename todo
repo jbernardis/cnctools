@@ -1,5 +1,6 @@
 allow for lowest layer to leave some material behind
 
+set material thickness globally
 
 	carve: grid, hatch
 	contour: line, arc, circle, polygon, rectangle, rounded slot, polyline

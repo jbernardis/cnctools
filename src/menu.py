@@ -25,6 +25,8 @@ import carving.grid as grid
 import carving.diamonds as diamonds
 import carving.hatch as hatch
 
+import objects.tichy as tichy
+
 from viewer.ncviewer import NCViewer
 from merge import FileMergeDialog
 from images import Images
@@ -61,6 +63,7 @@ class MainFrame(wx.Frame):
 		self.wgrid = None
 		self.wdiamonds = None
 		self.whatch = None
+		self.wtichy = None
 
 		self.modified = False
 		
@@ -231,6 +234,26 @@ class MainFrame(wx.Frame):
 		bsizer.AddSpacer(10)
 		boxCarve.SetSizer(bsizer)
 		msizer.Add(boxCarve, weightSingle, wx.EXPAND|wx.ALL, 10)
+		
+
+		boxObject = wx.StaticBox(self, wx.ID_ANY, " Objects ")
+		topBorder = boxObject.GetBordersForSizer()[0]
+		bsizer = wx.BoxSizer(wx.VERTICAL)
+		bsizer.AddSpacer(topBorder)
+		
+		szObjects = wx.BoxSizer(wx.HORIZONTAL)
+		
+		szObjects.AddSpacer(10)
+		
+		self.bTichy = wx.BitmapButton(boxObject, wx.ID_ANY, self.images.pngTichy, size=BTNDIM)
+		self.bTichy.SetToolTip("Generate G Code for tichy windows and doors")
+		szObjects.Add(self.bTichy)
+		self.Bind(wx.EVT_BUTTON, self.bTichyPressed, self.bTichy)
+		
+		bsizer.Add(szObjects)
+		bsizer.AddSpacer(10)
+		boxObject.SetSizer(bsizer)
+		msizer.Add(boxObject, weightSingle, wx.EXPAND|wx.ALL, 10)
 		
 		sizer.Add(msizer)
 		
@@ -593,7 +616,19 @@ class MainFrame(wx.Frame):
 	def hatchClose(self, _):
 		if self.closeIfOkay(self.whatch):
 			self.whatch = None
-				
+		
+	def bTichyPressed(self, _):
+		if self.wtichy:
+			self.wtichy.SetFocus()
+		else:
+			self.wtichy = tichy.MainFrame(self.toolInfo, self.speedInfo, self)
+			self.wtichy.Bind(wx.EVT_CLOSE, self.tichyClose)
+			self.wtichy.Show()
+		
+	def tichyClose(self, _):
+		if self.closeIfOkay(self.wtichy):
+			self.wtichy = None
+			
 class App(wx.App):
 	def OnInit(self):
 		self.frame = MainFrame()
