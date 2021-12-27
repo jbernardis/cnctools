@@ -5,10 +5,10 @@ from cncobject import CNCObject
 from validators import ValidateToolSize, ValidateRange, ValidateNoEntryErrors
 
 TYPE_RECTANGLE = 1
-TYPE_ARCTOP = 1 # don't have a better solution for this yet, so for now just treat as a rectangle
 TYPE_CIRCLE = 2
 TYPE_ROUNDTOP = 3
-tichyParts = {
+TYPE_ARCTOP = 4
+tichyWindows = {
 	"8010": { "type": TYPE_RECTANGLE, "params": [ 13.21, 11.94 ] },
 	"8014": { "type": TYPE_RECTANGLE, "params": [ 10.92, 17.27 ] },
 	"8023": { "type": TYPE_RECTANGLE, "params": [ 9.40, 8.38 ] },
@@ -24,7 +24,7 @@ tichyParts = {
 	"8047": { "type": TYPE_ROUNDTOP,  "params": [ 9.65, 17.02 ] },
 	"8048": { "type": TYPE_ROUNDTOP,  "params": [ 5.59, 10.16 ] },
 	"8054": { "type": TYPE_RECTANGLE, "params": [ 13.72, 27.18 ] },
-	"8055": { "type": TYPE_ARCTOP,    "params": [ 13.72, 27.18 ] },
+	"8055": { "type": TYPE_ARCTOP,    "params": [ 13.72, 27.18, -2.0 ] },
 	"8056": { "type": TYPE_RECTANGLE, "params": [ 11.94, 28.19 ] },
 	"8057": { "type": TYPE_RECTANGLE, "params": [ 8.64, 28.19 ] },
 	"8061": { "type": TYPE_RECTANGLE, "params": [ 12.70, 25.40 ] },
@@ -35,7 +35,7 @@ tichyParts = {
 	"8069": { "type": TYPE_RECTANGLE, "params": [ 9.40, 19.81 ] },
 	"8070": { "type": TYPE_RECTANGLE, "params": [ 19.05, 19.94 ] },
 	"8071": { "type": TYPE_RECTANGLE, "params": [ 11.56, 15.49 ] },
-	"8072": { "type": TYPE_ARCTOP,    "params": [ 9.91, 18.03 ] },
+	"8072": { "type": TYPE_ARCTOP,    "params": [ 9.91, 18.03, -2.0 ] },
 	"8074": { "type": TYPE_RECTANGLE, "params": [ 12.70, 3.86 ] },
 	"8088": { "type": TYPE_RECTANGLE, "params": [ 11.18, 24.89 ] },
 	"8089": { "type": TYPE_RECTANGLE, "params": [ 16.51, 13.46 ] },
@@ -91,9 +91,12 @@ tichyParts = {
 	"8305": { "type": TYPE_RECTANGLE, "params": [ 6.22, 6.22 ] },
 	"8306": { "type": TYPE_RECTANGLE, "params": [ 10.16, 9.27 ] },
 	"8323": { "type": TYPE_RECTANGLE, "params": [ 8.00, 11.05 ] },
+}
+
+tichyDoors = {
 	"8009": { "type": TYPE_RECTANGLE, "params": [ 9.65, 23.88 ] },
 	"8015": { "type": TYPE_RECTANGLE, "params": [ 21.59, 24.89 ] },
-	"8022": { "type": TYPE_ARCTOP,    "params": [ 24.38, 34.29 ] },
+	"8022": { "type": TYPE_ARCTOP,    "params": [ 24.38, 34.29, -8.0 ] },
 	"8032": { "type": TYPE_RECTANGLE, "params": [ 10.16, 24.38 ] },
 	"8033": { "type": TYPE_RECTANGLE, "params": [ 9.65, 29.46 ] },
 	"8038": { "type": TYPE_RECTANGLE, "params": [ 30.48, 34.54 ] },
@@ -177,7 +180,7 @@ class TichyPanel(wx.Panel, CNCObject):
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		
 		self.cbTichyPart = wx.ComboBox(self, wx.ID_ANY, "", 
-				 choices=sorted(tichyParts.keys()),
+				 choices=sorted(tichyWindows.keys()) + sorted(tichyDoors.keys()),
 				 style=wx.CB_DROPDOWN
 				 )
 		self.cbTichyPart.SetSelection(0)
@@ -331,6 +334,16 @@ class TichyPanel(wx.Panel, CNCObject):
 		self.Layout()
 		self.Fit();
 		
+	def getTichyPartType(self, cbv):
+		if cbv in tichyWindows.keys():
+			return tichyWindows[cbv]["type"]
+		return tichyDoors[cbv]["type"]
+		
+	def getTichyPartParams(self, cbv):
+		if cbv in tichyWindows.keys():
+			return tichyWindows[cbv]["params"]
+		return tichyDoors[cbv]["params"]
+		
 	def getStartingPoints(self):
 		labels = ["Lower Left", "Upper Left", "Lower Right", "Upper Right", "Center"]
 		self.rbStartPoints = []
@@ -350,18 +363,19 @@ class TichyPanel(wx.Panel, CNCObject):
 		
 	def enableStartingPoints(self):
 		cbv = self.cbTichyPart.GetValue()
-		tp = tichyParts[cbv]["type"]
-		p = tichyParts[cbv]["params"]
+		tp = self.getTichyPartType(cbv)
+		p = self.getTichyPartParams(cbv)
 		if tp == TYPE_RECTANGLE:
 			info = "Rectangle %6.2fw x %6.2fh" % (p[0], p[1])
 		elif tp == TYPE_ROUNDTOP:
 			info = "Round Top %6.2fw x %6.2fh" % (p[0], p[1])
+		elif tp == TYPE_ARCTOP:
+			info = "Arc Top %6.2fw x %6.2fh y offset %6.2f" % (p[0], p[1], p[2])
 		elif tp == TYPE_CIRCLE:
 			info = "Circle diameter %6.2f" % p[0]
 		else:
 			info = ""
 			
-		print (info)
 		self.stInfo.SetLabel(info)
 		
 		for l, r in self.startPoints:
@@ -408,16 +422,18 @@ class TichyPanel(wx.Panel, CNCObject):
 		self.gcode = []
 		
 		tpn = self.cbTichyPart.GetValue()
+		tp = self.getTichyPartType(tpn)
+		p = self.getTichyPartParams(tpn)
 		
-		if tichyParts[tpn]["type"] == TYPE_RECTANGLE:
-			self.tichyRectangle(tichyParts[tpn]["params"])
-		elif tichyParts[tpn]["type"] == TYPE_ROUNDTOP:
-			self.tichyRoundTop(tichyParts[tpn]["params"])
-		elif tichyParts[tpn]["type"] == TYPE_CIRCLE:
-			self.tichyCircle(tichyParts[tpn]["params"])
-		else:
-			print("Unknown tichy type for part %s" % tpn)
-			
+		if tp == TYPE_RECTANGLE:
+			self.tichyRectangle(p)
+		elif tp == TYPE_ROUNDTOP:
+			self.tichyRoundTop(p+[0])
+		elif tp == TYPE_ARCTOP:
+			self.tichyRoundTop(p)
+		elif tp == TYPE_CIRCLE:
+			self.tichyCircle(p)
+		
 			
 	def tichyRectangle(self, p):
 		width = p[0] + margin
@@ -568,6 +584,7 @@ class TichyPanel(wx.Panel, CNCObject):
 	def tichyRoundTop(self, p):
 		width = p[0] + margin
 		height = p[1] + margin
+		yoff = p[2]
 		
 		errs = []
 		try:
@@ -642,7 +659,10 @@ class TichyPanel(wx.Panel, CNCObject):
 		self.tDiam = tdiam
 		rad = float(tdiam)/2.0
 		if self.settings.annotate:
-			self.gcode.append("(Tichy Round Top (%6.2f,%6.2f) to (%6.2f,%6.2f) depth from %6.2f to %6.2f) dpp %6.2f" % (sx, sy, width, height, sz, depth, passdepth))
+			if yoff == 0:
+				self.gcode.append("(Tichy Round Top (%6.2f,%6.2f) to (%6.2f,%6.2f) depth from %6.2f to %6.2f) dpp %6.2f" % (sx, sy, width, height, sz, depth, passdepth))
+			else:
+				self.gcode.append("(Tichy Arc Top (%6.2f,%6.2f) to (%6.2f,%6.2f) y offset %6.2f depth from %6.2f to %6.2f) dpp %6.2f" % (sx, sy, width, height, yoff, sz, depth, passdepth))
 
 		points = [[sx, sy], [sx, sy+height], [sx+width, sy+height], [sx+width, sy], [sz, sy]]
 			
@@ -708,13 +728,13 @@ class TichyPanel(wx.Panel, CNCObject):
 			self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % (points[1][0], points[1][1]))
 			if cw:
 				# arc here to point 2
-				self.gcode.append((cmd+self.IJTerm("I", wrad)+self.IJTerm("J", 0)+" X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1))
+				self.gcode.append((cmd+self.IJTerm("I", wrad)+self.IJTerm("J", yoff)+" X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1))
 								% (points[2][0], points[2][1]))
 				self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % (points[3][0], points[3][1]))
 			else:
 				self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % (points[2][0], points[2][1]))
 				# arc here to point 3
-				self.gcode.append((cmd+self.IJTerm("I", -wrad)+self.IJTerm("J", 0)+" X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1))
+				self.gcode.append((cmd+self.IJTerm("I", -wrad)+self.IJTerm("J", yoff)+" X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1))
 								% (points[3][0], points[3][1]))
 			self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % (points[4][0], points[4][1]))
 			

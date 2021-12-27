@@ -37,6 +37,8 @@ class Settings:
 		self.speedG1Z = 55
 		self.depthperpass = 0.33
 		self.stepover = 0.75
+		self.boxdirectory = os.getcwd()
+		self.boxgcodedirectory = os.getcwd()
 		
 		self.cfg = configparser.ConfigParser()
 		self.cfg.optionxform = str
@@ -77,6 +79,10 @@ class Settings:
 					self.depthperpass = float(value)
 				elif opt == 'stepover':
 					self.stepover = float(value)
+				elif opt == "boxdirectory":
+					self.boxdirectory = value
+				elif opt == "boxgcodedirectory":
+					self.boxgcodedirectory = value
 				else:
 					print("Unknown %s option: %s - ignoring" % (self.section, opt))
 		else:
@@ -109,6 +115,8 @@ class Settings:
 		self.cfg.set(self.section, "speedG1Z", "%d" % self.speedG1Z)
 		self.cfg.set(self.section, "depthperpass", "%.2f" % self.depthperpass)
 		self.cfg.set(self.section, "stepover", "%.2f" % self.stepover)
+		self.cfg.set(self.section, "boxdirectory", str(self.boxdirectory))
+		self.cfg.set(self.section, "boxgcodedirectory", str(self.boxgcodedirectory))
 
 		try:		
 			cfp = open(self.inifile, 'w')

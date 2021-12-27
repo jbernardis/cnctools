@@ -26,6 +26,7 @@ import carving.diamonds as diamonds
 import carving.hatch as hatch
 
 import objects.tichy as tichy
+import tabbedbox
 
 from viewer.ncviewer import NCViewer
 from merge import FileMergeDialog
@@ -64,6 +65,7 @@ class MainFrame(wx.Frame):
 		self.wdiamonds = None
 		self.whatch = None
 		self.wtichy = None
+		self.wbox = None
 
 		self.modified = False
 		
@@ -249,6 +251,13 @@ class MainFrame(wx.Frame):
 		self.bTichy.SetToolTip("Generate G Code for tichy windows and doors")
 		szObjects.Add(self.bTichy)
 		self.Bind(wx.EVT_BUTTON, self.bTichyPressed, self.bTichy)
+		
+		szObjects.AddSpacer(10)
+		
+		self.bBox = wx.BitmapButton(boxObject, wx.ID_ANY, self.images.pngBox, size=BTNDIM)
+		self.bBox.SetToolTip("Generate G Code for a tabbed box")
+		szObjects.Add(self.bBox)
+		self.Bind(wx.EVT_BUTTON, self.bBoxPressed, self.bBox)
 		
 		bsizer.Add(szObjects)
 		bsizer.AddSpacer(10)
@@ -447,6 +456,14 @@ class MainFrame(wx.Frame):
 		if not self.closeIfOkay(self.whatch):
 			return
 		self.whatch = None
+			
+		if not self.closeIfOkay(self.wtichy):
+			return
+		self.wtichy = None
+			
+		if not self.closeIfOkay(self.wbox):
+			return
+		self.wbox = None
 
 		self.settings.save()
 			
@@ -628,6 +645,18 @@ class MainFrame(wx.Frame):
 	def tichyClose(self, _):
 		if self.closeIfOkay(self.wtichy):
 			self.wtichy = None
+		
+	def bBoxPressed(self, _):
+		if self.wbox:
+			self.wbox.SetFocus()
+		else:
+			self.wbox = tabbedbox.MainFrame(self.toolInfo, self.speedInfo, self)
+			self.wbox.Bind(wx.EVT_CLOSE, self.boxClose)
+			self.wbox.Show()
+		
+	def boxClose(self, _):
+		if self.closeIfOkay(self.wbox):
+			self.wbox = None
 			
 class App(wx.App):
 	def OnInit(self):

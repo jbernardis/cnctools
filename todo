@@ -2,8 +2,13 @@ allow for lowest layer to leave some material behind
 
 set material thickness globally
 
+verify y offset values for tichy arc top wondows
+show image of tichy parts when chosen
+rearrange fields to make positioning more consistent
+either complete implementation of blind faces in box, or remove feature
+many print statements in cncbox would be better ad message boxes
+
+
 	carve: grid, hatch
 	contour: line, arc, circle, polygon, rectangle, rounded slot, polyline
 	drills: circle, linear, rectangle
-	
-	integrate cnc boxes???

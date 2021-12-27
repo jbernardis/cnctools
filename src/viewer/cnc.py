@@ -330,7 +330,7 @@ class CNC:
 		elif dx == 0:
 			startang = math.radians(90)
 		else:
-			startang = math.atan(dx/dy)
+			startang = math.atan(dy/dx)
 			
 		startang = setQuadrant(startang, dx, dy)
 		rad = math.sqrt(dx*dx+dy*dy)
@@ -342,7 +342,7 @@ class CNC:
 		elif dx == 0:
 			endang = math.radians(90)
 		else:
-			endang = math.atan(dx/dy)
+			endang = math.atan(dy/dx)
 		endang = setQuadrant(endang, dx, dy)
 
 		pts = drawArc(cx, cy, cz, rad, startang, endang, cw, 20)
