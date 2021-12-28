@@ -35,8 +35,11 @@ class Settings:
 		self.speedG1XY = 330
 		self.speedG0Z = 300
 		self.speedG1Z = 55
+		self.safez = 0.5
+		self.totaldepth = 1.6
 		self.depthperpass = 0.33
 		self.stepover = 0.75
+		self.decimals = 4
 		self.boxdirectory = os.getcwd()
 		self.boxgcodedirectory = os.getcwd()
 		
@@ -75,10 +78,16 @@ class Settings:
 					self.speedG0Z = int(float(value))
 				elif opt == 'speedG1Z':
 					self.speedG1Z = int(float(value))
+				elif opt == 'decimals':
+					self.decimals = int(float(value))
 				elif opt == 'depthperpass':
 					self.depthperpass = float(value)
 				elif opt == 'stepover':
 					self.stepover = float(value)
+				elif opt == 'totaldepth':
+					self.totaldepth = float(value)
+				elif opt == 'safez':
+					self.safez = float(value)
 				elif opt == "boxdirectory":
 					self.boxdirectory = value
 				elif opt == "boxgcodedirectory":
@@ -115,8 +124,11 @@ class Settings:
 		self.cfg.set(self.section, "speedG1Z", "%d" % self.speedG1Z)
 		self.cfg.set(self.section, "depthperpass", "%.2f" % self.depthperpass)
 		self.cfg.set(self.section, "stepover", "%.2f" % self.stepover)
+		self.cfg.set(self.section, "totaldepth", "%.2f" % self.totaldepth)
+		self.cfg.set(self.section, "safez", "%.2f" % self.safez)
 		self.cfg.set(self.section, "boxdirectory", str(self.boxdirectory))
 		self.cfg.set(self.section, "boxgcodedirectory", str(self.boxgcodedirectory))
+		self.cfg.set(self.section, "decimals", "%d" % self.decimals)
 
 		try:		
 			cfp = open(self.inifile, 'w')

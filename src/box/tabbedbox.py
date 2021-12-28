@@ -68,8 +68,6 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		self.Show()
 		
 		self.Bind(wx.EVT_KEY_DOWN, self.keyDown)
-		self.Bind(wx.EVT_KEY_UP, self.keyUp)
-		self.Bind(wx.EVT_CHAR, self.keyChar)
 		
 		self.fileName = None
 		
@@ -528,14 +526,7 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		self.render()
 		
 	def keyDown(self, evt):
-		print("key down")
 		evt.Skip()
-		
-	def keyUp(self, evt):
-		print("key up")
-		
-	def keyChar(self, evt):
-		print("key char: (", evt.GetKeyCode(), ")")
 		
 	def updateFileName(self, fn):
 		self.fileName = fn
@@ -831,7 +822,13 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		if path is None:
 			return
 		
-		self.bx.loadBox(path, self.toolrad)
+		msg = self.bx.loadBox(path, self.toolrad)
+		if not msg is None:
+			dlg = wx.MessageDialog(self, msg,
+				'Errors reading box file', wx.OK | wx.ICON_ERROR)
+			dlg.ShowModal()
+			dlg.Destroy()
+
 		self.currentFace = cncbox.FACE_TOP
 		self.hiLite = [ 0, 0, 0, 0, 0, 0 ]
 

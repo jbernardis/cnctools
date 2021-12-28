@@ -462,11 +462,9 @@ class GCodeDlg(wx.Dialog):
 		steps = []
 		d = self.depthPerCut
 		while totalDepth - d > 0.0001: 
-			print("appending for depth %f" % -d)
 			steps.append(-d)
 			d += self.depthPerCut
 		steps.append(-(totalDepth + self.extraDepth))
-		print("append final depth %f" % -(totalDepth + self.extraDepth))
 		
 		if icw:
 			cmd = "G2"

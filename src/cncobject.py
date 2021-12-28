@@ -181,7 +181,7 @@ class CNCObject:
 			title += " (unsaved)"
 		self.parent.SetTitle(title)
 		
-	def preamble(self, measSys, tDiam, tInfo, safeZ):
+	def preamble(self, metric, tDiam, tInfo, safeZ):
 		code = []
 		if self.settings.annotate:
 			code.append("({})".format(self.viewTitle))
@@ -191,11 +191,11 @@ class CNCObject:
 				code.append("(Tool diameter %6.2f)" % (tDiam))
 			code.append("(preamble)")
 		code.append("G90")
-		if measSys == "Imperial":
-			code.append("G20")
-		else:
+		if metric:
 			code.append("G21")
-		  
+		else:
+			code.append("G20")
+			
 		code.append("G0 X0 Y0 Z%6.2f" % safeZ)  
 		return code
 	

@@ -1,14 +1,22 @@
 allow for lowest layer to leave some material behind
 
-set material thickness globally
+set material thickness/depth of cut, safez, decimal places globally
 
-verify y offset values for tichy arc top wondows
+verify y offset values for tichy arc top windows (can't really do unless I have windows in hand)
+
 show image of tichy parts when chosen
-rearrange fields to make positioning more consistent
+
 either complete implementation of blind faces in box, or remove feature
-many print statements in cncbox would be better ad message boxes
+
+box generate gcode - get values from settings/tools/materials depth, measuring system, safez, etc
+
+figure out how to deal with tool dimensions in metric vs imperial 
+
+polyline - initial value for points
 
 
-	carve: grid, hatch
+
+	carve: grid, hatch, diamond
 	contour: line, arc, circle, polygon, rectangle, rounded slot, polyline
 	drills: circle, linear, rectangle
+	objects: tichy, box

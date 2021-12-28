@@ -107,21 +107,7 @@ class GridPanel(wx.Panel, CNCObject):
 		self.addWidget(self.teSizeY, "sizey")
 		sizer.Add(self.teSizeY, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
-
-		t = wx.StaticText(self, wx.ID_ANY, "Perpendicular Gap")
-		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teGap = wx.TextCtrl(self, wx.ID_ANY, "10", style=wx.TE_RIGHT)
-		self.addWidget(self.teGap, "gap")
-		sizer.Add(self.teGap, pos=(ln, 1), flag=wx.LEFT, border=10)
 		
-		t = wx.StaticText(self, wx.ID_ANY, "Tool Diameter")
-		td = "%6.3f" % toolInfo["diameter"]
-		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teToolDiam = wx.TextCtrl(self, wx.ID_ANY, td, style=wx.TE_RIGHT)
-		self.addWidget(self.teToolDiam, "tooldiam")
-		sizer.Add(self.teToolDiam, pos=(ln, 3), flag=wx.LEFT, border=10)
-		ln += 1
-
 		t = wx.StaticText(self, wx.ID_ANY, "Angle")
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teAngle = wx.TextCtrl(self, wx.ID_ANY, "45", style=wx.TE_RIGHT)
@@ -135,20 +121,13 @@ class GridPanel(wx.Panel, CNCObject):
 		sizer.Add(self.teYOffset, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
 
-		t = wx.StaticText(self, wx.ID_ANY, "Total Depth")
+		t = wx.StaticText(self, wx.ID_ANY, "Perpendicular Gap")
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teTotalDepth = wx.TextCtrl(self, wx.ID_ANY, "1", style=wx.TE_RIGHT)
-		self.addWidget(self.teTotalDepth, "depth")
-		sizer.Add(self.teTotalDepth, pos=(ln, 1), flag=wx.LEFT, border=10)
-		
-		t = wx.StaticText(self, wx.ID_ANY, "Depth/Pass")
-		dpp = "%6.3f" % speedInfo["depthperpass"]
-		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.tePassDepth = wx.TextCtrl(self, wx.ID_ANY, dpp, style=wx.TE_RIGHT)
-		self.addWidget(self.tePassDepth, "passdepth")
-		sizer.Add(self.tePassDepth, pos=(ln, 3), flag=wx.LEFT, border=10)
+		self.teGap = wx.TextCtrl(self, wx.ID_ANY, "10", style=wx.TE_RIGHT)
+		self.addWidget(self.teGap, "gap")
+		sizer.Add(self.teGap, pos=(ln, 1), flag=wx.LEFT, border=10)
 		ln += 1
-
+		
 		t = wx.StaticText(self, wx.ID_ANY, "Start X")
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teStartX = wx.TextCtrl(self, wx.ID_ANY, "0", style=wx.TE_RIGHT)
@@ -169,12 +148,51 @@ class GridPanel(wx.Panel, CNCObject):
 		sizer.Add(self.teStartZ, pos=(ln, 1), flag=wx.LEFT, border=10)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Safe Z above surface")
+		sz = "%6.3f" % self.settings.safez
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teSafeZ = wx.TextCtrl(self, wx.ID_ANY, "0.5", style=wx.TE_RIGHT)
+		self.teSafeZ = wx.TextCtrl(self, wx.ID_ANY, sz, style=wx.TE_RIGHT)
 		self.addWidget(self.teSafeZ, "safez")
 		sizer.Add(self.teSafeZ, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
 		
+		t = wx.StaticText(self, wx.ID_ANY, "Tool Diameter")
+		td = "%6.3f" % toolInfo["diameter"]
+		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		self.teToolDiam = wx.TextCtrl(self, wx.ID_ANY, td, style=wx.TE_RIGHT)
+		self.addWidget(self.teToolDiam, "tooldiam")
+		sizer.Add(self.teToolDiam, pos=(ln, 1), flag=wx.LEFT, border=10)
+		ln += 1
+
+		t = wx.StaticText(self, wx.ID_ANY, "Total Depth")
+		td = "%6.3f" % self.settings.totaldepth
+		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		self.teTotalDepth = wx.TextCtrl(self, wx.ID_ANY, td, style=wx.TE_RIGHT)
+		self.addWidget(self.teTotalDepth, "depth")
+		sizer.Add(self.teTotalDepth, pos=(ln, 1), flag=wx.LEFT, border=10)
+		
+		t = wx.StaticText(self, wx.ID_ANY, "Depth/Pass")
+		dpp = "%6.3f" % speedInfo["depthperpass"]
+		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		self.tePassDepth = wx.TextCtrl(self, wx.ID_ANY, dpp, style=wx.TE_RIGHT)
+		self.addWidget(self.tePassDepth, "passdepth")
+		sizer.Add(self.tePassDepth, pos=(ln, 3), flag=wx.LEFT, border=10)
+		ln += 1
+		
+		t = wx.StaticText(self, wx.ID_ANY, "Starting Point")
+		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)	
+		sizer.Add(self.getStartingPoints(), pos=(ln, 1), border=5, flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_VERTICAL)	
+
+		t = wx.StaticText(self, wx.ID_ANY, "Add Border")
+		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		self.cbBorder = wx.CheckBox(self, wx.ID_ANY)
+		self.addWidget(self.cbBorder, "border")
+		self.Bind(wx.EVT_CHECKBOX, self.onChange, self.cbBorder)
+		sizer.Add(self.cbBorder, pos=(ln, 3), flag=wx.LEFT+wx.RIGHT+wx.ALIGN_CENTER_VERTICAL, border=10)
+		ln += 1
+		
+		sizer.Add(20, 20, wx.GBPosition(ln, 0))
+		ln += 1
+
 		self.cbAddSpeed = wx.CheckBox(self, wx.ID_ANY, "Add Speed Parameter")
 		self.addWidget(self.cbAddSpeed, "addspeed")
 		sizer.Add(self.cbAddSpeed, pos=(ln, 0), span=(1,4),
@@ -218,29 +236,6 @@ class GridPanel(wx.Panel, CNCObject):
 		self.teFeedZG1.Enable(self.settings.addspeed)
 		ln += 1
 
-		t = wx.StaticText(self, wx.ID_ANY, "Starting Point")
-		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)	
-		sizer.Add(self.getStartingPoints(), pos=(ln, 1), border=5, flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_VERTICAL)	
-
-		t = wx.StaticText(self, wx.ID_ANY, "Measurement System")
-		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		sizer.Add(self.getMeasurementSystem(), pos=(ln, 3), border=5, flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_VERTICAL)	
-		ln += 1
-
-		t = wx.StaticText(self, wx.ID_ANY, "Add Border")
-		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.cbBorder = wx.CheckBox(self, wx.ID_ANY)
-		self.addWidget(self.cbBorder, "border")
-		self.Bind(wx.EVT_CHECKBOX, self.onChange, self.cbBorder)
-		sizer.Add(self.cbBorder, pos=(ln, 1), flag=wx.LEFT+wx.RIGHT+wx.ALIGN_CENTER_VERTICAL, border=10)
-
-		t = wx.StaticText(self, wx.ID_ANY, "Decimal Places")
-		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teDecimals = wx.TextCtrl(self, wx.ID_ANY, "4", style=wx.TE_RIGHT)
-		self.addWidget(self.teDecimals, "decimals")
-		sizer.Add(self.teDecimals, pos=(ln, 3), flag=wx.LEFT, border=10)
-		ln += 1
-
 		sizer.Add(20, 20, wx.GBPosition(ln, 0))
 		ln += 1
 		
@@ -280,25 +275,6 @@ class GridPanel(wx.Panel, CNCObject):
 			sz.Add(r)
 			self.rbStartPoints.append(r)
 		return sz
-		
-	def getMeasurementSystem(self):
-		labels = ["Metric", "Imperial"]
-		self.rbMeas = []
-		sz = wx.BoxSizer(wx.VERTICAL)
-		for i in range(len(labels)):
-			if i == 0:
-				style = wx.RB_GROUP
-			else:
-				style = 0
-			r = wx.RadioButton(self, wx.ID_ANY, labels[i], style=style)
-			sz.Add(r)
-			self.addWidget(r, labels[i])
-			self.rbMeas.append(r)
-		if self.settings.metric:
-			self.setChosen(self.rbMeas, "Metric")
-		else:
-			self.setChosen(self.rbMeas, "Imperial")
-		return sz
 
 	def onCbAddSpeed(self, _):
 		self.setState(True, False)
@@ -313,13 +289,10 @@ class GridPanel(wx.Panel, CNCObject):
 		self.bVisualize.Enable(False)
 		self.gcl.clear()
 		self.gcode = []
+		
+		self.fmt = "%%0.%df" % self.settings.decimals
 
 		errs = []		
-		try:
-			dec = int(self.teDecimals.GetValue())
-			self.fmt = "%0." + str(dec) + "f"
-		except:
-			errs.append("Decimal Places")
 		try:
 			sx = float(self.teStartX.GetValue())
 		except:
@@ -388,7 +361,7 @@ class GridPanel(wx.Panel, CNCObject):
 		if not ValidateNoEntryErrors(self, errs):
 			return			
 
-		self.gcode = self.preamble(self.getChosen(self.rbMeas), self.tDiam, self.toolInfo, safez)
+		self.gcode = self.preamble(self.settings.metric, self.tDiam, self.toolInfo, safez)
 			
 		border = self.cbBorder.IsChecked()
 		addspeed = self.cbAddSpeed.IsChecked()

@@ -304,8 +304,8 @@ class ManageToolsDlg(wx.Dialog):
 		
 		btnSizer.AddSpacer(10)
 
-		self.bEdit = wx.BitmapButton(self, wx.ID_ANY, self.images.pngReplace, size=BTNDIM)
-		self.bEdit.SetToolTip("Edit selected tooll properties")
+		self.bEdit = wx.BitmapButton(self, wx.ID_ANY, self.images.pngModify, size=BTNDIM)
+		self.bEdit.SetToolTip("Edit selected tool properties")
 		btnSizer.Add(self.bEdit)
 		self.Bind(wx.EVT_BUTTON, self.bEditPressed, self.bEdit)
 		self.bEdit.Enable(False)

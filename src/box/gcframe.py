@@ -112,8 +112,6 @@ class GcFrame (wx.Window):
 		self.redrawGraph()
 		
 	def initBuffer(self):
-		w, h = self.GetClientSize()
-		print(w, h)
 		self.buffer = wx.Bitmap(self.sz[0], self.sz[1])
 		self.redrawGraph()
 		

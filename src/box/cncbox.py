@@ -111,39 +111,41 @@ class cncbox:
 			config.write(configfile)
 			
 	def loadBox(self, fn, toolrad):
-		global s;
+		global s, cx, cy, rad, lx, ly
+
 		config = configparser.SafeConfigParser()
 		config.read(fn)
 
-		section = 'box'	  
+		section = 'box'	 
+		errors = [] 
 		if config.has_section(section):
 			for n, v in config.items(section):
 				if n == 'width':
 					try:
 						w = float(v)
 					except:
-						print("invalid value in box file for width")
+						errors.append("invalid value in box file for width")
 						w = 100
 					self.setWidth(w)
 				elif n == 'height':
 					try:
 						h = float(v)
 					except:
-						print("invalid value in box file for height")
+						errors.append("invalid value in box file for height")
 						h = 100
 					self.setHeight(h)
 				elif n == 'depth':
 					try:
 						d = float(v)
 					except:
-						print("invalid value in box file for depth")
+						errors.append("invalid value in box file for depth")
 						d = 100
 					self.setDepth(d)
 				elif n == 'wall':
 					try:
 						w = float(v)
 					except:
-						print("invalid value in box file for wall")
+						errors.append("invalid value in box file for wall")
 						w = 6
 					self.setWall(w, toolrad)
 
@@ -151,7 +153,7 @@ class cncbox:
 					try:
 						exec("global s; s=%s" % v)
 					except:
-						print("invalid value in box file for tabcount")
+						errors.append("invalid value in box file for tabcount")
 						s = [0, 0, 0]
 						
 					for c in cornerTypes:
@@ -161,7 +163,7 @@ class cncbox:
 					try:
 						exec("global s; s=%s" % v)
 					except:
-						print("invalid value in box file for tablength")
+						errors.append("invalid value in box file for tablength")
 						s = [10, 10, 10]
 					for c in cornerTypes:
 						self.setTabLen(c, s[c])
@@ -170,7 +172,7 @@ class cncbox:
 					try:
 						exec("global s; s=%s" % v)
 					except:
-						print("invalid value in box file for tabtype")
+						errors.append("invalid value in box file for tabtype")
 						s = [0, 0, 0]
 					for c in cornerTypes:
 						self.setTabType(c, s[c])
@@ -179,7 +181,7 @@ class cncbox:
 					try:
 						r = int(v)
 					except:
-						print("invalid value in box file for relief")
+						errors.append("invalid value in box file for relief")
 						r = NRELIEF
 					self.setRelief(r)
 				else:
@@ -201,25 +203,22 @@ class cncbox:
 		for f in faceTypes:
 			section = "face_%d_circles" % f
 			if config.has_section(section):
-				cx = ""
-				cy = ""
-				rad = ""
 				try:
 					cxs = config.get(section, "cx")
-					exec("cx=%s" % cxs)
+					exec("global cx; cx=%s" % cxs)
 					cys = config.get(section, "cy")
-					exec("cy=%s" % cys)
+					exec("global cy; cy=%s" % cys)
 					rads = config.get(section, "radii")
-					exec("rad=%s" % rads)
+					exec("global rad; rad=%s" % rads)
 				except:
-					print("Unable to process section %s" % section)
+					errors.append("Unable to process section %s" % section)
 					continue
 				
 				lx = len(cx);
 				ly = len(cy)
 				lr = len(rad)
 				if lx != ly or ly != lr or lr != lx:
-					print("Invalid data for section %s" % section)
+					errors.append("Invalid data for section %s" % section)
 					continue
 				
 				c = []
@@ -230,21 +229,17 @@ class cncbox:
 				
 			section = "face_%d_rectangles" % f
 			if config.has_section(section):
-				cx = ""
-				cy = ""
-				lx = ""
-				ly = ""
 				try:
 					cxs = config.get(section, "cx")
-					exec("cx=%s" % cxs)
+					exec("global cx; cx=%s" % cxs)
 					cys = config.get(section, "cy")
-					exec("cy=%s" % cys)
+					exec("global cy; cy=%s" % cys)
 					lxs = config.get(section, "width")
-					exec("lx=%s" % lxs)
+					exec("global lx; lx=%s" % lxs)
 					lys = config.get(section, "height")
-					exec("ly=%s" % lys)
+					exec("global ly; ly=%s" % lys)
 				except:
-					print("Unable to process section %s" % section)
+					errors.append("Unable to process section %s" % section)
 					continue
 				
 				lencx = len(cx);
@@ -252,7 +247,7 @@ class cncbox:
 				lenlx = len(lx)
 				lenly = len(ly)
 				if lencx != lency or lency != lenlx or lenlx != lenly:
-					print("Invalid data for section %s" % section)
+					errors.append("Invalid data for section %s" % section)
 					continue
 				
 				r = []
@@ -260,6 +255,12 @@ class cncbox:
 					r.append([[cx[i], cy[i]], lx[i], ly[i]])
 					
 				self.setRectangles(f, r)
+				
+		if len(errors) > 0:
+			msg = "\n".join(errors)
+			return msg
+		
+		return None
 
 			
 	def setHeight(self, nh):

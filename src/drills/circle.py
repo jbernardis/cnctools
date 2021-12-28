@@ -60,28 +60,13 @@ class CirDrillPanel(wx.Panel, CNCObject):
 		self.addWidget(self.teDiameter, "diameter")
 		sizer.Add(self.teDiameter, pos=(ln, 1), flag=wx.LEFT, border=10)
 		ln += 1
-
-		t = wx.StaticText(self, wx.ID_ANY, "Tool Diameter")
-		td = "%6.3f" % toolInfo["diameter"]
-		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teToolDiam = wx.TextCtrl(self, wx.ID_ANY, td, style=wx.TE_RIGHT)
-		self.addWidget(self.teToolDiam, "tooldiameter")
-		sizer.Add(self.teToolDiam, pos=(ln, 1), flag=wx.LEFT, border=10)
-
+		
 		t = wx.StaticText(self, wx.ID_ANY, "Hole Diameter")
-		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teHoleDiam = wx.TextCtrl(self, wx.ID_ANY, "3", style=wx.TE_RIGHT)
 		self.addWidget(self.teHoleDiam, "holediameter")
-		sizer.Add(self.teHoleDiam, pos=(ln, 3), flag=wx.LEFT, border=10)
-		ln += 1
-
-		t = wx.StaticText(self, wx.ID_ANY, "Stepover")
-		so = "%6.3f" % speedInfo["stepover"]
-		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teStepover = wx.TextCtrl(self, wx.ID_ANY, so, style=wx.TE_RIGHT)
-		self.addWidget(self.teStepover, "stepover")
-		sizer.Add(self.teStepover, pos=(ln, 1), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=10)
-
+		sizer.Add(self.teHoleDiam, pos=(ln, 1), flag=wx.LEFT, border=10)
+		
 		t = wx.StaticText(self, wx.ID_ANY, "Minimum space between")
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teSpacing = wx.TextCtrl(self, wx.ID_ANY, "2", style=wx.TE_RIGHT)
@@ -89,51 +74,6 @@ class CirDrillPanel(wx.Panel, CNCObject):
 		sizer.Add(self.teSpacing, pos=(ln, 3), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=10)
 		ln += 1
 		
-		szOpts = wx.BoxSizer(wx.VERTICAL)
-		self.cbInside = wx.CheckBox(self, wx.ID_ANY, "Inside Circle")
-		self.addWidget(self.cbInside, "inside")
-		self.Bind(wx.EVT_CHECKBOX, self.onChange, self.cbInside)
-		szOpts.Add(self.cbInside)
-		
-		szOpts.AddSpacer(10)
-		
-		self.cbStagger = wx.CheckBox(self, wx.ID_ANY, "Staggered rows")
-		self.addWidget(self.cbStagger, "stagger")
-		self.Bind(wx.EVT_CHECKBOX, self.onChange, self.cbStagger)
-		szOpts.Add(self.cbStagger)
-		
-		szOpts2 = wx.BoxSizer(wx.HORIZONTAL)
-		szOpts2.AddSpacer(80)
-		szOpts2.Add(szOpts)
-		
-		sizer.Add(szOpts2, pos=(ln, 0), span=(1, 2), border=5, flag=wx.TOP+wx.BOTTOM+wx.LEFT+wx.ALIGN_CENTER_VERTICAL)
-
-		t = wx.StaticText(self, wx.ID_ANY, "Cutting Direction")
-		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		sizer.Add(self.getCuttingDirection(), pos=(ln, 3), border=5, flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_VERTICAL)	
-		ln += 1
-
-		t = wx.StaticText(self, wx.ID_ANY, "Depth of Cut")
-		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teDepth = wx.TextCtrl(self, wx.ID_ANY, "1", style=wx.TE_RIGHT)
-		self.addWidget(self.teDepth, "depth")
-		sizer.Add(self.teDepth, pos=(ln, 1), flag=wx.LEFT, border=10)
-		
-		t = wx.StaticText(self, wx.ID_ANY, "Depth/Pass")
-		dpp = "%6.3f" % speedInfo["depthperpass"]
-		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.tePassDepth = wx.TextCtrl(self, wx.ID_ANY, dpp, style=wx.TE_RIGHT)
-		self.addWidget(self.tePassDepth, "passdepth")
-		sizer.Add(self.tePassDepth, pos=(ln, 3), flag=wx.LEFT, border=10)
-		ln += 1
-		
-		self.cbRetract = wx.CheckBox(self, wx.ID_ANY, "Retract each pass")
-		self.addWidget(self.cbRetract, "retract")
-		sizer.Add(self.cbRetract, pos=(ln, 2), span=(1,2),
-				flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_HORIZONTAL, border=5)
-		self.Bind(wx.EVT_CHECKBOX, self.onChange, self.cbRetract)
-		ln += 1
-
 		t = wx.StaticText(self, wx.ID_ANY, "Center X")
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teStartX = wx.TextCtrl(self, wx.ID_ANY, "0", style=wx.TE_RIGHT)
@@ -147,19 +87,88 @@ class CirDrillPanel(wx.Panel, CNCObject):
 		sizer.Add(self.teStartY, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
 
-		t = wx.StaticText(self, wx.ID_ANY, "Center Z")
+		t = wx.StaticText(self, wx.ID_ANY, "Start Z")
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teStartZ = wx.TextCtrl(self, wx.ID_ANY, "0", style=wx.TE_RIGHT)
 		self.addWidget(self.teStartZ, "startz")
 		sizer.Add(self.teStartZ, pos=(ln, 1), flag=wx.LEFT, border=10)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Safe Z above surface")
+		sz = "%6.3f" % self.settings.safez
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teSafeZ = wx.TextCtrl(self, wx.ID_ANY, "0.5", style=wx.TE_RIGHT)
+		self.teSafeZ = wx.TextCtrl(self, wx.ID_ANY, sz, style=wx.TE_RIGHT)
 		self.addWidget(self.teSafeZ, "safez")
 		sizer.Add(self.teSafeZ, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
+
+		t = wx.StaticText(self, wx.ID_ANY, "Tool Diameter")
+		td = "%6.3f" % toolInfo["diameter"]
+		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		self.teToolDiam = wx.TextCtrl(self, wx.ID_ANY, td, style=wx.TE_RIGHT)
+		self.addWidget(self.teToolDiam, "tooldiameter")
+		sizer.Add(self.teToolDiam, pos=(ln, 1), flag=wx.LEFT, border=10)
+
+		t = wx.StaticText(self, wx.ID_ANY, "Stepover")
+		so = "%6.3f" % speedInfo["stepover"]
+		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		self.teStepover = wx.TextCtrl(self, wx.ID_ANY, so, style=wx.TE_RIGHT)
+		self.addWidget(self.teStepover, "stepover")
+		sizer.Add(self.teStepover, pos=(ln, 3), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=10)
+		ln += 1
+
+		t = wx.StaticText(self, wx.ID_ANY, "Depth of Cut")
+		td = "%6.3f" % self.settings.totaldepth
+		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		self.teDepth = wx.TextCtrl(self, wx.ID_ANY, td, style=wx.TE_RIGHT)
+		self.addWidget(self.teDepth, "depth")
+		sizer.Add(self.teDepth, pos=(ln, 1), flag=wx.LEFT, border=10)
 		
+		t = wx.StaticText(self, wx.ID_ANY, "Depth/Pass")
+		dpp = "%6.3f" % speedInfo["depthperpass"]
+		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		self.tePassDepth = wx.TextCtrl(self, wx.ID_ANY, dpp, style=wx.TE_RIGHT)
+		self.addWidget(self.tePassDepth, "passdepth")
+		sizer.Add(self.tePassDepth, pos=(ln, 3), flag=wx.LEFT, border=10)
+		ln += 1
+		
+
+
+		
+		szOpts = wx.BoxSizer(wx.VERTICAL)
+		self.cbInside = wx.CheckBox(self, wx.ID_ANY, "Inside Circle")
+		self.addWidget(self.cbInside, "inside")
+		self.Bind(wx.EVT_CHECKBOX, self.onChange, self.cbInside)
+		szOpts.Add(self.cbInside)
+		
+		szOpts.AddSpacer(10)
+		
+		self.cbStagger = wx.CheckBox(self, wx.ID_ANY, "Staggered rows")
+		self.addWidget(self.cbStagger, "stagger")
+		self.Bind(wx.EVT_CHECKBOX, self.onChange, self.cbStagger)
+		szOpts.Add(self.cbStagger)
+
+		szOpts.AddSpacer(10)
+		
+		self.cbRetract = wx.CheckBox(self, wx.ID_ANY, "Retract each pass")
+		self.addWidget(self.cbRetract, "retract")
+		szOpts.Add(self.cbRetract)
+		self.Bind(wx.EVT_CHECKBOX, self.onChange, self.cbRetract)
+
+		szOpts2 = wx.BoxSizer(wx.HORIZONTAL)
+		szOpts2.AddSpacer(80)
+		szOpts2.Add(szOpts)
+		
+		sizer.Add(szOpts2, pos=(ln, 0), span=(1, 2), border=5, flag=wx.TOP+wx.BOTTOM+wx.LEFT+wx.ALIGN_CENTER_VERTICAL)
+
+		t = wx.StaticText(self, wx.ID_ANY, "Cutting Direction")
+		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		sizer.Add(self.getCuttingDirection(), pos=(ln, 3), border=5, flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_VERTICAL)	
+		ln += 1
+		
+		sizer.Add(20, 20, wx.GBPosition(ln, 0))
+		ln += 1
+		
+
 		self.cbAddSpeed = wx.CheckBox(self, wx.ID_ANY, "Add Speed Parameter")
 		self.addWidget(self.cbAddSpeed, "addspeed")
 		sizer.Add(self.cbAddSpeed, pos=(ln, 0), span=(1,4),
@@ -203,17 +212,6 @@ class CirDrillPanel(wx.Panel, CNCObject):
 		self.teFeedZG1.Enable(self.settings.addspeed)
 		ln += 1
 
-		t = wx.StaticText(self, wx.ID_ANY, "Decimal Places")
-		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teDecimals = wx.TextCtrl(self, wx.ID_ANY, "4", style=wx.TE_RIGHT)
-		self.addWidget(self.teDecimals, "decimals")
-		sizer.Add(self.teDecimals, pos=(ln, 1), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=10)
-
-		t = wx.StaticText(self, wx.ID_ANY, "Measurement System")
-		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		sizer.Add(self.getMeasurementSystem(), pos=(ln, 3), border=5, flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_VERTICAL)	
-		ln += 1
-
 		sizer.Add(20, 20, wx.GBPosition(ln, 0))
 		ln += 1
 		
@@ -238,25 +236,6 @@ class CirDrillPanel(wx.Panel, CNCObject):
 		self.SetSizer(sizer)
 		self.Layout()
 		self.Fit();
-		
-	def getMeasurementSystem(self):
-		labels = ["Metric", "Imperial"]
-		self.rbMeas = []
-		sz = wx.BoxSizer(wx.VERTICAL)
-		for i in range(len(labels)):
-			if i == 0:
-				style = wx.RB_GROUP
-			else:
-				style = 0
-			r = wx.RadioButton(self, wx.ID_ANY, labels[i], style=style)
-			sz.Add(r)
-			self.addWidget(r, labels[i])
-			self.rbMeas.append(r)
-		if self.settings.metric:
-			self.setChosen(self.rbMeas, "Metric")
-		else:
-			self.setChosen(self.rbMeas, "Imperial")
-		return sz
 	
 	def getCuttingDirection(self):
 		labels = ["Clockwise", "Counter Clockwise"]
@@ -286,13 +265,10 @@ class CirDrillPanel(wx.Panel, CNCObject):
 		self.bVisualize.Enable(False)
 		self.gcl.clear()
 		self.gcode = []
+		
+		self.fmt = "%%0.%df" % self.settings.decimals
 
 		errs = []
-		try:
-			dec = int(self.teDecimals.GetValue())
-			self.fmt = "%0." + str(dec) + "f"
-		except:
-			errs.append("Decimal Places")
 		try:
 			sx = float(self.teStartX.GetValue())
 		except:
@@ -369,7 +345,7 @@ class CirDrillPanel(wx.Panel, CNCObject):
 		if not ValidateMinLength(self, cdiam, hdiam + spacing, "Overall diameter", "Hole diameter + spacing"):
 			return
 
-		self.gcode = self.preamble(self.getChosen(self.rbMeas), tdiam, self.toolInfo, safez)
+		self.gcode = self.preamble(self.settings.metric, tdiam, self.toolInfo, safez)
 		
 		if inside:
 			radlimit = cdiam/2 - hdiam/2

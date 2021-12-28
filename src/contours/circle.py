@@ -53,29 +53,8 @@ class CirclePanel(wx.Panel, CNCObject):
 		self.teDiam = wx.TextCtrl(self, wx.ID_ANY, "10", style=wx.TE_RIGHT)
 		self.addWidget(self.teDiam, "circlediameter")
 		sizer.Add(self.teDiam, pos=(ln, 1), flag=wx.LEFT, border=10)
-
-		t = wx.StaticText(self, wx.ID_ANY, "Tool Diameter")
-		td = "%6.3f" % toolInfo["diameter"]
-		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teToolDiam = wx.TextCtrl(self, wx.ID_ANY, td, style=wx.TE_RIGHT)
-		self.addWidget(self.teToolDiam, "tooldiameter")
-		sizer.Add(self.teToolDiam, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
-
-		t = wx.StaticText(self, wx.ID_ANY, "Total Depth")
-		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teTotalDepth = wx.TextCtrl(self, wx.ID_ANY, "1", style=wx.TE_RIGHT)
-		self.addWidget(self.teTotalDepth, "depth")
-		sizer.Add(self.teTotalDepth, pos=(ln, 1), flag=wx.LEFT, border=10)
 		
-		t = wx.StaticText(self, wx.ID_ANY, "Depth/Pass")
-		dpp = "%6.3f" % speedInfo["depthperpass"]
-		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.tePassDepth = wx.TextCtrl(self, wx.ID_ANY, dpp, style=wx.TE_RIGHT)
-		self.addWidget(self.tePassDepth, "passdepth")
-		sizer.Add(self.tePassDepth, pos=(ln, 3), flag=wx.LEFT, border=10)
-		ln += 1
-
 		t = wx.StaticText(self, wx.ID_ANY, "Center X")
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teStartX = wx.TextCtrl(self, wx.ID_ANY, "0", style=wx.TE_RIGHT)
@@ -89,17 +68,68 @@ class CirclePanel(wx.Panel, CNCObject):
 		sizer.Add(self.teStartY, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
 
-		t = wx.StaticText(self, wx.ID_ANY, "Center Z")
+		t = wx.StaticText(self, wx.ID_ANY, "Start Z")
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teStartZ = wx.TextCtrl(self, wx.ID_ANY, "0", style=wx.TE_RIGHT)
 		self.addWidget(self.teStartZ, "centerz")
 		sizer.Add(self.teStartZ, pos=(ln, 1), flag=wx.LEFT, border=10)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Safe Z above surface")
+		sz = "%6.3f" % self.settings.safez
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teSafeZ = wx.TextCtrl(self, wx.ID_ANY, "0.5", style=wx.TE_RIGHT)
+		self.teSafeZ = wx.TextCtrl(self, wx.ID_ANY, sz, style=wx.TE_RIGHT)
 		self.addWidget(self.teSafeZ, "safez")
 		sizer.Add(self.teSafeZ, pos=(ln, 3), flag=wx.LEFT, border=10)
+		ln += 1
+
+		t = wx.StaticText(self, wx.ID_ANY, "Tool Diameter")
+		td = "%6.3f" % toolInfo["diameter"]
+		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		self.teToolDiam = wx.TextCtrl(self, wx.ID_ANY, td, style=wx.TE_RIGHT)
+		self.addWidget(self.teToolDiam, "tooldiameter")
+		sizer.Add(self.teToolDiam, pos=(ln, 1), flag=wx.LEFT, border=10)
+		
+		t = wx.StaticText(self, wx.ID_ANY, "Stepover")
+		so = "%6.3f" % speedInfo["stepover"]
+		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		self.teStepOver = wx.TextCtrl(self, wx.ID_ANY, so, style=wx.TE_RIGHT)
+		self.addWidget(self.teStepOver, "stepover")
+		sizer.Add(self.teStepOver, pos=(ln, 3), flag=wx.LEFT, border=10)
+		ln += 1
+
+		t = wx.StaticText(self, wx.ID_ANY, "Total Depth")
+		td = "%6.3f" % self.settings.totaldepth
+		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		self.teTotalDepth = wx.TextCtrl(self, wx.ID_ANY, td, style=wx.TE_RIGHT)
+		self.addWidget(self.teTotalDepth, "depth")
+		sizer.Add(self.teTotalDepth, pos=(ln, 1), flag=wx.LEFT, border=10)
+		
+		t = wx.StaticText(self, wx.ID_ANY, "Depth/Pass")
+		dpp = "%6.3f" % speedInfo["depthperpass"]
+		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		self.tePassDepth = wx.TextCtrl(self, wx.ID_ANY, dpp, style=wx.TE_RIGHT)
+		self.addWidget(self.tePassDepth, "passdepth")
+		sizer.Add(self.tePassDepth, pos=(ln, 3), flag=wx.LEFT, border=10)
+		ln += 1
+
+		t = wx.StaticText(self, wx.ID_ANY, "Cutting Direction")
+		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		sizer.Add(self.getCuttingDirection(), pos=(ln, 1), border=5, flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_VERTICAL)	
+
+		t = wx.StaticText(self, wx.ID_ANY, "Tool Movement")
+		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		sizer.Add(self.getToolMovement(), pos=(ln, 3), border=5, flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_VERTICAL)	
+		ln += 1
+
+		self.cbPocket = wx.CheckBox(self, wx.ID_ANY, "Pocket")
+		self.addWidget(self.cbPocket, "pocket")
+		sizer.Add(self.cbPocket, pos=(ln, 0), span=(1,2),
+				flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_HORIZONTAL, border=5)
+		self.Bind(wx.EVT_CHECKBOX, self.onChange, self.cbPocket)
+		
+		ln += 1
+		
+		sizer.Add(20, 20, wx.GBPosition(ln, 0))
 		ln += 1
 		
 		self.cbAddSpeed = wx.CheckBox(self, wx.ID_ANY, "Add Speed Parameter")
@@ -144,41 +174,7 @@ class CirclePanel(wx.Panel, CNCObject):
 		self.teFeedZG0.Enable(self.settings.addspeed)
 		self.teFeedZG1.Enable(self.settings.addspeed)
 		ln += 1
-
-		t = wx.StaticText(self, wx.ID_ANY, "Cutting Direction")
-		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		sizer.Add(self.getCuttingDirection(), pos=(ln, 1), border=5, flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_VERTICAL)	
-
-		t = wx.StaticText(self, wx.ID_ANY, "Tool Movement")
-		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		sizer.Add(self.getToolMovement(), pos=(ln, 3), border=5, flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_VERTICAL)	
-		ln += 1
-
-		self.cbPocket = wx.CheckBox(self, wx.ID_ANY, "Pocket")
-		self.addWidget(self.cbPocket, "pocket")
-		sizer.Add(self.cbPocket, pos=(ln, 0), span=(1,2),
-				flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_HORIZONTAL, border=5)
-		self.Bind(wx.EVT_CHECKBOX, self.onChange, self.cbPocket)
 		
-		t = wx.StaticText(self, wx.ID_ANY, "Stepover")
-		so = "%6.3f" % speedInfo["stepover"]
-		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teStepOver = wx.TextCtrl(self, wx.ID_ANY, so, style=wx.TE_RIGHT)
-		self.addWidget(self.teStepOver, "stepover")
-		sizer.Add(self.teStepOver, pos=(ln, 3), flag=wx.LEFT, border=10)
-		ln += 1
-		
-		t = wx.StaticText(self, wx.ID_ANY, "Decimal Places")
-		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teDecimals = wx.TextCtrl(self, wx.ID_ANY, "4", style=wx.TE_RIGHT)
-		self.addWidget(self.teDecimals, "decimals")
-		sizer.Add(self.teDecimals, pos=(ln, 1), flag=wx.LEFT, border=10)
-
-		t = wx.StaticText(self, wx.ID_ANY, "Measurement System")
-		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		sizer.Add(self.getMeasurementSystem(), pos=(ln, 3), border=5, flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_VERTICAL)	
-		ln += 1
-
 		sizer.Add(20, 20, wx.GBPosition(ln, 0))
 		ln += 1
 		
@@ -233,25 +229,6 @@ class CirclePanel(wx.Panel, CNCObject):
 			sz.Add(r)
 			self.rbCutDir.append(r)
 		return sz
-	
-	def getMeasurementSystem(self):
-		labels = ["Metric", "Imperial"]
-		self.rbMeas = []
-		sz = wx.BoxSizer(wx.VERTICAL)
-		for i in range(len(labels)):
-			if i == 0:
-				style = wx.RB_GROUP
-			else:
-				style = 0
-			r = wx.RadioButton(self, wx.ID_ANY, labels[i], style=style)
-			self.addWidget(r, labels[i])
-			sz.Add(r)
-			self.rbMeas.append(r)
-		if self.settings.metric:
-			self.setChosen(self.rbMeas, "Metric")
-		else:
-			self.setChosen(self.rbMeas, "Imperial")
-		return sz
 		
 	def onCbAddSpeed(self, _):
 		self.setState(True, False)
@@ -267,12 +244,9 @@ class CirclePanel(wx.Panel, CNCObject):
 		self.gcl.clear()
 		self.gcode = []
 		
+		self.fmt = "%%0.%df" % self.settings.decimals
+		
 		errs = []
-		try:
-			dec = int(self.teDecimals.GetValue())
-			self.fmt = "%0." + str(dec) + "f"
-		except:
-			errs.append("Decimal Places")
 		try:
 			sx = float(self.teStartX.GetValue())
 		except:
@@ -337,7 +311,7 @@ class CirclePanel(wx.Panel, CNCObject):
 		if not ValidateRange(self, stepover, 0.001, 1.0, "Stepover", "0 < x <= 1.0"):
 			return
 
-		self.gcode = self.preamble(self.getChosen(self.rbMeas), tdiam, self.toolInfo, safez)
+		self.gcode = self.preamble(self.settings.metric, tdiam, self.toolInfo, safez)
 			
 		self.tDiam = tdiam
 		if self.settings.annotate:
