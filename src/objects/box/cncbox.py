@@ -1,4 +1,4 @@
-import face
+import objects.box.face as face
 
 import configparser
 
@@ -110,8 +110,10 @@ class cncbox:
 		with open(fn, 'w') as configfile:
 			config.write(configfile)
 			
-	def loadBox(self, fn, toolrad):
+	def loadBox(self, fn, tooldiam):
 		global s, cx, cy, rad, lx, ly
+		
+		toolrad = float(tooldiam)/2.0
 
 		config = configparser.SafeConfigParser()
 		config.read(fn)
@@ -373,7 +375,8 @@ class cncbox:
 	def setRectangles(self, facetype, r):
 		self.faces[facetype].setRectangles(r)
 
-	def render(self, faceType, toolrad, blindDepth = False):
+	def render(self, faceType, tooldiam, blindDepth = False):
+		toolrad = float(tooldiam)/2.0
 		if faceType is None:
 			return 
 		

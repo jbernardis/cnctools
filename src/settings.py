@@ -4,6 +4,7 @@ import os
 INIFILE = "cnctools.ini"
 
 BTNDIM = (48,48)
+SPINSIZE = (100, -1)
 
 def parseBoolean(val, defaultVal):
 	lval = val.lower();
@@ -31,17 +32,20 @@ class Settings:
 		self.metric = True
 		self.tool = "110"
 		self.material = "MDF"
+		self.safez = 0.5
+		self.totaldepth = 1.6
+		self.decimals = 4
+		self.boxdirectory = os.getcwd()
+		self.boxgcodedirectory = os.getcwd()
+
+		# these 6 items are ONLY used as default values when creating
+		# a new material, or a new tool override
 		self.speedG0XY = 600
 		self.speedG1XY = 330
 		self.speedG0Z = 300
 		self.speedG1Z = 55
-		self.safez = 0.5
-		self.totaldepth = 1.6
 		self.depthperpass = 0.33
 		self.stepover = 0.75
-		self.decimals = 4
-		self.boxdirectory = os.getcwd()
-		self.boxgcodedirectory = os.getcwd()
 		
 		self.cfg = configparser.ConfigParser()
 		self.cfg.optionxform = str

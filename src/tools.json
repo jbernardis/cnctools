@@ -1,6 +1,7 @@
 {
     "110": {
         "diameter": 1,
+        "metric": true,
         "name": "1mm End Mill",
         "speeds": {
             "MDF": {
@@ -23,6 +24,7 @@
     },
     "115": {
         "diameter": 1.5,
+        "metric": true,
         "name": "1.5mm endmill",
         "speeds": {
             "MDF": {
@@ -45,6 +47,7 @@
     },
     "118": {
         "diameter": 1.8,
+        "metric": true,
         "name": "1.8mm endmill",
         "speeds": {
             "MDF": {
@@ -67,6 +70,7 @@
     },
     "120": {
         "diameter": 2.0,
+        "metric": true,
         "name": "2mm End Mill",
         "speeds": {
             "MDF": {
@@ -83,7 +87,7 @@
                 "G1XY": 330,
                 "G1Z": 55,
                 "depthperpass": 0.25,
-                "stepover": 0.92
+                "stepover": 0.75
             }
         }
     }

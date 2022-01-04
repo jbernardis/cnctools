@@ -1,9 +1,7 @@
 import os, wx
-import sys, inspect
+import inspect
 
 cmdFolder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0]))
-if cmdFolder not in sys.path:
-	sys.path.insert(0, cmdFolder)
 	
 from settings import Settings, BTNDIM
 from tools import Tools
@@ -26,11 +24,13 @@ import carving.diamonds as diamonds
 import carving.hatch as hatch
 
 import objects.tichy as tichy
-import tabbedbox
+import objects.box.tabbedbox as tabbedbox
+import objects.stringer as stringer
 
 from viewer.ncviewer import NCViewer
 from merge import FileMergeDialog
 from images import Images
+from settingsdlg import SettingsDlg
 
 wildcard = "G Code (*.nc)|*.nc|"	 \
 		   "All files (*.*)|*.*"
@@ -43,6 +43,7 @@ MENU_FILE_MERGE = 102
 MENU_OPTS_ANNOTATE = 201
 MENU_OPTS_ADD_SPEED = 203
 MENU_OPTS_METRIC = 204
+MENU_OPTS_SETTINGS = 205
 
 MENU_MATERIALS_BASE = 300
 MENU_MATERIALS_MANAGE = 1300
@@ -66,6 +67,7 @@ class MainFrame(wx.Frame):
 		self.whatch = None
 		self.wtichy = None
 		self.wbox = None
+		self.wstringer = None
 
 		self.modified = False
 		
@@ -87,10 +89,9 @@ class MainFrame(wx.Frame):
 			self.settings.tool = self.toolList[0]
 			self.settings.setModified()
 		self.toolInfo = self.tools.getTool(self.settings.tool)
+		self.speedInfo = self.tools.getToolSpeeds(self.settings.tool, self.settings.material, self.materials)
 		
 		self.images = Images(os.path.join(cmdFolder, "images"))
-			
-		self.speedInfo = self.tools.getToolSpeeds(self.settings.tool, self.settings.material, self.materials)
 			
 		self.CreateStatusBar()
 		
@@ -105,6 +106,8 @@ class MainFrame(wx.Frame):
 		self.menuOpts.Append(MENU_OPTS_ANNOTATE, "&Annotate", "Annotate G Code", wx.ITEM_CHECK)
 		self.menuOpts.Append(MENU_OPTS_ADD_SPEED, "A&dd Speed Term", "Default setting for add speed term", wx.ITEM_CHECK)
 		self.menuOpts.Append(MENU_OPTS_METRIC, "&Metric", "Use Metric Measurement System", wx.ITEM_CHECK)
+		self.menuOpts.AppendSeparator()
+		self.menuOpts.Append(MENU_OPTS_SETTINGS, "&Settings", "Enter/modify settings values")
 		menuBar.Append(self.menuOpts, "&Options")
 
 		self.createMaterialsMenu()					
@@ -120,6 +123,7 @@ class MainFrame(wx.Frame):
 		self.Bind(wx.EVT_MENU, self.onMenuOptsAnnotate, id=MENU_OPTS_ANNOTATE)
 		self.Bind(wx.EVT_MENU, self.onMenuOptsAddSpeed, id=MENU_OPTS_ADD_SPEED)
 		self.Bind(wx.EVT_MENU, self.onMenuOptsMetric, id=MENU_OPTS_METRIC)
+		self.Bind(wx.EVT_MENU, self.onMenuOptsSettings, id=MENU_OPTS_SETTINGS)
 		
 		self.menuOpts.Check(MENU_OPTS_ANNOTATE, self.settings.annotate)
 		self.menuOpts.Check(MENU_OPTS_ADD_SPEED, self.settings.addspeed)
@@ -259,6 +263,13 @@ class MainFrame(wx.Frame):
 		szObjects.Add(self.bBox)
 		self.Bind(wx.EVT_BUTTON, self.bBoxPressed, self.bBox)
 		
+		szObjects.AddSpacer(10)
+		
+		self.bStringer = wx.BitmapButton(boxObject, wx.ID_ANY, self.images.pngStringer, size=BTNDIM)
+		self.bStringer.SetToolTip("Generate G Code for a stair stringers")
+		szObjects.Add(self.bStringer)
+		self.Bind(wx.EVT_BUTTON, self.bStringerPressed, self.bStringer)
+		
 		bsizer.Add(szObjects)
 		bsizer.AddSpacer(10)
 		boxObject.SetSizer(bsizer)
@@ -384,6 +395,22 @@ class MainFrame(wx.Frame):
 		self.settings.metric = self.menuOpts.IsChecked(MENU_OPTS_METRIC)
 		self.settings.setModified()
 		
+	def onMenuOptsSettings(self, _):
+		dlg = SettingsDlg(self)
+		rc = dlg.ShowModal()
+		if rc == wx.ID_OK:
+			result = dlg.getResults()
+			
+		dlg.Destroy()
+		
+		if rc != wx.ID_OK:
+			return 
+		
+		self.settings.safez = result["safez"]
+		self.settings.totaldepth = result["totaldepth"]
+		self.settings.decimals = result["decimals"]
+		self.settings.setModified()
+		
 	def onMenuMaterials(self, evt):
 		self.settings.material = self.menuMaterials.GetLabel(evt.GetId())
 		self.settings.setModified()
@@ -393,6 +420,12 @@ class MainFrame(wx.Frame):
 		if self.materials.manage(self):
 			self.rebuildMaterialsMenu()
 			self.tools.pruneMaterials(self.materials.getMaterials())
+			if self.settings.material not in self.materialList:
+				self.settings.material = self.materialList[0]
+			self.settings.setModified()
+
+		self.settings.setModified()
+		self.speedInfo = self.tools.getToolSpeeds(self.settings.tool, self.settings.material, self.materials)
 		
 	def onMenuTools(self, evt):
 		self.settings.tool = self.menuTools.GetLabel(evt.GetId())
@@ -403,6 +436,13 @@ class MainFrame(wx.Frame):
 	def onMenuManageTools(self, evt):
 		if self.tools.manage(self, self.materials.getMaterials()):
 			self.rebuildToolsMenu()
+			if self.settings.tool not in self.toolList:
+				self.settings.tool = self.toolList[0]
+			self.settings.setModified()
+
+		self.settings.setModified()
+		self.toolInfo = self.tools.getTool(self.settings.tool)
+		self.speedInfo = self.tools.getToolSpeeds(self.settings.tool, self.settings.material, self.materials)
 		
 	def onClose(self, _):
 		if not self.closeIfOkay(self.wline):
@@ -657,6 +697,18 @@ class MainFrame(wx.Frame):
 	def boxClose(self, _):
 		if self.closeIfOkay(self.wbox):
 			self.wbox = None
+		
+	def bStringerPressed(self, _):
+		if self.wstringer:
+			self.wstringer.SetFocus()
+		else:
+			self.wstringer = stringer.MainFrame(self.toolInfo, self.speedInfo, self)
+			self.wstringer.Bind(wx.EVT_CLOSE, self.stringerClose)
+			self.wstringer.Show()
+		
+	def stringerClose(self, _):
+		if self.closeIfOkay(self.wstringer):
+			self.wstringer = None
 			
 class App(wx.App):
 	def OnInit(self):

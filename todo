@@ -1,22 +1,33 @@
 allow for lowest layer to leave some material behind
 
-set material thickness/depth of cut, safez, decimal places globally
-
 verify y offset values for tichy arc top windows (can't really do unless I have windows in hand)
 
 show image of tichy parts when chosen
 
 either complete implementation of blind faces in box, or remove feature
 
-box generate gcode - get values from settings/tools/materials depth, measuring system, safez, etc
-
-figure out how to deal with tool dimensions in metric vs imperial 
-
 polyline - initial value for points
 
 
+rectangle - rounded corners
 
-	carve: grid, hatch, diamond
-	contour: line, arc, circle, polygon, rectangle, rounded slot, polyline
+in tabbed box, use parens for annotation instead of ;
+	
+look into using spinners in fields on all screens - tool diam
+	carve: diamond, grid, hatch
+	contour: arc, circle, line, polyline, rectangle, reg polygon, rounded slot
 	drills: circle, linear, rectangle
-	objects: tichy, box
+	objects: box, stringer, tichy
+	
+	
+
+
+
+
+	
+	
+	carve: diamond, grid, hatch
+	contour: arc, circle, line, polyline, rectangle, reg polygon, rounded slot
+	drills: circle, linear, rectangle
+	objects: box, stringer, tichy
+	

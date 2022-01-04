@@ -2,7 +2,7 @@ import wx
 import math
 from gcodelist import GCodeList
 from cncobject import CNCObject
-from validators import ValidateToolSize, ValidateMinLength, ValidateNoEntryErrors
+from rotator import Rotator
 from settings import SPINSIZE
 
 
@@ -16,7 +16,7 @@ class MainFrame(wx.Frame):
 		self.Bind(wx.EVT_CLOSE, self.onClose)
 
 		sizer = wx.BoxSizer(wx.HORIZONTAL)		
-		self.panel = LinDrillPanel(toolInfo, speedInfo, self)
+		self.panel = StringerPanel(toolInfo, speedInfo, self)
 		sizer.Add(self.panel)
 		
 		self.SetSizer(sizer)
@@ -28,20 +28,19 @@ class MainFrame(wx.Frame):
 	
 	def onClose(self, _):
 		return self.panel.onClose(None)
-		
 
-class LinDrillPanel(wx.Panel, CNCObject):
+class StringerPanel(wx.Panel, CNCObject):
 	seqNo = 1
 	def __init__(self, toolInfo, speedInfo, parent):
-		CNCObject.__init__(self, parent, "drill:linear")
+		CNCObject.__init__(self, parent, "object:stringer")
 		self.toolInfo = toolInfo
 		
 		self.modified = False
 		self.unsaved = False
-		self.viewTitle = "Linear Drill Pattern %d" % LinDrillPanel.seqNo
+		self.viewTitle = "Stair Stringer %d" % StringerPanel.seqNo
 		self.titleText = "G Code Generator: %s" % self.viewTitle
-		LinDrillPanel.seqNo += 1
-
+		StringerPanel.seqNo += 1
+		
 		wx.Panel.__init__(self, parent, wx.ID_ANY, style=wx.TAB_TRAVERSAL)
 		self.Bind(wx.EVT_CLOSE, self.onClose)
 		sizer = wx.GridBagSizer(wx.HORIZONTAL)
@@ -49,33 +48,55 @@ class LinDrillPanel(wx.Panel, CNCObject):
 		ln = 1
 		
 		self.setTitleFlag()
-		
-		t = wx.StaticText(self, wx.ID_ANY, "Hole Diameter")
+
+		t = wx.StaticText(self, wx.ID_ANY, "Rise")
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teHoleDiam = wx.TextCtrl(self, wx.ID_ANY, "3", style=wx.TE_RIGHT)
-		self.addWidget(self.teHoleDiam, "holediameter")
-		sizer.Add(self.teHoleDiam, pos=(ln, 1), flag=wx.LEFT, border=10)
+		self.rise = 2.5
+		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.rise, min=0.0, max=10.0, inc=0.01, size=SPINSIZE)
+		sc.SetValue(self.rise)
+		sc.SetDigits(2)
+		self.scRise = sc
+		self.addWidget(self.scRise, "rise")
+		sizer.Add(self.scRise, pos=(ln, 1), flag=wx.LEFT, border=10)
 		
-		t = wx.StaticText(self, wx.ID_ANY, "Number of Holes")
-		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teNHoles = wx.TextCtrl(self, wx.ID_ANY, "10", style=wx.TE_RIGHT)
-		self.addWidget(self.teNHoles, "numberholes")
-		sizer.Add(self.teNHoles, pos=(ln, 3), flag=wx.LEFT, border=10)
-		ln += 1
-		
-		t = wx.StaticText(self, wx.ID_ANY, "Hole Spacing")
-		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teSpacing = wx.TextCtrl(self, wx.ID_ANY, "10", style=wx.TE_RIGHT)
-		self.addWidget(self.teSpacing, "spacing")
-		sizer.Add(self.teSpacing, pos=(ln, 1), flag=wx.LEFT, border=10)
-		
-		t = wx.StaticText(self, wx.ID_ANY, "Rotation Angle")
-		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teAngle = wx.TextCtrl(self, wx.ID_ANY, "45", style=wx.TE_RIGHT)
-		self.addWidget(self.teAngle, "angle")
-		sizer.Add(self.teAngle, pos=(ln, 3), flag=wx.LEFT, border=10)
+		t = wx.StaticText(self, wx.ID_ANY, "Run")
+		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)	
+		self.run = 3.0	
+		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.run, min=0.0, max=10.0, inc=0.01, size=SPINSIZE)
+		sc.SetValue(self.run)
+		sc.SetDigits(2)
+		self.scRun = sc
+		self.addWidget(self.scRun, "run")
+		sizer.Add(self.scRun, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
 
+		t = wx.StaticText(self, wx.ID_ANY, "Angle")
+		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		self.stAngle = wx.StaticText(self, wx.ID_ANY, "")
+		sizer.Add(self.stAngle, pos=(ln, 1), flag=wx.LEFT, border=10)
+		
+		self.cbRotate = wx.CheckBox(self, wx.ID_ANY, "Rotate to horizontal")
+		self.addWidget(self.cbRotate, "rotate")
+		sizer.Add(self.cbRotate, pos=(ln, 2), span=(1,2),
+				flag=wx.LEFT, border=10)
+		self.Bind(wx.EVT_CHECKBOX, self.onCbRotate, self.cbRotate)
+		self.cbRotate.SetValue(False)
+		ln += 1
+		
+		sizer.Add(20, 20, wx.GBPosition(ln, 0))
+		ln += 1
+		
+		t = wx.StaticText(self, wx.ID_ANY, "Number of steps")
+		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)	
+		self.count = 5	
+		sc = wx.SpinCtrl(self, wx.ID_ANY, "", initial=self.count, size=SPINSIZE)
+		sc.SetRange(3, 50)
+		sc.SetValue(self.count)
+		self.scCount = sc
+		self.addWidget(self.scCount, "count")
+		sizer.Add(self.scCount, pos=(ln, 1), flag=wx.LEFT, border=10)
+		ln += 1
+		
 		t = wx.StaticText(self, wx.ID_ANY, "Start X")
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teStartX = wx.TextCtrl(self, wx.ID_ANY, "0", style=wx.TE_RIGHT)
@@ -101,7 +122,7 @@ class LinDrillPanel(wx.Panel, CNCObject):
 		sc.SetValue(self.settings.safez)
 		sc.SetDigits(2)
 		self.scSafeZ = sc
-		self.addWidget(self.scSafeZ, "safex")
+		self.addWidget(self.scSafeZ, "safez")
 		sizer.Add(self.scSafeZ, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
 
@@ -111,15 +132,6 @@ class LinDrillPanel(wx.Panel, CNCObject):
 		self.teToolDiam = wx.TextCtrl(self, wx.ID_ANY, td, style=wx.TE_RIGHT)
 		self.addWidget(self.teToolDiam, "tooldiameter")
 		sizer.Add(self.teToolDiam, pos=(ln, 1), flag=wx.LEFT, border=10)
-		
-		t = wx.StaticText(self, wx.ID_ANY, "Step Over")
-		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=speedInfo["stepover"], min=0.1, max=1.0, inc=0.01, size=SPINSIZE)
-		sc.SetValue(speedInfo["stepover"])
-		sc.SetDigits(2)
-		self.scStepover = sc
-		self.addWidget(self.scStepover, "stepover")
-		sizer.Add(self.scStepover, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
 
 		t = wx.StaticText(self, wx.ID_ANY, "Total Depth")
@@ -138,21 +150,10 @@ class LinDrillPanel(wx.Panel, CNCObject):
 		self.addWidget(self.scPassDepth, "passdepth")
 		sizer.Add(self.scPassDepth, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
-
-		t = wx.StaticText(self, wx.ID_ANY, "Cutting Direction")
-		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		sizer.Add(self.getCuttingDirection(), pos=(ln, 1), border=5, flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_VERTICAL)	
-
-		self.cbRetract = wx.CheckBox(self, wx.ID_ANY, "Retract each pass")
-		self.addWidget(self.cbRetract, "retract")
-		sizer.Add(self.cbRetract, pos=(ln, 2), span=(1,2),
-				flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_HORIZONTAL, border=5)
-		self.Bind(wx.EVT_CHECKBOX, self.onChange, self.cbRetract)
-		ln += 1
 		
 		sizer.Add(20, 20, wx.GBPosition(ln, 0))
 		ln += 1
-
+		
 		self.cbAddSpeed = wx.CheckBox(self, wx.ID_ANY, "Add Speed Parameter")
 		self.addWidget(self.cbAddSpeed, "addspeed")
 		sizer.Add(self.cbAddSpeed, pos=(ln, 0), span=(1,4),
@@ -160,7 +161,7 @@ class LinDrillPanel(wx.Panel, CNCObject):
 		self.Bind(wx.EVT_CHECKBOX, self.onCbAddSpeed, self.cbAddSpeed)
 		self.cbAddSpeed.SetValue(self.settings.addspeed)
 		ln += 1
-
+		
 		t = wx.StaticText(self, wx.ID_ANY, "Feed Rate XY (G0)")
 		g0xy = speedInfo["G0XY"]
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
@@ -227,28 +228,43 @@ class LinDrillPanel(wx.Panel, CNCObject):
 		sizer.Add(10, 10, wx.GBPosition(ln, 0))
 
 		self.Bind(wx.EVT_TEXT, self.onChange)
-		self.Bind(wx.EVT_RADIOBUTTON, self.onChange)
 		self.Bind(wx.EVT_SPINCTRL, self.onChange)
+		self.Bind(wx.EVT_RADIOBUTTON, self.onChange)
+
+		self.Bind(wx.EVT_SPINCTRL, self.onRiseRunSpin, self.scRise)
+		self.Bind(wx.EVT_TEXT, self.onRiseRunText, self.scRise)
+		self.Bind(wx.EVT_SPINCTRL, self.onRiseRunSpin, self.scRun)
+		self.Bind(wx.EVT_TEXT, self.onRiseRunText, self.scRun)
+		
+		self.setAngle()
 		
 		self.SetSizer(sizer)
 		self.Layout()
 		self.Fit();
 		
-	def getCuttingDirection(self):
-		labels = ["Clockwise", "Counter Clockwise"]
-		self.rbCutDir = []
-		sz = wx.BoxSizer(wx.VERTICAL)
-		for i in range(len(labels)):
-			if i == 0:
-				style = wx.RB_GROUP
-			else:
-				style = 0
-			r = wx.RadioButton(self, wx.ID_ANY, labels[i], style=style)
-			sz.Add(r)
-			self.addWidget(r, labels[i])
-			self.rbCutDir.append(r)
-		return sz
-
+	def onRiseRunSpin(self, _):
+		self.setState(True, False)
+		self.run = self.scRun.GetValue()
+		self.rise = self.scRise.GetValue() 
+		
+		self.setAngle()
+		
+	def onRiseRunText(self, _):
+		self.setState(True, False)
+		self.run = self.scRun.GetValue()
+		self.rise = self.scRise.GetValue() 
+		
+		self.setAngle()
+		
+	def setAngle(self):
+		self.angle = math.degrees(math.atan(self.rise/self.run))
+		sangle = "%6.2f degrees" % (self.angle)
+		self.stAngle.SetLabel(sangle)
+		
+		
+	def onCbRotate(self, _):
+		self.setState(True, False)
+		
 	def onCbAddSpeed(self, _):
 		self.setState(True, False)
 		flag = self.cbAddSpeed.IsChecked()
@@ -264,20 +280,20 @@ class LinDrillPanel(wx.Panel, CNCObject):
 		self.gcode = []
 		
 		self.fmt = "%%0.%df" % self.settings.decimals
-
+		
 		errs = []
 		try:
 			sx = float(self.teStartX.GetValue())
 		except:
-			errs.append("Start X")		
+			errs.append("Start X")	
 		try:
 			sy = float(self.teStartY.GetValue())
 		except:
-			errs.append("Start Y")		
+			errs.append("Start Y")	
 		try:
 			sz = float(self.teStartZ.GetValue())
 		except:
-			errs.append("Start Z")		
+			errs.append("Start Z")	
 
 		safez = self.scSafeZ.GetValue()
 			
@@ -285,110 +301,151 @@ class LinDrillPanel(wx.Panel, CNCObject):
 		feedzG0 = self.scFeedZG0.GetValue()
 		feedzG1 = self.scFeedZG1.GetValue()
 		feedxyG0 = self.scFeedXYG0.GetValue()
-		feedxyG23 = self.scFeedXYG1.GetValue()
-
-		stepover = self.scStepover.GetValue()
+		feedxyG1 = self.scFeedXYG1.GetValue()
+		
 		passdepth = self.scPassDepth.GetValue()
 
 		try:
-			totaldepth = float(self.teTotalDepth.GetValue())
+			self.rise = float(self.scRise.GetValue())
 		except:
-			errs.append("Depth")		
+			errs.append("Rise")	
+		try:
+			self.run = float(self.scRun.GetValue())
+		except:
+			errs.append("Run")	
+		try:
+			count = int(self.scCount.GetValue())
+		except:
+			errs.append("Count")	
+		try:
+			depth = float(self.teTotalDepth.GetValue())
+		except:
+			errs.append("Depth")	
 		try:
 			tdiam = float(self.teToolDiam.GetValue())
 		except:
-			errs.append("Tool Diameter")		
-		try:
-			hdiam = float(self.teHoleDiam.GetValue())
-		except:
-			errs.append("Hole Diameter")		
-		try:
-			spacing = float(self.teSpacing.GetValue())
-		except:
-			errs.append("Spacing")		
-		try:
-			nholes = int(self.teNHoles.GetValue())
-		except:
-			errs.append("Number of Holes")		
-		try:
-			angle = float(self.teAngle.GetValue())
-		except:
-			errs.append("Angle")		
-				
-		if not ValidateNoEntryErrors(self, errs):
-			return
-		if not ValidateToolSize(self, tdiam, hdiam, "Hole Diameter"):
-			return
-		if not ValidateMinLength(self, spacing, hdiam, "Hole Spacing", "Hole Diameter"):
-			return
+			errs.append("Tool Diameter")	
+		
+		self.setAngle()
+		rotate = self.cbRotate.GetValue()
+		if rotate:
+				rot = Rotator(-self.angle)
 
+		self.tDiam = tdiam
 		if self.toolInfo["diameter"] == tdiam:
 			toolname = self.toolInfo["name"]
 		else:
 			toolname = None
-			
+
 		self.gcode = self.preamble(self.settings, self.viewTitle, tdiam, toolname, self.settings.metric)					
 		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % safez)
 		
-		retract = self.cbRetract.IsChecked()
-		cd = self.getChosen(self.rbCutDir)
-		if cd == "Clockwise":
-			cmd = "G2"
-		else:
-			cmd = "G3"
-		
-		dy = spacing * math.sin(math.radians(angle))
-		dx = spacing * math.cos(math.radians(angle))
-		
 		if self.settings.annotate:
-			self.gcode.append("(Linear drill pattern start (%6.2f,%6.2f) Number of holes %d depth from %6.2f to %6.2f)" % (sx, sy, nholes, sz, totaldepth))
-			self.gcode.append("(Cut Direction: %s)" % cd)
-			self.gcode.append("(Spacing: %6.2f)" % spacing)
-			self.gcode.append("(Angle: %6.2f)" % angle)
-			self.gcode.append("(Retract each pass: %s)" % str(retract))
-			self.gcode.append("(Hole diameter: %6.2f)" % hdiam)
-			self.gcode.append("(Calculated step x/y: %6.2f/%6.2f)" % (dx, dy))
-			
-		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
+			self.gcode.append("(Stair Stringer step count %d, rise %6.2f/run %6.2f%s)" % (count, self.rise, self.run, " rotated to horizontal" if rotate else ""))
 		
-		passes = int(math.ceil(totaldepth/passdepth))
-		for ix in range(nholes):
-			cx = sx + ix*dx
-			cy = sy + ix*dy
-			self.gcode.append(("G0 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG0)) % (cx, cy))
-			cz = sz
-			for i in range(passes):
-				cz -= passdepth
-				if cz < -totaldepth:
-					cz = -totaldepth
-				if self.settings.annotate:
-					self.gcode.append("(Pass number %d at depth %f)" % (i, cz))
-				self.gcode.append(("G1 Z"+self.fmt+self.speedTerm(addspeed, feedzG1)) % (cz))
-				if hdiam > tdiam:
-					maxyoff = (hdiam-tdiam)/2.0
-					yoff = stepover
-					while True:
-						if yoff > maxyoff:
-							yoff = maxyoff
-						self.gcode.append(("G1 Y"+self.fmt+self.speedTerm(addspeed, feedxyG0)) % (cy-yoff))
-						self.gcode.append((cmd+" J"+self.fmt+" X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG23)) % (yoff, cx, cy-yoff))
-						if yoff >= maxyoff:
-							break
-						yoff += stepover
-						
-					self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG23)) % (cx, cy))
-					
-				if retract:
-					self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
-						
-					
-			if not retract:
-				self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
+		passes = int(math.ceil(depth/passdepth))
+
+		offsetx = sx
+		offsety = sy
+		sx = 0
+		sy = 0
 				
+		ptsa = [
+			[sx, sy + self.rise ],
+			[sx + self.run * count, sy + self.rise * (count+1)],
+			[sx + self.run * (count+1), sy + self.rise * (count+1)]
+		]
+		if rotate:
+			ptsa = [rot.rotate(x, y) for x, y in ptsa]
+			
+		ptsa = [[x+offsetx, y+offsety] for x, y in ptsa]
+			
+		cz = sz
+		if self.settings.annotate:
+			self.gcode.append("(Upper Edge)")
+			
+		for i in range(passes):
+			cz -= passdepth
+			if cz < -depth:
+				cz = -depth
+			if self.settings.annotate:
+				self.gcode.append("(Pass number %d at depth %f)" % (i, cz))
+				
+			ax = ptsa[0][0]
+			ay = ptsa[0][1]
+			self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
+			self.gcode.append(("G0 X"+self.fmt+ " Y"+self.fmt+self.speedTerm(addspeed, feedxyG0)) % (ax, ay))
+			self.gcode.append(("G1 Z"+self.fmt+self.speedTerm(addspeed, feedzG1)) % cz)
+			for p in ptsa[1:]:
+				self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % (p[0], p[1]))
+
+		points = [[sx, sy], [sx+self.run, sy]]
+		x = sx+self.run
+		y = sy			
+		for _ in range(count):
+			points.append([x, y+self.rise])
+			points.append([x+self.run, y+self.rise])
+			y += self.rise
+			x += self.run
+		if rotate:
+			points = [rot.rotate(x, y) for x, y in points]
+			
+		points = [[x+offsetx, y+offsety] for x, y in points]
+		
+		cz = sz
+		if self.settings.annotate:
+			self.gcode.append("(Stringer)")
+		for i in range(passes):
+			cz -= passdepth
+			if cz < -depth:
+				cz = -depth
+			if self.settings.annotate:
+				self.gcode.append("(Pass number %d at depth %f)" % (i, cz))
+				
+			ax = points[0][0]
+			ay = points[0][1]
+			self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
+			self.gcode.append(("G0 X"+self.fmt+ " Y"+self.fmt+self.speedTerm(addspeed, feedxyG0)) % (ax, ay))
+			self.gcode.append(("G1 Z"+self.fmt+self.speedTerm(addspeed, feedzG1)) % cz)
+			for p in points[1:]:
+				self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % (p[0], p[1]))
+				
+		ptsb = [
+			[sx, sy - self.rise],
+			[sx + self.run, sy - self.rise],
+			[sx + self.run * (count+1), sy + self.rise * (count-1)]
+		]
+		if rotate:
+			ptsb = [rot.rotate(x, y) for x, y in ptsb]
+			
+		ptsb = [[x+offsetx, y+offsety] for x, y in ptsb]
+
+		cz = sz
+		if self.settings.annotate:
+			self.gcode.append("(Lower Edge)")
+		for i in range(passes):
+			cz -= passdepth
+			if cz < -depth:
+				cz = -depth
+			if self.settings.annotate:
+				self.gcode.append("(Pass number %d at depth %f)" % (i, cz))
+				
+			ax = ptsb[0][0]
+			ay = ptsb[0][1]
+			self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
+			self.gcode.append(("G0 X"+self.fmt+ " Y"+self.fmt+self.speedTerm(addspeed, feedxyG0)) % (ax, ay))
+			self.gcode.append(("G1 Z"+self.fmt+self.speedTerm(addspeed, feedzG1)) % cz)
+			for p in ptsb[1:]:
+				self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % (p[0], p[1]))
+
+		
+		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
 		if self.settings.annotate:
 			self.gcode.append("(End object %s)" % self.viewTitle)
+				
 		self.gcl.updateList(self.gcode)
 		self.bSave.Enable()
 		self.bVisualize.Enable()
 		self.setState(False, True)
+
 

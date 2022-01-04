@@ -1,32 +1,34 @@
-import os
 import wx
-import cncbox
+import objects.box.cncbox as cncbox
+from gcodelist import GCodeList
+from settings import BTNDIM, SPINSIZE
 
 DEPTHFORMAT = "%8.2f"
 RATEFORMAT = "%8.2f"
 INTFORMAT = "%3d"
-BUTTONDIM = (56, 56)
+
 BTNSPACING = 10
 
 VISIBLEQUEUESIZE = 21
 
 class GCodeDlg(wx.Dialog):
-	def __init__(self, parent, bx, toolrad, images, settings):
+	def __init__(self, parent, bx, toolinfo, images, speedinfo, settings):
 		self.parent = parent
+		self.speedinfo = speedinfo
 		self.bx = bx
-		self.toolrad = toolrad
+		self.toolinfo = toolinfo
 		self.settings = settings
-		wx.Dialog.__init__(self, parent, wx.ID_ANY, "Generate G Code")
+		wx.Dialog.__init__(self, parent, wx.ID_ANY, "")
 		self.SetBackgroundColour("white")
-		
-		self.depthPerCut = 1.0
-		self.feedG1XY = 50.0
-		self.feedG1Z = 50.0
-		self.feedG0XY = 70.0
-		self.feedG0Z = 70.0
-		self.safeZ = 1.0
+
+		self.tooldiam = toolinfo["diameter"]	
+		self.depthPerCut = speedinfo["depthperpass"]
+		self.feedG1XY = speedinfo["G1XY"]
+		self.feedG1Z = speedinfo["G1Z"]
+		self.feedG0XY = speedinfo["G0XY"]
+		self.feedG0Z = speedinfo["G0Z"]
+		self.safez = self.settings.safez
 		self.extraDepth = 0.5
-		self.sigDigits = 4
 		self.offsetX = 0
 		self.offsetY = 0
 		
@@ -67,54 +69,51 @@ class GCodeDlg(wx.Dialog):
 		vsizer.Add(staticboxsizer)
 		vsizer.AddSpacer(20)
 		
-		t = wx.StaticText(self, wx.ID_ANY, "Depth per Cut: ", size=(80, -1))
-		tc = wx.TextCtrl(self, wx.ID_ANY, DEPTHFORMAT % self.depthPerCut, size=(70, -1), style=wx.TE_RIGHT)
-		self.tcDPC = tc
+		t = wx.StaticText(self, wx.ID_ANY, "Depth/Pass: ", size=(80, -1))
+		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.depthPerCut, min=0.1, max=5.0, inc=0.1, size=SPINSIZE)
+		sc.SetValue(self.depthPerCut)
+		sc.SetDigits(2)
+		self.scDPP = sc
 
-		tc.Bind(wx.EVT_KILL_FOCUS, self.onTextDPC)
+		sc.Bind(wx.EVT_TEXT, self.onTextDPP)
+		sc.Bind(wx.EVT_SPINCTRL, self.onSpinDPP)
 		
 		hb = wx.BoxSizer(wx.HORIZONTAL)
 		hb.Add(t, 1, wx.TOP, 5)
-		hb.Add(tc)
+		hb.Add(sc)
 		vsizer.Add(hb)
 		vsizer.AddSpacer(5)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Extra Depth: ", size=(80, -1))
-		tc = wx.TextCtrl(self, wx.ID_ANY, DEPTHFORMAT % self.extraDepth, size=(70, -1), style=wx.TE_RIGHT)
-		self.tcExtraDepth = tc
+		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.extraDepth, min=0.0, max=5.0, inc=0.1, size=SPINSIZE)
+		sc.SetValue(self.settings.safez)
+		sc.SetDigits(2)
+		self.scExtraDepth = sc
 
-		tc.Bind(wx.EVT_KILL_FOCUS, self.onTextExtraDepth)
+		sc.Bind(wx.EVT_TEXT, self.onTextExtraDepth)
+		sc.Bind(wx.EVT_SPINCTRL, self.onSpinExtraDepth)
 		
 		hb = wx.BoxSizer(wx.HORIZONTAL)
 		hb.Add(t, 1, wx.TOP, 5)
-		hb.Add(tc)
+		hb.Add(sc)
 		vsizer.Add(hb)
 		vsizer.AddSpacer(5)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Safe Z Height: ", size=(80, -1))
-		tc = wx.TextCtrl(self, wx.ID_ANY, DEPTHFORMAT % self.safeZ, size=(70, -1), style=wx.TE_RIGHT)
-		self.tcSafeZ = tc
+		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.safez, min=0.0, max=5.0, inc=0.1, size=SPINSIZE)
+		sc.SetValue(self.settings.safez)
+		sc.SetDigits(2)
+		self.scSafeZ = sc
 
-		tc.Bind(wx.EVT_KILL_FOCUS, self.onTextSafeZ)
+		sc.Bind(wx.EVT_SPINCTRL, self.onSpinSafeZ)
+		sc.Bind(wx.EVT_TEXT, self.onTextSafeZ)
 		
 		hb = wx.BoxSizer(wx.HORIZONTAL)
 		hb.Add(t, 1, wx.TOP, 5)
-		hb.Add(tc)
+		hb.Add(sc)
 		vsizer.Add(hb)
 		vsizer.AddSpacer(5)
-		
-		t = wx.StaticText(self, wx.ID_ANY, "Digits/Accuracy: ", size=(80, -1))
-		tc = wx.TextCtrl(self, wx.ID_ANY, INTFORMAT % self.sigDigits, size=(70, -1), style=wx.TE_RIGHT)
-		self.tcSigDigits = tc
 
-		tc.Bind(wx.EVT_KILL_FOCUS, self.onTextSigDigits)
-		
-		hb = wx.BoxSizer(wx.HORIZONTAL)
-		hb.Add(t, 1, wx.TOP, 5)
-		hb.Add(tc)
-		vsizer.Add(hb)
-		vsizer.AddSpacer(5)
-		
 		hsizer.Add(vsizer)
 		hsizer.AddSpacer(20)
 		
@@ -171,6 +170,14 @@ class GCodeDlg(wx.Dialog):
 		staticboxsizer.AddSpacer(10)
 		self.rbCTR.SetValue(True)
 		
+		
+		
+		for rb in [ self.rbTop, self.rbBottom, self.rbLeft, self.rbRight, self.rbFront, self.rbBack,
+				self.rbUL, self.rbUR, self.rbCTR, self.rbLL, self.rbLR,
+				self.rbOCW, self.rbOCCW,
+				self.rbICW, self.rbICCW ]:
+			self.Bind(wx.EVT_RADIOBUTTON, self.onRb, rb)
+		
 		vsizer.Add(staticboxsizer)
 		vsizer.AddSpacer(20)
 
@@ -179,75 +186,68 @@ class GCodeDlg(wx.Dialog):
 		
 		vsizer = wx.BoxSizer(wx.VERTICAL)
 		
-		sbox = wx.StaticBox(self, -1, "Measurement System")
-		staticboxsizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
-
-		staticboxsizer.AddSpacer(10)
-		self.rbMetric = wx.RadioButton(self, wx.ID_ANY, " Metric ", style = wx.RB_GROUP )
-		self.rbImperial = wx.RadioButton(self, wx.ID_ANY, " Imperial " )
-		staticboxsizer.Add(self.rbMetric, 1, wx.LEFT, 10)
-		staticboxsizer.AddSpacer(10)
-		staticboxsizer.Add(self.rbImperial, 1, wx.LEFT, 10)
-		staticboxsizer.AddSpacer(10)
-		self.rbMetric.SetValue(True)
-		
-		vsizer.Add(staticboxsizer)
-		vsizer.AddSpacer(20)
-		
 		sbox = wx.StaticBox(self, -1, "Feed Rates")
 		staticboxsizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "XY (G0): ", size=(80, -1))
-		tc = wx.TextCtrl(self, wx.ID_ANY, RATEFORMAT % self.feedG0XY, size=(70, -1), style=wx.TE_RIGHT)
-		self.tcG0XY = tc
-
-		tc.Bind(wx.EVT_KILL_FOCUS, self.onTextG0XY)
+		sc = wx.SpinCtrl(self, wx.ID_ANY, "", initial=self.feedG0XY, size=SPINSIZE)
+		sc.SetRange(1,10000)
+		sc.SetValue(self.feedG0XY)
+		sc.Bind(wx.EVT_SPINCTRL, self.onSpinG0XY)
+		sc.Bind(wx.EVT_SPINCTRL, self.onTextG0XY)
+		self.scG0XY = sc
 		
 		hb = wx.BoxSizer(wx.HORIZONTAL)
 		hb.Add(t, 1, wx.TOP+wx.LEFT, 5)
-		hb.Add(tc)
+		hb.Add(sc)
 		staticboxsizer.Add(hb)
 		staticboxsizer.AddSpacer(5)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Z (G0): ", size=(80, -1))
-		tc = wx.TextCtrl(self, wx.ID_ANY, RATEFORMAT % self.feedG0Z, size=(70, -1), style=wx.TE_RIGHT)
-		self.tcG0Z = tc
-
-		tc.Bind(wx.EVT_KILL_FOCUS, self.onTextG0Z)
+		sc = wx.SpinCtrl(self, wx.ID_ANY, "", initial=self.feedG0XY, size=SPINSIZE)
+		sc.SetRange(1,10000)
+		sc.SetValue(self.feedG0Z)
+		sc.Bind(wx.EVT_SPINCTRL, self.onSpinG0Z)
+		sc.Bind(wx.EVT_SPINCTRL, self.onTextG0Z)
+		self.scG0Z = sc
 		
 		hb = wx.BoxSizer(wx.HORIZONTAL)
 		hb.Add(t, 1, wx.TOP+wx.LEFT, 5)
-		hb.Add(tc)
+		hb.Add(sc)
 		staticboxsizer.Add(hb)
 		staticboxsizer.AddSpacer(5)
 
 		t = wx.StaticText(self, wx.ID_ANY, "XY (G1): ", size=(80, -1))
-		tc = wx.TextCtrl(self, wx.ID_ANY, RATEFORMAT % self.feedG1XY, size=(70, -1), style=wx.TE_RIGHT)
-		self.tcG1XY = tc
-
-		tc.Bind(wx.EVT_KILL_FOCUS, self.onTextG1XY)
+		sc = wx.SpinCtrl(self, wx.ID_ANY, "", initial=self.feedG0XY, size=SPINSIZE)
+		sc.SetRange(1,10000)
+		sc.SetValue(self.feedG1XY)
+		sc.Bind(wx.EVT_SPINCTRL, self.onSpinG1XY)
+		sc.Bind(wx.EVT_SPINCTRL, self.onTextG1XY)
+		self.scG1XY = sc
 		
 		hb = wx.BoxSizer(wx.HORIZONTAL)
 		hb.Add(t, 1, wx.TOP+wx.LEFT, 5)
-		hb.Add(tc)
+		hb.Add(sc)
 		staticboxsizer.Add(hb)
 		staticboxsizer.AddSpacer(5)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Z (G1): ", size=(80, -1))
-		tc = wx.TextCtrl(self, wx.ID_ANY, RATEFORMAT % self.feedG1Z, size=(70, -1), style=wx.TE_RIGHT)
-		self.tcG1Z = tc
-
-		tc.Bind(wx.EVT_KILL_FOCUS, self.onTextG1Z)
+		sc = wx.SpinCtrl(self, wx.ID_ANY, "", initial=self.feedG0XY, size=SPINSIZE)
+		sc.SetRange(1,10000)
+		sc.SetValue(self.feedG1Z)
+		sc.Bind(wx.EVT_SPINCTRL, self.onSpinG1Z)
+		sc.Bind(wx.EVT_SPINCTRL, self.onTextG1Z)
+		self.scG1Z = sc
 		
 		hb = wx.BoxSizer(wx.HORIZONTAL)
 		hb.Add(t, 1, wx.TOP+wx.LEFT, 5)
-		hb.Add(tc)
+		hb.Add(sc)
 		staticboxsizer.Add(hb)
 		staticboxsizer.AddSpacer(15)
 		
 		self.cbFeed = wx.CheckBox(self, wx.ID_ANY, "Add Rates to GCode")
 		self.Bind(wx.EVT_CHECKBOX, self.onCbFeed, self.cbFeed)
-		self.cbFeed.SetValue(True)
+		self.cbFeed.SetValue(self.settings.addspeed)
 		
 		staticboxsizer.Add(self.cbFeed, 1, wx.LEFT, 20)
 		staticboxsizer.AddSpacer(5)
@@ -260,15 +260,29 @@ class GCodeDlg(wx.Dialog):
 		
 		dsizer.Add(hsizer)
 		dsizer.AddSpacer(20)
+		
+		self.enableSpeeds(self.settings.addspeed)
 
 		btnsizer = wx.BoxSizer(wx.HORIZONTAL)		
 
-		self.bGCode = wx.BitmapButton(self, wx.ID_ANY, self.images.pngGcode, size=BUTTONDIM)
+		self.bGCode = wx.BitmapButton(self, wx.ID_ANY, self.images.pngGcode, size=BTNDIM)
 		self.bGCode.SetToolTip("Generate G Code")
 		btnsizer.Add(self.bGCode, 1, wx.LEFT + wx.RIGHT, BTNSPACING)
 		self.Bind(wx.EVT_BUTTON, self.doGCode, self.bGCode)
+		
+		self.bSave = wx.BitmapButton(self, wx.ID_ANY, self.images.pngFilesaveas, size=BTNDIM)
+		self.bSave.SetToolTip("Save G Code")
+		btnsizer.Add(self.bSave, 1, wx.LEFT + wx.RIGHT, BTNSPACING)
+		self.Bind(wx.EVT_BUTTON, self.bSavePressed, self.bSave)
+		self.bSave.Disable()		
+				
+		self.bVisualize = wx.BitmapButton(self, wx.ID_ANY, self.images.pngView, size=BTNDIM)
+		self.bVisualize.SetToolTip("Visualize G Code")
+		btnsizer.Add(self.bVisualize, 1, wx.LEFT + wx.RIGHT, BTNSPACING)
+		self.Bind(wx.EVT_BUTTON, self.bVisualizePressed, self.bVisualize)
+		self.bVisualize.Disable()
 
-		self.bExit = wx.BitmapButton(self, wx.ID_ANY, self.images.pngExit, size=BUTTONDIM)
+		self.bExit = wx.BitmapButton(self, wx.ID_ANY, self.images.pngExit, size=BTNDIM)
 		self.bExit.SetToolTip("Dismiss dialog")
 		btnsizer.Add(self.bExit, 1, wx.LEFT + wx.RIGHT, BTNSPACING)
 		self.Bind(wx.EVT_BUTTON, self.doExit, self.bExit)
@@ -277,111 +291,117 @@ class GCodeDlg(wx.Dialog):
 		
 		dsizer.AddSpacer(10)
 		
+		self.gcl = GCodeList(self)
+		
+		hsizer = wx.BoxSizer(wx.HORIZONTAL)
+		hsizer.AddSpacer(10)
+		hsizer.Add(self.gcl, 1, wx.EXPAND)
+		hsizer.AddSpacer(10)
+		
+		dsizer.Add(hsizer, 1, wx.EXPAND)
+				
+		dsizer.AddSpacer(10)
+		
 		self.SetSizer(dsizer)  
 		dsizer.Fit(self)
+		
+		self.modified = None
+		self.unsaved = None		
+		self.setState(modified=False, unsaved=False)
+
+		
+	def setState(self, modified=None, unsaved=None):
+		updateTitle = False
+		if modified is not None:
+			self.modified = modified
+			updateTitle = True
+			
+		if unsaved is not None:
+			self.unsaved = unsaved
+			updateTitle = True
+
+		if updateTitle:			
+			title = "Generate G Code"
+			if self.modified:
+				title += " (modified)"
+				
+			if self.unsaved and self.modified:
+				title += " (stale)"
+				
+			elif self.unsaved:
+				title += " (unsaved)"
+			
+			self.SetTitle(title)
+			
+		if self.unsaved and self.modified:
+			self.bSave.Enable(False)
+		else:
+			self.bSave.Enable(self.unsaved)
+
+
 		
 	def doExit(self, e):
 		self.EndModal(wx.ID_OK)
 		
-	def onTextG0XY(self, e):
-		d = self.tcG0XY.GetValue()
-		try:
-			dv = float(d)
-			self.feedG0XY = dv
-			self.tcG0XY.SetValue(RATEFORMAT % self.feedG0XY)
-
-		except:
-			self.illegalTcValue("Feed Rate XY (G0)")
-			self.tcG0XY.SetValue(RATEFORMAT % self.feedG0XY)
-			e.Skip()
+	def onRb(self, e):
+		self.setState(modified=True)
+		e.Skip()
 		
-	def onTextG0Z(self, e):
-		d = self.tcG0Z.GetValue()
-		try:
-			dv = float(d)
-			self.feedG0Z = dv
-			self.tcG0Z.SetValue(RATEFORMAT % self.feedG0Z)
-
-		except:
-			self.illegalTcValue("Feed Rate Z (G0)")
-			self.tcG0Z.SetValue(RATEFORMAT % self.feedG0Z)
-			e.Skip()
+	def onTextG0XY(self, e):
+		self.setState(modified=True)
+		e.Skip()
+		
+	def onSpinG0XY(self, e):
+		self.setState(modified=True)
+		e.Skip()
 		
 	def onTextG1XY(self, e):
-		d = self.tcG1XY.GetValue()
-		try:
-			dv = float(d)
-			self.feedG1XY = dv
-			self.tcG1XY.SetValue(RATEFORMAT % self.feedG1XY)
-
-		except:
-			self.illegalTcValue("Feed Rate XY (G1)")
-			self.tcG1XY.SetValue(RATEFORMAT % self.feedG1XY)
-			e.Skip()
+		self.setState(modified=True)
+		e.Skip()
+		
+	def onSpinG1XY(self, e):
+		self.setState(modified=True)
+		e.Skip()
+		
+	def onTextG0Z(self, e):
+		self.setState(modified=True)
+		e.Skip()
+		
+	def onSpinG0Z(self, e):
+		self.setState(modified=True)
+		e.Skip()
 		
 	def onTextG1Z(self, e):
-		d = self.tcG1Z.GetValue()
-		try:
-			dv = float(d)
-			self.feedG1Z = dv
-			self.tcG1Z.SetValue(RATEFORMAT % self.feedG1Z)
-
-		except:
-			self.illegalTcValue("Feed Rate Z (G1)")
-			self.tcG1Z.SetValue(RATEFORMAT % self.feedG1Z)
-			e.Skip()
+		self.setState(modified=True)
+		e.Skip()
 		
-	def onTextDPC(self, e):
-		d = self.tcDPC.GetValue()
-		try:
-			dv = float(d)
-			self.depthPerCut = dv
-			self.tcDPC.SetValue(DEPTHFORMAT % self.depthPerCut)
-
-		except:
-			self.illegalTcValue("Depth Per Cut")
-			self.tcDPC.SetValue(DEPTHFORMAT % self.depthPerCut)
-			e.Skip()
+	def onSpinG1Z(self, e):
+		self.setState(modified=True)
+		e.Skip()
+				
+	def onTextDPP(self, e):
+		self.setState(modified=True)
+		e.Skip()
+				
+	def onSpinDPP(self, e):
+		self.setState(modified=True)
+		e.Skip()
 		
 	def onTextSafeZ(self, e):
-		d = self.tcSafeZ.GetValue()
-		try:
-			dv = float(d)
-			self.safeZ = dv
-			self.tcSafeZ.SetValue(DEPTHFORMAT % self.safeZ)
-
-		except:
-			self.illegalTcValue("Safe Z Height")
-			self.tcSafeZ.SetValue(DEPTHFORMAT % self.safeZ)
-			e.Skip()
+		self.setState(modified=True)
+		e.Skip()
+		
+	def onSpinSafeZ(self, e):
+		self.setState(modified=True)
+		e.Skip()
 		
 	def onTextExtraDepth(self, e):
-		d = self.tcExtraDepth.GetValue()
-		try:
-			dv = float(d)
-			self.extraDepth = dv
-			self.tcExtraDepth.SetValue(DEPTHFORMAT % self.extraDepth)
-
-		except:
-			self.illegalTcValue("Depth Extra Depth")
-			self.tcExtraDepth.SetValue(DEPTHFORMAT % self.extraDepth)
-			e.Skip()
+		self.setState(modified=True)
+		e.Skip()
 		
-	def onTextSigDigits(self, e):
-		d = self.tcSigDigits.GetValue()
-		try:
-			dv = int(d)
-			if dv <= 0:
-				self.illegalTcValue("Digits of Accuracy")
-				self.tcSigDigits.SetValue(INTFORMAT % self.sigDigits)
-			else:
-				self.sigDigits = dv
-				self.tcSigDigits.SetValue(INTFORMAT % self.sigDigits)
-
-		except:
-			self.illegalTcValue("Digits of Accuracy")
-			self.tcSigDigits.SetValue(INTFORMAT % self.sigDigits)
-			e.Skip()
+	def onSpinExtraDepth(self, e):
+		self.setState(modified=True)
+		e.Skip()
 			
 	def illegalTcValue(self, name):
 		dlg = wx.MessageDialog(self,
@@ -394,27 +414,58 @@ class GCodeDlg(wx.Dialog):
 			
 	def onCbFeed(self, e):
 		f = self.cbFeed.GetValue()
-		self.tcG0XY.Enable(f)
-		self.tcG0Z.Enable(f)
-		self.tcG1XY.Enable(f)
-		self.tcG1Z.Enable(f)
+		self.setState(modified=True)
+		self.enableSpeeds(f)
+		
+	def enableSpeeds(self, f=True):
+		self.scG0XY.Enable(f)
+		self.scG0Z.Enable(f)
+		self.scG1XY.Enable(f)
+		self.scG1Z.Enable(f)
 		
 	def doGCode(self, e):
-		gcode = []
+		self.gcl.clear()
 		ft = cncbox.FACE_TOP
+		faceName = "Top Face"
 		if self.rbTop.GetValue():
 			ft = cncbox.FACE_TOP
+			faceName = "Top Face"
 		elif self.rbBottom.GetValue():
 			ft = cncbox.FACE_BOTTOM
+			faceName = "Bottom Face"
 		elif self.rbLeft.GetValue():
 			ft = cncbox.FACE_LEFT
+			faceName = "Left Face"
 		elif self.rbRight.GetValue():
 			ft = cncbox.FACE_RIGHT
+			faceName = "Right Face"
 		elif self.rbFront.GetValue():
 			ft = cncbox.FACE_FRONT
+			faceName = "Front Face"
 		elif self.rbBack.GetValue():
 			ft = cncbox.FACE_BACK
+			faceName = "Rear Face"
 			
+		safez = self.scSafeZ.GetValue()
+			
+		self.feedzG0 = self.scG0Z.GetValue()
+		self.feedzG1 = self.scG1Z.GetValue()
+		self.feedxyG0 = self.scG0XY.GetValue()
+		self.feedxyG1 = self.scG1XY.GetValue()
+
+		extradepth = self.scExtraDepth.GetValue()
+		passdepth = self.scDPP.GetValue()
+		
+		self.fmt = "%%0.%df" % self.settings.decimals
+		
+		self.addspeed = self.cbFeed.IsChecked()
+			
+		tdiam = self.toolinfo["diameter"]
+		trad = float(tdiam)/2.0
+		gcomment = "%s - %s" % (self.parent.viewTitle, faceName)
+		gcode = self.parent.preamble(self.settings, gcomment, tdiam, self.toolinfo["name"], self.settings.metric)					
+		gcode.append(("G0 Z"+self.fmt+self.addSpeedTerm("G0Z")) % safez)
+
 		self.offsetX = 0
 		self.offsetY = 0
 		
@@ -445,26 +496,16 @@ class GCodeDlg(wx.Dialog):
 		ocw = True
 		if self.rbOCCW.GetValue():
 			ocw = False
-			
-		if self.rbImperial.GetValue():
-			gcode.append("G20")
-		else:
-			gcode.append("G21")
-	
-		self.fmt = "%0." + str(self.sigDigits) + "f"
-		self.addSpeed = self.cbFeed.GetValue()
-				
-		pts, crc, rct = self.bx.render(ft, self.toolrad)
+
+		pts, crc, rct = self.bx.render(ft, tdiam)
 		totalDepth = self.bx.Wall
-		
-		gcode.append(("G0 Z" + self.fmt + self.addSpeedTerm("G0Z")) % self.safeZ)
-			
+				
 		steps = []
-		d = self.depthPerCut
+		d = passdepth
 		while totalDepth - d > 0.0001: 
 			steps.append(-d)
-			d += self.depthPerCut
-		steps.append(-(totalDepth + self.extraDepth))
+			d += passdepth
+		steps.append(-(totalDepth + extradepth))
 		
 		if icw:
 			cmd = "G2"
@@ -474,9 +515,11 @@ class GCodeDlg(wx.Dialog):
 		if len(crc) > 0:
 			gcode.append("; circles")		
 		for c in crc:
-			crad = c[1] - self.toolrad
-			gcode.append(("; New circle - center (" + self.fmt + "," + self.fmt + ") radius " + self.fmt + "(" + self.fmt +")")
+			crad = c[1] - trad
+			if self.settings.annotate:
+				gcode.append(("; New circle - center (" + self.fmt + "," + self.fmt + ") radius " + self.fmt + "(" + self.fmt +")")
 						 % (self.normalX(c[0][0]), self.normalY(c[0][1]), c[1], crad))
+				
 			gcode.append(("G0 X" + self.fmt + " Y" + self.fmt + self.addSpeedTerm("G0XY")) 
 						% (self.normalX(c[0][0]), self.normalY(c[0][1] - crad)))
 			for p in steps:
@@ -484,17 +527,18 @@ class GCodeDlg(wx.Dialog):
 				gcode.append((cmd+" J" + self.fmt + " X" + self.fmt + " Y" + self.fmt + self.addSpeedTerm("G1XY"))
 						% (crad, self.normalX(c[0][0]), self.normalY(c[0][1]) - crad))
 			
-			gcode.append(("G0 Z" + self.fmt + self.addSpeedTerm("G0Z")) % self.safeZ)
+			gcode.append(("G0 Z" + self.fmt + self.addSpeedTerm("G0Z")) % self.safez)
 			
 		if len(rct) > 0:
 			gcode.append("; rectangles")
 		for r in rct:
-			dx = r[1]/2.0 - self.toolrad
-			dy = r[2]/2.0 - self.toolrad
+			dx = r[1]/2.0 - trad
+			dy = r[2]/2.0 - trad
 			cx = r[0][0]
 			cy = r[0][1]
-			gcode.append(("; New rectangle - center (" + self.fmt + "," + self.fmt + ") width " + self.fmt + "(" + self.fmt +") height " + self.fmt + "(" + self.fmt +")")
-						% (self.normalX(cx), self.normalY(cy), r[1], r[1]-2*self.toolrad, r[2], r[2]-2*self.toolrad))	
+			if self.settings.annotate:
+				gcode.append(("; New rectangle - center (" + self.fmt + "," + self.fmt + ") width " + self.fmt + "(" + self.fmt +") height " + self.fmt + "(" + self.fmt +")")
+						% (self.normalX(cx), self.normalY(cy), r[1], r[1]-2*trad, r[2], r[2]-2*trad))	
 			if icw:
 				rpts = [ [-dx, dy], [dx, dy], [dx, -dy], [-dx, -dy] ]
 			else:
@@ -508,9 +552,10 @@ class GCodeDlg(wx.Dialog):
 					gcode.append(("G1 X" + self.fmt + " Y" + self.fmt + self.addSpeedTerm("G1XY")) 
 								% (self.normalX(cx+rp[0]), self.normalY(cy+rp[1])))
 
-			gcode.append(("G0 Z" + self.fmt + self.addSpeedTerm("G0Z")) % self.safeZ)
+			gcode.append(("G0 Z" + self.fmt + self.addSpeedTerm("G0Z")) % self.safez)
 			
-		gcode.append("; perimeter")
+		if self.settings.annotate:
+			gcode.append("; perimeter")
 		if ocw:
 			data = pts
 		else:
@@ -521,8 +566,9 @@ class GCodeDlg(wx.Dialog):
 		
 		for i in range(len(steps)):
 			p = steps[i]
-			gcode.append(("; layer at depth "+DEPTHFORMAT) % p)
-			pts = self.bx.render(ft, self.toolrad, i >= (len(steps)-2))[0]
+			if self.settings.annotate:
+				gcode.append(("; layer at depth "+DEPTHFORMAT) % p)
+			pts = self.bx.render(ft, trad, i >= (len(steps)-2))[0]
 			if ocw:
 				data = pts
 			else:
@@ -533,50 +579,20 @@ class GCodeDlg(wx.Dialog):
 				gcode.append(("G1 X" + self.fmt + " Y" + self.fmt + self.addSpeedTerm("G1XY")) 
 						% (self.normalX(data[d][0]), self.normalY(data[d][1])))
 
-		gcode.append(("G0 Z" + self.fmt + self.addSpeedTerm("G0Z")) % self.safeZ)
-		self.saveGCodeFile(gcode)
-		
-	def saveGCodeFile(self, gcode):
-		wildcardSave = "G Code file(*.nc)|*.nc" 
-
-		dlg = wx.FileDialog(
-			self, message="Save file as ...", defaultDir=self.settings.boxgcodedirectory, 
-			defaultFile="", wildcard=wildcardSave, style=wx.FD_SAVE + wx.FD_OVERWRITE_PROMPT
-			)
-		path = None
-		if dlg.ShowModal() == wx.ID_OK:
-			path = dlg.GetPath()
-			self.settings.boxgcodedirectory = os.path.dirname(path)
-
-		dlg.Destroy()
-		
-		if path is None:
-			return
-
-		try:
-			fp = open(path, "w")
-		except:
-			dlg = wx.MessageDialog(self,
-				"Unable to open file: " + path,
-				'Error',
-				wx.OK | wx.ICON_ERROR
-				)
-			dlg.ShowModal()
-			dlg.Destroy()
-			return
-		
-		for g in gcode:
-			fp.write("%s\n" % g)
-		
-		fp.close()
-		dlg = wx.MessageDialog(self,
-			"File: %s" % path,
-			'G-Code Saved',
-			wx.OK | wx.ICON_INFORMATION
-			)
-		dlg.ShowModal()
-		dlg.Destroy()
+		gcode.append(("G0 Z" + self.fmt + self.addSpeedTerm("G0Z")) % self.safez)
 			
+		self.gcl.updateList(gcode)
+		self.bVisualize.Enable()
+		self.bSave.Enable()
+		self.setState(modified=False, unsaved=True)
+	
+	def bVisualizePressed(self, _):
+		self.gcl.visualize()
+		
+	def bSavePressed(self, _):
+		if self.gcl.save(self.settings):
+			self.setState(modified=False, unsaved=False)
+
 	def normalX(self, x):
 		return x+self.offsetX
 	
@@ -584,16 +600,16 @@ class GCodeDlg(wx.Dialog):
 		return y+self.offsetY
 			
 	def addSpeedTerm(self, stype):
-		if not self.addSpeed:
+		if not self.addspeed:
 			return ""
 		
 		if stype == "G0XY":
-			return " F"+self.fmt % self.feedG0XY
+			return self.parent.speedTerm(True, self.feedxyG0)
 		if stype == "G0Z":
-			return " F"+self.fmt % self.feedG0Z
+			return self.parent.speedTerm(True, self.feedzG0)
 		if stype == "G1XY":
-			return " F"+self.fmt % self.feedG1XY
+			return self.parent.speedTerm(True, self.feedxyG1)
 		if stype == "G1Z":
-			return " F"+self.fmt % self.feedG1Z
+			return self.parent.speedTerm(True,  self.feedzG1)
 		
 		return ""

@@ -27,7 +27,7 @@ class EditToolDlg(wx.Dialog):
 		vsizer = wx.BoxSizer(wx.VERTICAL)
 		vsizer.AddSpacer(20)
 
-		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.properties["diameter"], min=0.1, max=5.0, inc=0.1, size=SPINSIZE)
+		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.properties["diameter"], min=0.01, max=5.0, inc=0.01, size=SPINSIZE)
 		sc.SetValue(self.properties["diameter"])
 		sc.SetDigits(2)
 		self.scDiam = sc
@@ -35,6 +35,12 @@ class EditToolDlg(wx.Dialog):
 		hsz = wx.BoxSizer(wx.HORIZONTAL)
 		hsz.Add(wx.StaticText(self, wx.ID_ANY, "Diameter: ", size=LABELSIZE))		
 		hsz.Add(self.scDiam, 0)
+		
+		self.cbMetric = wx.CheckBox(self, wx.ID_ANY, "Metric")
+		self.cbMetric.SetValue(self.properties["metric"])
+		hsz.AddSpacer(10)
+		hsz.Add(self.cbMetric, 1, wx.ALIGN_CENTER_VERTICAL)
+		self.Bind(wx.EVT_CHECKBOX, self.onCbMetric, self.cbMetric)
 		vsizer.Add(hsz)
 
 		self.Bind(wx.EVT_SPINCTRL, self.OnSpin, self.scDiam)
@@ -111,6 +117,9 @@ class EditToolDlg(wx.Dialog):
 	def OnText(self, _):
 		self.modified = True
 		
+	def onCbMetric(self, _):
+		self.modified = True
+		
 	def onBOverrides(self, _):
 		t = ToolMaterials(self.properties["speeds"], self.tname, self.mlist)
 		newOverrides = t.manage(self)
@@ -149,6 +158,7 @@ class EditToolDlg(wx.Dialog):
 		properties["diameter"] = self.scDiam.GetValue()
 		properties["name"] = self.tcDesc.GetValue()
 		properties["speeds"] = self.properties["speeds"]
+		properties["metric"] = self.cbMetric.GetValue()
 
 		return properties
 
@@ -159,7 +169,7 @@ class ToolsList(wx.ListCtrl):
 		self.toolnames = sorted(list(self.tools.json.keys()))
 		
 		wx.ListCtrl.__init__(
-			self, parent, wx.ID_ANY, size=(680, 300),
+			self, parent, wx.ID_ANY, size=(700, 300),
 			style=wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_VRULES|wx.LC_SINGLE_SEL
 			)
 
@@ -169,7 +179,7 @@ class ToolsList(wx.ListCtrl):
 		self.InsertColumn(3, "Material Overrides")
 		self.SetColumnWidth(0, 100)
 		self.SetColumnWidth(1, 200)
-		self.SetColumnWidth(2, 80)
+		self.SetColumnWidth(2, 100)
 		self.SetColumnWidth(3, 300)
 
 		self.SetItemCount(len(self.toolnames))
@@ -178,6 +188,7 @@ class ToolsList(wx.ListCtrl):
 		self.attr2.SetBackgroundColour("light blue")
 		
 		self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected)
+		self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated)
 		self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.OnItemDeselected)
 		self.Bind(wx.EVT_LIST_CACHE_HINT, self.OnItemHint)
 		
@@ -203,6 +214,13 @@ class ToolsList(wx.ListCtrl):
 
 	def OnItemSelected(self, event):
 		self.setSelection(event.Index)
+
+	def OnItemActivated(self, event):
+		self.setSelection(event.Index)
+		t = self.getSelectedTool()
+		if t is None:
+			return
+		self.parent.editTool(t)
 
 	def OnItemDeselected(self, evt):
 		self.setSelection(None)
@@ -233,7 +251,12 @@ class ToolsList(wx.ListCtrl):
 		elif col == 1:
 			return "%s" % self.tools.json[nm]["name"]
 		elif col == 2:
-			return "%12.2f" % self.tools.json[nm]["diameter"]
+			s = "%12.2f" % self.tools.json[nm]["diameter"]
+			if self.tools.json[nm]["metric"]:
+				s += " mm"
+			else:
+				s += " in"
+			return s
 		elif col == 3:
 			return ", ".join(list(self.tools.json[nm]["speeds"].keys()))
 
@@ -371,12 +394,14 @@ class ManageToolsDlg(wx.Dialog):
 
 		self.tools.json[nm] = {
 			"diameter": 1,
+			"metric": True,
 			"name": "NEW TOOL",
 			"speeds": {}
 		}
 		
 		self.toolnames = sorted(list(self.tools.json.keys()))
 		self.tl.redrawList()
+		self.enableButtons()
 		self.tl.selectTool(nm)
 		self.modified = True
 		
@@ -384,7 +409,10 @@ class ManageToolsDlg(wx.Dialog):
 		t = self.tl.getSelectedTool()
 		if t is None:
 			return 
-
+		
+		self.editTool(t)
+		
+	def editTool(self, t):
 		props = self.tools.json[t].copy()
 		dlg = EditToolDlg(self, t, props, self.mlist)
 		rc = dlg.ShowModal()
@@ -397,6 +425,7 @@ class ManageToolsDlg(wx.Dialog):
 		
 		self.tools.json[t] = props
 		self.tl.redrawList()
+		self.enableButtons()
 		self.tl.selectTool(t)
 
 		self.modified = True
@@ -445,9 +474,17 @@ class ManageToolsDlg(wx.Dialog):
 		else:
 			self.EndModal(wx.ID_EXIT)
 	
+	def enableButtons(self):
+		n = len(self.toolnames)
+		self.bEdit.Enable(n > 0)
+		self.bDel.Enable(n > 1) # can't delete last tool
+	
 	def reportSelection(self, sx):
-		self.bEdit.Enable(sx is not None)
-		self.bDel.Enable(sx is not None)
+		if sx is None:
+			self.bEdit.Enable(False)
+			self.bDel.Enable(False)
+		else:
+			self.enableButtons()
 
 class Tools:
 	def __init__(self, fn, settings):

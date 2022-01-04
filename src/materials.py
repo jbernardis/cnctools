@@ -34,6 +34,7 @@ class MaterialsList(wx.ListCtrl):
 		self.attr2.SetBackgroundColour("light blue")
 		
 		self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected)
+		self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated)
 		self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.OnItemDeselected)
 		self.Bind(wx.EVT_LIST_CACHE_HINT, self.OnItemHint)
 		
@@ -59,6 +60,13 @@ class MaterialsList(wx.ListCtrl):
 
 	def OnItemSelected(self, event):
 		self.setSelection(event.Index)
+		
+	def OnItemActivated(self, event):
+		self.setSelection(event.Index)
+		m = self.getSelectedMaterial()
+		if m is None:
+			return
+		self.parent.editMaterial(m)
 
 	def OnItemDeselected(self, evt):
 		self.setSelection(None)
@@ -290,8 +298,10 @@ class ManageMaterialsDlg(wx.Dialog):
 	def __init__(self, parent, materials, tname=None, mlist=None):
 		if tname is None:
 			title = "Manage Materials"
+			self.toolSpecific = False
 		else:
 			title = "Manage Material Overrides for tool '%s'" % tname
+			self.toolSpecific = True
 			
 		wx.Dialog.__init__(self, parent, wx.ID_ANY, title)
 		self.Bind(wx.EVT_CLOSE, self.onClose)
@@ -416,18 +426,23 @@ class ManageMaterialsDlg(wx.Dialog):
 			"stepover": self.settings.stepover
 		}
 		self.matnames = sorted(list(self.materials.json.keys()))
+		self.enableButtons()
 		self.ml.redrawList()
 		self.ml.selectMaterial(nm)
 		self.modified = True
 		
 		if self.mlist is not None:
 			self.checkAllMaterials()
+			
 		
 	def bEditPressed(self, _):
 		m = self.ml.getSelectedMaterial()
 		if m is None:
 			return 
 		
+		self.editMaterial(m)
+		
+	def editMaterial(self, m):
 		props = self.materials.json[m].copy()
 		dlg = EditMaterialDlg(self, m, props)
 		rc = dlg.ShowModal()
@@ -460,6 +475,7 @@ class ManageMaterialsDlg(wx.Dialog):
 		del(self.materials.json[m])
 		self.matnames = sorted(list(self.materials.json.keys()))
 		self.ml.redrawList()
+		self.enableButtons()
 		self.ml.selectMaterial(None)
 		self.modified = True
 		
@@ -494,10 +510,21 @@ class ManageMaterialsDlg(wx.Dialog):
 			self.EndModal(wx.ID_CANCEL)
 		else:
 			self.EndModal(wx.ID_EXIT)
+
+	def enableButtons(self):
+		n = len(self.matnames)
+		self.bEdit.Enable(n > 0)
+		if self.toolSpecific:
+			self.bDel.Enable(n > 0)
+		else:
+			self.bDel.Enable(n > 1) # can't delete last material
 	
 	def reportSelection(self, sx):
-		self.bEdit.Enable(sx is not None)
-		self.bDel.Enable(sx is not None)
+		if sx is None:
+			self.bEdit.Enable(False)
+			self.bDel.Enable(False)
+		else:
+			self.enableButtons()
 
 class Materials:
 	def __init__(self, fn):

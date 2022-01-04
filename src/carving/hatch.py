@@ -3,6 +3,7 @@ import wx
 from cncobject import CNCObject
 from gcodelist import GCodeList
 from validators import ValidateNoEntryErrors
+from settings import SPINSIZE
 
 def hatch(angle, minx, miny, maxx, maxy, gap, offsety):
 	run = gap/math.sin(math.radians(angle))
@@ -148,15 +149,17 @@ class GridPanel(wx.Panel, CNCObject):
 		sizer.Add(self.teStartZ, pos=(ln, 1), flag=wx.LEFT, border=10)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Safe Z above surface")
-		sz = "%6.3f" % self.settings.safez
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teSafeZ = wx.TextCtrl(self, wx.ID_ANY, sz, style=wx.TE_RIGHT)
-		self.addWidget(self.teSafeZ, "safez")
-		sizer.Add(self.teSafeZ, pos=(ln, 3), flag=wx.LEFT, border=10)
+		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.settings.safez, min=0.0, max=5.0, inc=0.1, size=SPINSIZE)
+		sc.SetValue(self.settings.safez)
+		sc.SetDigits(2)
+		self.scSafeZ = sc
+		self.addWidget(self.scSafeZ, "safez")
+		sizer.Add(self.scSafeZ, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Tool Diameter")
-		td = "%6.3f" % toolInfo["diameter"]
+		td = "%6.3f" % self.resolveToolDiameter(toolInfo)
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teToolDiam = wx.TextCtrl(self, wx.ID_ANY, td, style=wx.TE_RIGHT)
 		self.addWidget(self.teToolDiam, "tooldiam")
@@ -171,11 +174,13 @@ class GridPanel(wx.Panel, CNCObject):
 		sizer.Add(self.teTotalDepth, pos=(ln, 1), flag=wx.LEFT, border=10)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Depth/Pass")
-		dpp = "%6.3f" % speedInfo["depthperpass"]
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.tePassDepth = wx.TextCtrl(self, wx.ID_ANY, dpp, style=wx.TE_RIGHT)
-		self.addWidget(self.tePassDepth, "passdepth")
-		sizer.Add(self.tePassDepth, pos=(ln, 3), flag=wx.LEFT, border=10)
+		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=speedInfo["depthperpass"], min=0.1, max=5.0, inc=0.1, size=SPINSIZE)
+		sc.SetValue(speedInfo["depthperpass"])
+		sc.SetDigits(2)
+		self.scPassDepth = sc
+		self.addWidget(self.scPassDepth, "passdepth")
+		sizer.Add(self.scPassDepth, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Starting Point")
@@ -202,38 +207,50 @@ class GridPanel(wx.Panel, CNCObject):
 		ln += 1
 
 		t = wx.StaticText(self, wx.ID_ANY, "Feed Rate XY (G0)")
-		g0xy = "%7.2f" % speedInfo["G0XY"]
+		g0xy = speedInfo["G0XY"]
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teFeedXYG0 = wx.TextCtrl(self, wx.ID_ANY, g0xy, style=wx.TE_RIGHT)
-		self.addWidget(self.teFeedXYG0, "feedXYG0")
-		sizer.Add(self.teFeedXYG0, pos=(ln, 1), flag=wx.LEFT, border=10)
+		sc = wx.SpinCtrl(self, wx.ID_ANY, "", initial=g0xy, size=SPINSIZE)
+		sc.SetRange(1,10000)
+		sc.SetValue(g0xy)
+		self.scFeedXYG0 = sc
+		self.addWidget(self.scFeedXYG0, "feedXYG0")
+		sizer.Add(self.scFeedXYG0, pos=(ln, 1), flag=wx.LEFT, border=10)		
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Feed Rate XY (G1)")
-		g1xy = "%7.2f" % speedInfo["G1XY"]
+		g1xy = speedInfo["G1XY"]
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teFeedXYG1 = wx.TextCtrl(self, wx.ID_ANY, g1xy, style=wx.TE_RIGHT)
-		self.addWidget(self.teFeedXYG1, "feedXYG1")
-		sizer.Add(self.teFeedXYG1, pos=(ln, 3), flag=wx.LEFT, border=10)
+		sc = wx.SpinCtrl(self, wx.ID_ANY, "", initial=g1xy, size=SPINSIZE)
+		sc.SetRange(1,10000)
+		sc.SetValue(g1xy)
+		self.scFeedXYG1 = sc
+		self.addWidget(self.scFeedXYG1, "feedXYG1")
+		sizer.Add(self.scFeedXYG1, pos=(ln, 3), flag=wx.LEFT, border=10)		
 		ln += 1
 
 		t = wx.StaticText(self, wx.ID_ANY, "Feed Rate Z (G0)")
-		g0z = "%7.2f" % speedInfo["G0Z"]
+		g0z = speedInfo["G0Z"]
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teFeedZG0 = wx.TextCtrl(self, wx.ID_ANY, g0z, style=wx.TE_RIGHT)
-		self.addWidget(self.teFeedZG0, "feedZG0")
-		sizer.Add(self.teFeedZG0, pos=(ln, 1), flag=wx.LEFT, border=10)
+		sc = wx.SpinCtrl(self, wx.ID_ANY, "", initial=g0z, size=SPINSIZE)
+		sc.SetRange(1,10000)
+		sc.SetValue(g0z)
+		self.scFeedZG0 = sc
+		self.addWidget(self.scFeedZG0, "feedZG0")
+		sizer.Add(self.scFeedZG0, pos=(ln, 1), flag=wx.LEFT, border=10)		
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Feed Rate Z (G1)")
-		g1z = "%7.2f" % speedInfo["G1Z"]
+		g1z = speedInfo["G1Z"]
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teFeedZG1 = wx.TextCtrl(self, wx.ID_ANY, g1z, style=wx.TE_RIGHT)
-		self.addWidget(self.teFeedZG1, "feedZG1")
-		sizer.Add(self.teFeedZG1, pos=(ln, 3), flag=wx.LEFT, border=10)
+		sc = wx.SpinCtrl(self, wx.ID_ANY, "", initial=g1z, size=SPINSIZE)
+		sc.SetRange(1,10000)
+		sc.SetValue(g1z)
+		self.scFeedZG1 = sc
+		self.addWidget(self.scFeedZG1, "feedZG1")
+		sizer.Add(self.scFeedZG1, pos=(ln, 3), flag=wx.LEFT, border=10)		
 
-		self.teFeedXYG0.Enable(self.settings.addspeed)
-		self.teFeedXYG1.Enable(self.settings.addspeed)
-		self.teFeedZG0.Enable(self.settings.addspeed)
-		self.teFeedZG1.Enable(self.settings.addspeed)
+		self.scFeedXYG0.Enable(self.settings.addspeed)
+		self.scFeedXYG1.Enable(self.settings.addspeed)
+		self.scFeedZG0.Enable(self.settings.addspeed)
+		self.scFeedZG1.Enable(self.settings.addspeed)
 		ln += 1
 
 		sizer.Add(20, 20, wx.GBPosition(ln, 0))
@@ -256,6 +273,7 @@ class GridPanel(wx.Panel, CNCObject):
 
 		self.Bind(wx.EVT_TEXT, self.onChange)
 		self.Bind(wx.EVT_RADIOBUTTON, self.onChange)
+		self.Bind(wx.EVT_SPINCTRL, self.onChange)
 		
 		self.SetSizer(sizer)
 		self.Layout()
@@ -279,10 +297,10 @@ class GridPanel(wx.Panel, CNCObject):
 	def onCbAddSpeed(self, _):
 		self.setState(True, False)
 		flag = self.cbAddSpeed.IsChecked()
-		self.teFeedXYG0.Enable(flag)
-		self.teFeedXYG1.Enable(flag)
-		self.teFeedZG0.Enable(flag)
-		self.teFeedZG1.Enable(flag)
+		self.scFeedXYG0.Enable(flag)
+		self.scFeedXYG1.Enable(flag)
+		self.scFeedZG0.Enable(flag)
+		self.scFeedZG1.Enable(flag)
 		
 	def bGeneratePressed(self, _):
 		self.bSave.Enable(False)
@@ -305,26 +323,16 @@ class GridPanel(wx.Panel, CNCObject):
 			sz = float(self.teStartZ.GetValue())
 		except:
 			errs.append("Start Z")
-		try:
-			safez = float(self.teSafeZ.GetValue())
-		except:
-			errs.append("Safe Z")
-		try:
-			feedzG0 = float(self.teFeedZG0.GetValue())
-		except:
-			errs.append("Z G0 Speed")
-		try:
-			feedzG1 = float(self.teFeedZG1.GetValue())
-		except:
-			errs.append("Z G1 Speed")
-		try:
-			feedxyG0 = float(self.teFeedXYG0.GetValue())
-		except:
-			errs.append("XY G0 Speed")
-		try:
-			feedxyG1 = float(self.teFeedXYG1.GetValue())
-		except:
-			errs.append("XY G1 Speed")
+			
+		safez = self.scSafeZ.GetValue()
+
+		feedzG0 = self.scFeedZG0.GetValue()
+		feedzG1 = self.scFeedZG1.GetValue()
+		feedxyG0 = self.scFeedXYG0.GetValue()
+		feedxyG1 = self.scFeedXYG1.GetValue()
+
+		passdepth = self.scPassDepth.GetValue()
+
 		try:
 			totalx = float(self.teSizeX.GetValue())
 		except:
@@ -337,10 +345,6 @@ class GridPanel(wx.Panel, CNCObject):
 			totaldepth = float(self.teTotalDepth.GetValue())
 		except:
 			errs.append("Depth")
-		try:
-			passdepth = float(self.tePassDepth.GetValue())
-		except:
-			errs.append("Depth per Pass")
 		try:
 			angle = float(self.teAngle.GetValue())
 		except:
@@ -360,14 +364,19 @@ class GridPanel(wx.Panel, CNCObject):
 
 		if not ValidateNoEntryErrors(self, errs):
 			return			
-
-		self.gcode = self.preamble(self.settings.metric, self.tDiam, self.toolInfo, safez)
 			
 		border = self.cbBorder.IsChecked()
 		addspeed = self.cbAddSpeed.IsChecked()
 		
-		plist = hatch(angle, sx, sy, sx+totalx, sy+totaly, gap, yoffset)
+		if self.toolInfo["diameter"] == self.tDiam:
+			toolname = self.toolInfo["name"]
+		else:
+			toolname = None
+			
+		self.gcode = self.preamble(self.settings, self.viewTitle, self.tDiam, toolname, self.settings.metric)					
+		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % safez)
 		
+		plist = hatch(angle, sx, sy, sx+totalx, sy+totaly, gap, yoffset)		
 			
 		sp = self.getChosen(self.rbStartPoints)
 		adjx = 0

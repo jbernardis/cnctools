@@ -1,16 +1,10 @@
 import os, wx
-import sys, inspect
 
-cmd_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0]))
-if cmd_folder not in sys.path:
-	sys.path.insert(0, cmd_folder)
-	
-from gcframe import GcFrame 
-import cncbox
-#from images import Images
-from circledlg import CircleDlg
-from rectangledlg import RectangleDlg
-from gcodedlg import GCodeDlg
+from objects.box.gcframe import GcFrame 
+import objects.box.cncbox as cncbox
+from objects.box.circledlg import CircleDlg
+from objects.box.rectangledlg import RectangleDlg
+from objects.box.gcodedlg import GCodeDlg
 from cncobject import CNCObject
 
 weightSingle = 10;
@@ -22,8 +16,6 @@ BTNSPACING = 10
 SECTION = "cncbox"
 FNSETTINGS = "cncbox.ini"
 
-TITLE = "Tabbed Box G Code Generator"
-
 
 class MainFrame(wx.Frame):
 	def __init__(self, toolInfo, speedInfo, parent):
@@ -31,7 +23,7 @@ class MainFrame(wx.Frame):
 		self.settings = parent.settings
 		self.images = self.parent.images
 		
-		wx.Frame.__init__(self, None, size=(480, 800), title=TITLE)
+		wx.Frame.__init__(self, None, size=(480, 800), title="")
 		self.Bind(wx.EVT_CLOSE, self.onClose)
 
 		sizer = wx.BoxSizer(wx.HORIZONTAL)		
@@ -49,15 +41,26 @@ class MainFrame(wx.Frame):
 		return self.panel.onClose(None)
 		
 class TabbedBoxPanel(wx.Panel, CNCObject):
-	def __init__(self, toolInfo, speedInfo, parent):
+	seqNo = 1
+	def __init__(self, toolinfo, speedinfo, parent):
+		CNCObject.__init__(self, parent, "object:tabbedbox")
 		self.parent = parent
 		self.settings = parent.settings
 		self.images = self.parent.images
+		self.toolinfo = toolinfo
+		self.speedinfo = speedinfo
+		self.viewTitle = "Tabbed Box %d" % TabbedBoxPanel.seqNo
+		self.titleTextBase = "G Code Generator: %s" % self.viewTitle
+		self.titleText = self.titleTextBase
+		TabbedBoxPanel.seqNo += 1
+		
+		self.fmt = "%%0.%df" % self.settings.decimals
 		
 		self.objectName = ""
 		
 		self.modified = False
 		self.unsaved = False
+		self.setTitleFlag()
 		
 		self.mainModelShowing = False
 		
@@ -73,11 +76,12 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		
 		self.currentFace = cncbox.FACE_TOP
 		self.hiLite = [ 0, 0, 0, 0, 0, 0 ]
-		self.toolrad = toolInfo["diameter"]
+		self.tooldiam = self.resolveToolDiameter(toolinfo)
+
 		self.circles = []
 		self.rects = []
 		
-		self.bx = cncbox.cncbox(100, 200, 200, 6)
+		self.bx = cncbox.cncbox(100.0, 200.0, 200.0, self.settings.totaldepth)
 		
 		sizer = wx.BoxSizer(wx.HORIZONTAL)
 		sizer.AddSpacer(20)
@@ -178,11 +182,11 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		staticboxsizer.Add(hb)
 		
 		staticboxsizer.AddSpacer(10)
-		t = wx.StaticText(self, wx.ID_ANY, "Tool Radius: ", size=(80, -1))
-		tc = wx.TextCtrl(self, wx.ID_ANY, DIMFORMAT % self.toolrad, size=(70, -1), style=wx.TE_RIGHT)
-		self.tcToolRad = tc
+		t = wx.StaticText(self, wx.ID_ANY, "Tool Diameter: ", size=(90, -1))
+		tc = wx.TextCtrl(self, wx.ID_ANY, DIMFORMAT % self.tooldiam, size=(70, -1), style=wx.TE_RIGHT)
+		self.tcToolDiam = tc
 
-		tc.Bind(wx.EVT_KILL_FOCUS, self.onTextToolRad)
+		tc.Bind(wx.EVT_KILL_FOCUS, self.onTextToolDiam)
 		
 		hb = wx.BoxSizer(wx.HORIZONTAL)
 		hb.AddSpacer(30)
@@ -526,29 +530,20 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		self.render()
 		
 	def keyDown(self, evt):
+		print("key down")
 		evt.Skip()
 		
 	def updateFileName(self, fn):
 		self.fileName = fn
-		self.displayTitle()
+		self.titleText = self.titleTextBase + (" (%s)" % fn)
+		self.setTitleFlag()
 		
 	def setModified(self, flag=True):
 		if flag == self.modified:
 			return
 		
 		self.modified = flag
-		self.displayTitle()
-		
-	def displayTitle(self):
-		txt = TITLE
-			
-		if self.fileName is not None:
-			txt += "  -  " + self.fileName
-			
-		if self.modified:
-			txt += ' *'
-
-		self.parent.SetTitle(txt)
+		self.setTitleFlag()
 		
 	def render(self, fc=None):
 		fx = None
@@ -569,10 +564,10 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 			fx = cncbox.FACE_BACK
 
 		if fx is not None:
-			p, c, r = self.bx.render(fx, self.toolrad)
+			p, c, r = self.bx.render(fx, self.tooldiam)
 			if p is not None:
 				self.currentFace = fx
-				self.gcf.setData(p, c, r, self.toolrad, self.hiLite[fx])  
+				self.gcf.setData(p, c, r, self.tooldiam, self.hiLite[fx])  
 				self.updateHiLite()
 				self.circles = c
 				self.rects = r
@@ -590,6 +585,7 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		self.Layout()
 			
 	def onTextHeight(self, e):
+		print("kf: height")
 		h = self.tcHeight.GetValue()
 		try:
 			hv = float(h)
@@ -601,9 +597,11 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		except:
 			self.illegalTcValue("Height")
 			self.tcHeight.SetValue(DIMFORMAT % self.bx.Height)
-			e.Skip()
+			
+		e.Skip()
 			
 	def onTextWidth(self, e):
+		print("kf: width")
 		w = self.tcWidth.GetValue()
 		try:
 			wv = float(w)
@@ -615,9 +613,11 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		except:
 			self.illegalTcValue("Width")
 			self.tcWidth.SetValue(DIMFORMAT % self.bx.Width)
-			e.Skip()
+			
+		e.Skip()
 			
 	def onTextDepth(self, e):
+		print("kf: depth")
 		d = self.tcDepth.GetValue()
 		try:
 			dv = float(d)
@@ -629,33 +629,37 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		except:
 			self.illegalTcValue("Depth")
 			self.tcDepth.SetValue(DIMFORMAT % self.bx.Depth)
-			e.Skip()
+			
+		e.Skip()
 			
 	def onTextWall(self, e):
+		print("kf: wall")
 		d = self.tcWall.GetValue()
 		try:
 			dv = float(d)
 			if dv != self.bx.Wall:
-				self.bx.setWall(dv, self.toolrad)
+				self.bx.setWall(dv, self.tooldiam)
 				self.tcWall.SetValue(DIMFORMAT % self.bx.Wall)
 				self.render();
 				self.setModified()
 		except:
 			self.illegalTcValue("Wall Thickness")
 			self.tcWall.SetValue(DIMFORMAT % self.bx.Wall)
-			e.Skip()
 			
-	def onTextToolRad(self, e):
-		d = self.tcToolRad.GetValue()
+		e.Skip()
+			
+	def onTextToolDiam(self, e):
+		d = self.tcToolDiam.GetValue()
 		try:
 			dv = float(d)
-			self.toolrad = dv
-			self.tcToolRad.SetValue(DIMFORMAT % self.toolrad)
+			self.tooldiam = dv
+			self.tcToolDiam.SetValue(DIMFORMAT % self.tooldiam)
 			self.render();
 		except:
 			self.illegalTcValue("Tool Radius")
-			self.tcToolRad.SetValue(DIMFORMAT % self.toolrad)
-			e.Skip()
+			self.tcToolDiam.SetValue(DIMFORMAT % self.tooldiam)
+			
+		e.Skip()
 			
 	def illegalTcValue(self, name):
 		dlg = wx.MessageDialog(self,
@@ -764,7 +768,7 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		self.gcf.resetView()
 		
 	def bGCodePressed(self, e):
-		dlg = GCodeDlg(self, self.bx, self.toolrad, self.images, self.settings)
+		dlg = GCodeDlg(self, self.bx, self.toolinfo, self.images, self.speedinfo, self.settings)
 		dlg.ShowModal()
 		dlg.Destroy()
 		
@@ -822,7 +826,7 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		if path is None:
 			return
 		
-		msg = self.bx.loadBox(path, self.toolrad)
+		msg = self.bx.loadBox(path, self.tooldiam)
 		if not msg is None:
 			dlg = wx.MessageDialog(self, msg,
 				'Errors reading box file', wx.OK | wx.ICON_ERROR)
@@ -954,16 +958,5 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 			
 		#self.settings.saveSettings()
 		self.Destroy()
-				
-class App(wx.App):
-	def OnInit(self):
-		self.frame = MainFrame()
-		self.frame.Show()
-		self.SetTopWindow(self.frame)
-		return True
-
-if __name__ == '__main__':
-	app = App(False)
-	app.MainLoop()
 
 	

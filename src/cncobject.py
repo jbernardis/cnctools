@@ -120,20 +120,20 @@ class CNCObject:
 				dlg.ShowModal()
 				dlg.Destroy()
 				return
- 
+
 		kcount = 0			   
 		for jk in j.keys():
 			if kcount == 0:
 				jkey = jk
 			kcount += 1
- 
+
 		if kcount != 1:
 			dlg = wx.MessageDialog(self.parent, "Unable to interpret data in (%s)" % path,
 					'Unexpected format', wx.OK | wx.ICON_INFORMATION)
 			dlg.ShowModal()
 			dlg.Destroy()
 			return 
-   
+
 		if jkey != self.objectType:
 			dlg = wx.MessageDialog(self.parent, "File %s\n\nWritten from object type: %s\nExpecting type: %s" % (path, jkey, self.objectType),
 					'Incorrect Object Type', wx.OK | wx.ICON_INFORMATION)
@@ -181,22 +181,50 @@ class CNCObject:
 			title += " (unsaved)"
 		self.parent.SetTitle(title)
 		
-	def preamble(self, metric, tDiam, tInfo, safeZ):
+		
+		
+	def resolveToolDiameter(self, toolInfo):	
+		tm = toolInfo["metric"]
+		if tm == self.settings.metric:
+			return toolInfo["diameter"]
+		
+		if tm:
+			tdf = float(toolInfo["diameter"]) / 25.4
+			msg = "Tool is metric, but object is imperial.\n" +\
+				("Converted tool diameter of %6.3f mm to %6.3f in" % (toolInfo["diameter"], tdf))
+		else:
+			tdf = toolInfo["diameter"] * 25.4
+			msg = "Tool is imperial, but object is metric.\n" +\
+				("Converted tool diameter of %6.3f in to %6.3f mm" % (toolInfo["diameter"], tdf))
+			
+		dlg = wx.MessageDialog(self,
+			msg,
+			'Tool Diameter Converted',
+			wx.OK | wx.ICON_INFORMATION)
+		dlg.ShowModal()
+		dlg.Destroy()
+		
+		return tdf
+		
+		
+		
+		
+	def preamble(self, settings, title, tooldiam, toolname, metric): #, toolinfo, feedZG0, safeZ):
 		code = []
 		if self.settings.annotate:
-			code.append("({})".format(self.viewTitle))
-			if tDiam == tInfo["diameter"]:
-				code.append("(Tool %s - diameter %6.2f)" % (tInfo["name"], tInfo["diameter"]))
+			code.append("({})".format(title))
+			if toolname is None:
+				code.append("(Tool diameter %6.2f %s)" % (tooldiam, "mm" if settings.metric else "in"))
 			else:
-				code.append("(Tool diameter %6.2f)" % (tDiam))
-			code.append("(preamble)")
+				code.append("(Tool %s - diameter %6.2f %s)" % (
+					toolname, tooldiam, "mm" if settings.metric else "in"))
+
 		code.append("G90")
 		if metric:
 			code.append("G21")
 		else:
 			code.append("G20")
 			
-		code.append("G0 X0 Y0 Z%6.2f" % safeZ)  
 		return code
 	
 	def onChange(self, _):
@@ -231,18 +259,18 @@ class CNCObject:
 			
 		if self.gcl.save(self.settings):
 			self.setState(None, False)
-		 
+
 	def speedTerm(self, flag, speed):
 		if not flag:
 			return ""
 		
-		return " F" + self.fmt % speed
+		return " F%d" % speed
 	
 	def IJTerm(self, label, val):
 		if val == 0.0:
 			return ""
 		else:
 			return " " + label + self.fmt % val
-	   
+
 	def bVisualizePressed(self, _):
 		self.gcl.visualize(title=self.viewTitle)
