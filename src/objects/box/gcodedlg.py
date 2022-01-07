@@ -21,7 +21,8 @@ class GCodeDlg(wx.Dialog):
 		wx.Dialog.__init__(self, parent, wx.ID_ANY, "")
 		self.SetBackgroundColour("white")
 
-		self.tooldiam = toolinfo["diameter"]	
+		self.tooldiam = self.parent.tooldiam
+		print("got td=%f" % self.tooldiam)
 		self.depthPerCut = speedinfo["depthperpass"]
 		self.feedG1XY = speedinfo["G1XY"]
 		self.feedG1Z = speedinfo["G1Z"]
@@ -70,9 +71,10 @@ class GCodeDlg(wx.Dialog):
 		vsizer.AddSpacer(20)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Depth/Pass: ", size=(80, -1))
-		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.depthPerCut, min=0.1, max=5.0, inc=0.1, size=SPINSIZE)
+		vmin, vmax, vinc, digits = self.parent.getSpinValues(self.settings.metric, "passdepth")
+		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.depthPerCut, min=vmin, max=vmax, inc=vinc, size=SPINSIZE)
 		sc.SetValue(self.depthPerCut)
-		sc.SetDigits(2)
+		sc.SetDigits(digits)
 		self.scDPP = sc
 
 		sc.Bind(wx.EVT_TEXT, self.onTextDPP)
@@ -85,9 +87,10 @@ class GCodeDlg(wx.Dialog):
 		vsizer.AddSpacer(5)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Extra Depth: ", size=(80, -1))
-		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.extraDepth, min=0.0, max=5.0, inc=0.1, size=SPINSIZE)
+		vmin, vmax, vinc, digits = self.parent.getSpinValues(self.settings.metric, "extradepth")
+		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.extraDepth, min=vmin, max=vmax, inc=vinc, size=SPINSIZE)
 		sc.SetValue(self.settings.safez)
-		sc.SetDigits(2)
+		sc.SetDigits(digits)
 		self.scExtraDepth = sc
 
 		sc.Bind(wx.EVT_TEXT, self.onTextExtraDepth)
@@ -100,9 +103,10 @@ class GCodeDlg(wx.Dialog):
 		vsizer.AddSpacer(5)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Safe Z Height: ", size=(80, -1))
-		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.safez, min=0.0, max=5.0, inc=0.1, size=SPINSIZE)
+		vmin, vmax, vinc, digits = self.parent.getSpinValues(self.settings.metric, "safez")
+		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.safez, min=vmin, max=vmax, inc=vinc, size=SPINSIZE)
 		sc.SetValue(self.settings.safez)
-		sc.SetDigits(2)
+		sc.SetDigits(digits)
 		self.scSafeZ = sc
 
 		sc.Bind(wx.EVT_SPINCTRL, self.onSpinSafeZ)
@@ -191,7 +195,8 @@ class GCodeDlg(wx.Dialog):
 		
 		t = wx.StaticText(self, wx.ID_ANY, "XY (G0): ", size=(80, -1))
 		sc = wx.SpinCtrl(self, wx.ID_ANY, "", initial=self.feedG0XY, size=SPINSIZE)
-		sc.SetRange(1,10000)
+		vmin, vmax, vinc, digits = self.parent.getSpinValues(self.settings.metric, "feedxyg0")
+		sc.SetRange(vmin, vmax)
 		sc.SetValue(self.feedG0XY)
 		sc.Bind(wx.EVT_SPINCTRL, self.onSpinG0XY)
 		sc.Bind(wx.EVT_SPINCTRL, self.onTextG0XY)
@@ -205,7 +210,8 @@ class GCodeDlg(wx.Dialog):
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Z (G0): ", size=(80, -1))
 		sc = wx.SpinCtrl(self, wx.ID_ANY, "", initial=self.feedG0XY, size=SPINSIZE)
-		sc.SetRange(1,10000)
+		vmin, vmax, vinc, digits = self.parent.getSpinValues(self.settings.metric, "feedxyg1")
+		sc.SetRange(vmin, vmax)
 		sc.SetValue(self.feedG0Z)
 		sc.Bind(wx.EVT_SPINCTRL, self.onSpinG0Z)
 		sc.Bind(wx.EVT_SPINCTRL, self.onTextG0Z)
@@ -219,7 +225,8 @@ class GCodeDlg(wx.Dialog):
 
 		t = wx.StaticText(self, wx.ID_ANY, "XY (G1): ", size=(80, -1))
 		sc = wx.SpinCtrl(self, wx.ID_ANY, "", initial=self.feedG0XY, size=SPINSIZE)
-		sc.SetRange(1,10000)
+		vmin, vmax, vinc, digits = self.parent.getSpinValues(self.settings.metric, "feedzg0")
+		sc.SetRange(vmin, vmax)
 		sc.SetValue(self.feedG1XY)
 		sc.Bind(wx.EVT_SPINCTRL, self.onSpinG1XY)
 		sc.Bind(wx.EVT_SPINCTRL, self.onTextG1XY)
@@ -233,7 +240,8 @@ class GCodeDlg(wx.Dialog):
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Z (G1): ", size=(80, -1))
 		sc = wx.SpinCtrl(self, wx.ID_ANY, "", initial=self.feedG0XY, size=SPINSIZE)
-		sc.SetRange(1,10000)
+		vmin, vmax, vinc, digits = self.parent.getSpinValues(self.settings.metric, "feedzg1")
+		sc.SetRange(vmin, vmax)
 		sc.SetValue(self.feedG1Z)
 		sc.Bind(wx.EVT_SPINCTRL, self.onSpinG1Z)
 		sc.Bind(wx.EVT_SPINCTRL, self.onTextG1Z)
@@ -460,7 +468,7 @@ class GCodeDlg(wx.Dialog):
 		
 		self.addspeed = self.cbFeed.IsChecked()
 			
-		tdiam = self.toolinfo["diameter"]
+		tdiam = self.tooldiam
 		trad = float(tdiam)/2.0
 		gcomment = "%s - %s" % (self.parent.viewTitle, faceName)
 		gcode = self.parent.preamble(self.settings, gcomment, tdiam, self.toolinfo["name"], self.settings.metric)					
@@ -513,11 +521,11 @@ class GCodeDlg(wx.Dialog):
 			cmd = "G3"
 
 		if len(crc) > 0:
-			gcode.append("; circles")		
+			gcode.append("( circles )")		
 		for c in crc:
 			crad = c[1] - trad
 			if self.settings.annotate:
-				gcode.append(("; New circle - center (" + self.fmt + "," + self.fmt + ") radius " + self.fmt + "(" + self.fmt +")")
+				gcode.append(("( New circle - center " + self.fmt + "," + self.fmt + " radius " + self.fmt + " " + self.fmt +" )")
 						 % (self.normalX(c[0][0]), self.normalY(c[0][1]), c[1], crad))
 				
 			gcode.append(("G0 X" + self.fmt + " Y" + self.fmt + self.addSpeedTerm("G0XY")) 
@@ -530,14 +538,14 @@ class GCodeDlg(wx.Dialog):
 			gcode.append(("G0 Z" + self.fmt + self.addSpeedTerm("G0Z")) % self.safez)
 			
 		if len(rct) > 0:
-			gcode.append("; rectangles")
+			gcode.append("( rectangles )")
 		for r in rct:
 			dx = r[1]/2.0 - trad
 			dy = r[2]/2.0 - trad
 			cx = r[0][0]
 			cy = r[0][1]
 			if self.settings.annotate:
-				gcode.append(("; New rectangle - center (" + self.fmt + "," + self.fmt + ") width " + self.fmt + "(" + self.fmt +") height " + self.fmt + "(" + self.fmt +")")
+				gcode.append(("( New rectangle - center " + self.fmt + "," + self.fmt + " width " + self.fmt + " " + self.fmt +" height " + self.fmt + " " + self.fmt +" )")
 						% (self.normalX(cx), self.normalY(cy), r[1], r[1]-2*trad, r[2], r[2]-2*trad))	
 			if icw:
 				rpts = [ [-dx, dy], [dx, dy], [dx, -dy], [-dx, -dy] ]
@@ -555,7 +563,7 @@ class GCodeDlg(wx.Dialog):
 			gcode.append(("G0 Z" + self.fmt + self.addSpeedTerm("G0Z")) % self.safez)
 			
 		if self.settings.annotate:
-			gcode.append("; perimeter")
+			gcode.append("( perimeter )")
 		if ocw:
 			data = pts
 		else:
@@ -567,7 +575,7 @@ class GCodeDlg(wx.Dialog):
 		for i in range(len(steps)):
 			p = steps[i]
 			if self.settings.annotate:
-				gcode.append(("; layer at depth "+DEPTHFORMAT) % p)
+				gcode.append(("( layer at depth "+DEPTHFORMAT + " )") % p)
 			pts = self.bx.render(ft, trad, i >= (len(steps)-2))[0]
 			if ocw:
 				data = pts

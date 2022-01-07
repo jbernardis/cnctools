@@ -77,20 +77,25 @@ class CirclePanel(wx.Panel, CNCObject):
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Safe Z above surface")
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.settings.safez, min=0.0, max=5.0, inc=0.1, size=SPINSIZE)
+		vmin, vmax, vinc, digits = self.getSpinValues(self.settings.metric, "safez")
+		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.settings.safez, min=vmin, max=vmax, inc=vinc, size=SPINSIZE)
 		sc.SetValue(self.settings.safez)
-		sc.SetDigits(2)
+		sc.SetDigits(digits)
 		self.scSafeZ = sc
 		self.addWidget(self.scSafeZ, "safez")
 		sizer.Add(self.scSafeZ, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
 
 		t = wx.StaticText(self, wx.ID_ANY, "Tool Diameter")
-		td = "%6.3f" % self.resolveToolDiameter(toolInfo)
+		td = self.resolveToolDiameter(toolInfo)
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teToolDiam = wx.TextCtrl(self, wx.ID_ANY, td, style=wx.TE_RIGHT)
-		self.addWidget(self.teToolDiam, "tooldiameter")
-		sizer.Add(self.teToolDiam, pos=(ln, 1), flag=wx.LEFT, border=10)
+		vmin, vmax, vinc, digits = self.getSpinValues(self.settings.metric, "tooldiam")
+		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=td, min=vmin, max=vmax, inc=vinc, size=SPINSIZE)
+		sc.SetValue(td)
+		sc.SetDigits(digits)
+		self.scToolDiam = sc
+		self.addWidget(self.scToolDiam, "tooldiameter")
+		sizer.Add(self.scToolDiam, pos=(ln, 1), flag=wx.LEFT, border=10)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Stepover")
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
@@ -103,17 +108,22 @@ class CirclePanel(wx.Panel, CNCObject):
 		ln += 1
 
 		t = wx.StaticText(self, wx.ID_ANY, "Total Depth")
-		td = "%6.3f" % self.settings.totaldepth
+		td = self.settings.totaldepth
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teTotalDepth = wx.TextCtrl(self, wx.ID_ANY, td, style=wx.TE_RIGHT)
-		self.addWidget(self.teTotalDepth, "depth")
-		sizer.Add(self.teTotalDepth, pos=(ln, 1), flag=wx.LEFT, border=10)
+		vmin, vmax, vinc, digits = self.getSpinValues(self.settings.metric, "totaldepth")
+		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=td, min=vmin, max=vmax, inc=vinc, size=SPINSIZE)
+		sc.SetValue(td)
+		sc.SetDigits(digits)
+		self.scTotalDepth = sc
+		self.addWidget(self.scTotalDepth, "depth")
+		sizer.Add(self.scTotalDepth, pos=(ln, 1), flag=wx.LEFT, border=10)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Depth/Pass")
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=speedInfo["depthperpass"], min=0.1, max=5.0, inc=0.1, size=SPINSIZE)
+		vmin, vmax, vinc, digits = self.getSpinValues(self.settings.metric, "passdepth")
+		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=speedInfo["depthperpass"], min=vmin, max=vmax, inc=vinc, size=SPINSIZE)
 		sc.SetValue(speedInfo["depthperpass"])
-		sc.SetDigits(2)
+		sc.SetDigits(digits)
 		self.scPassDepth = sc
 		self.addWidget(self.scPassDepth, "passdepth")
 		sizer.Add(self.scPassDepth, pos=(ln, 3), flag=wx.LEFT, border=10)
@@ -151,7 +161,8 @@ class CirclePanel(wx.Panel, CNCObject):
 		g0xy = speedInfo["G0XY"]
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		sc = wx.SpinCtrl(self, wx.ID_ANY, "", initial=g0xy, size=SPINSIZE)
-		sc.SetRange(1,10000)
+		vmin, vmax, vinc, digits = self.getSpinValues(self.settings.metric, "feedxyg0")
+		sc.SetRange(vmin, vmax)
 		sc.SetValue(g0xy)
 		self.scFeedXYG0 = sc
 		self.addWidget(self.scFeedXYG0, "feedXYG0")
@@ -161,7 +172,8 @@ class CirclePanel(wx.Panel, CNCObject):
 		g1xy = speedInfo["G1XY"]
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		sc = wx.SpinCtrl(self, wx.ID_ANY, "", initial=g1xy, size=SPINSIZE)
-		sc.SetRange(1,10000)
+		vmin, vmax, vinc, digits = self.getSpinValues(self.settings.metric, "feedxyg1")
+		sc.SetRange(vmin, vmax)
 		sc.SetValue(g1xy)
 		self.scFeedXYG1 = sc
 		self.addWidget(self.scFeedXYG1, "feedXYG1")
@@ -172,7 +184,8 @@ class CirclePanel(wx.Panel, CNCObject):
 		g0z = speedInfo["G0Z"]
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		sc = wx.SpinCtrl(self, wx.ID_ANY, "", initial=g0z, size=SPINSIZE)
-		sc.SetRange(1,10000)
+		vmin, vmax, vinc, digits = self.getSpinValues(self.settings.metric, "feedzg0")
+		sc.SetRange(vmin, vmax)
 		sc.SetValue(g0z)
 		self.scFeedZG0 = sc
 		self.addWidget(self.scFeedZG0, "feedZG0")
@@ -182,7 +195,8 @@ class CirclePanel(wx.Panel, CNCObject):
 		g1z = speedInfo["G1Z"]
 		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		sc = wx.SpinCtrl(self, wx.ID_ANY, "", initial=g1z, size=SPINSIZE)
-		sc.SetRange(1,10000)
+		vmin, vmax, vinc, digits = self.getSpinValues(self.settings.metric, "feedzg1")
+		sc.SetRange(vmin, vmax)
 		sc.SetValue(g1z)
 		self.scFeedZG1 = sc
 		self.addWidget(self.scFeedZG1, "feedZG1")
@@ -290,19 +304,13 @@ class CirclePanel(wx.Panel, CNCObject):
 
 		stepover = self.scStepover.GetValue()
 		passdepth = self.scPassDepth.GetValue()
+		depth = self.scTotalDepth.GetValue()
+		tdiam = self.scToolDiam.GetValue()
 
 		try:
 			diam = float(self.teDiam.GetValue())
 		except:
 			errs.append("Diameter")
-		try:
-			depth = float(self.teTotalDepth.GetValue())
-		except:
-			errs.append("Depth")
-		try:
-			tdiam = float(self.teToolDiam.GetValue())
-		except:
-			errs.append("Tool Diameter")
 
 		if not ValidateNoEntryErrors(self, errs):
 			return

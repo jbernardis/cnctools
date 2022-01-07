@@ -11,14 +11,9 @@ polyline - initial value for points
 
 rectangle - rounded corners
 
-in tabbed box, use parens for annotation instead of ;
-	
-look into using spinners in fields on all screens - tool diam
-	carve: diamond, grid, hatch
-	contour: arc, circle, line, polyline, rectangle, reg polygon, rounded slot
-	drills: circle, linear, rectangle
-	objects: box, stringer, tichy
-	
+verify plotting of imperial g code - scale may not be right
+
+look into when to NOT use a tool name - it tool is metric and object is imperial or vice versa, it will never report the tool name (except in box because of a different bug)
 	
 
 

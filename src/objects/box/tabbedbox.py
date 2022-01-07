@@ -6,6 +6,7 @@ from objects.box.circledlg import CircleDlg
 from objects.box.rectangledlg import RectangleDlg
 from objects.box.gcodedlg import GCodeDlg
 from cncobject import CNCObject
+from settings import SPINSIZE
 
 weightSingle = 10;
 weightDouble = 16;
@@ -105,6 +106,7 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		hb.AddSpacer(30)
 		hb.Add(t, 0, wx.TOP|wx.LEFT, 10)
 		hb.Add(tc, 0, wx.TOP|wx.LEFT, 10)
+		hb.AddSpacer(10)
 		staticboxsizer.Add(hb)
 		staticboxsizer.AddSpacer(10)
 		
@@ -118,6 +120,7 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		hb.AddSpacer(30)
 		hb.Add(t, 0, wx.TOP|wx.LEFT, 10)
 		hb.Add(tc, 0, wx.TOP|wx.LEFT, 10)
+		hb.AddSpacer(10)
 		staticboxsizer.Add(hb)
 		staticboxsizer.AddSpacer(10)
 		
@@ -131,24 +134,31 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		hb.AddSpacer(30)
 		hb.Add(t, 0, wx.TOP|wx.LEFT, 10)
 		hb.Add(tc, 0, wx.TOP|wx.LEFT, 10)
+		hb.AddSpacer(10)
 		staticboxsizer.Add(hb)
 		staticboxsizer.AddSpacer(10)
 		
-		vsizer.Add(staticboxsizer)
-		vsizer.AddSpacer(20)
-		
 		t = wx.StaticText(self, wx.ID_ANY, "Wall Thickness: ", size=(80, -1))
-		tc = wx.TextCtrl(self, wx.ID_ANY, DIMFORMAT % self.bx.Wall, size=(70, -1), style=wx.TE_RIGHT)
-		self.tcWall = tc
+		td = self.bx.Wall
+		vmin, vmax, vinc, digits = self.getSpinValues(self.settings.metric, "totaldepth")
+		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=td, min=vmin, max=vmax, inc=vinc, size=SPINSIZE)
+		sc.SetValue(td)
+		sc.SetDigits(digits)
+		self.scWall = sc
 
-		tc.Bind(wx.EVT_KILL_FOCUS, self.onTextWall)
+		sc.Bind(wx.EVT_TEXT, self.onTextWall)
+		sc.Bind(wx.EVT_SPINCTRL, self.onSpinWall)
 		
 		hb = wx.BoxSizer(wx.HORIZONTAL)
 		hb.AddSpacer(30)
 		hb.Add(t, 0, wx.TOP|wx.LEFT, 10)
-		hb.Add(tc, 0, wx.TOP|wx.LEFT, 10)
+		hb.Add(sc, 0, wx.TOP|wx.LEFT, 10)
+		hb.AddSpacer(10)
 		staticboxsizer.Add(hb)
 		staticboxsizer.AddSpacer(10)
+		
+		vsizer.Add(staticboxsizer, 1, wx.ALL|wx.EXPAND, 10)
+		vsizer.AddSpacer(20)		
 			
 		sbox = wx.StaticBox(self, -1, "Tool Radius Relief")
 		staticboxsizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
@@ -163,6 +173,7 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		hb = wx.BoxSizer(wx.HORIZONTAL)
 		hb.Add(self.rbRlfNone, 1, wx.TOP, 18)
 		hb.Add(bmNone)
+		hb.AddSpacer(10)
 		self.Bind(wx.EVT_RADIOBUTTON, self.onNoRelief, self.rbRlfNone)
 		staticboxsizer.Add(hb)
 		
@@ -171,6 +182,7 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		hb = wx.BoxSizer(wx.HORIZONTAL)
 		hb.Add(self.rbRlfHeight, 1, wx.TOP, 18)
 		hb.Add(bmHRlf)
+		hb.AddSpacer(10)
 		self.Bind(wx.EVT_RADIOBUTTON, self.onHRelief, self.rbRlfHeight)
 		staticboxsizer.Add(hb)
 		
@@ -178,24 +190,30 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		hb = wx.BoxSizer(wx.HORIZONTAL)
 		hb.Add(self.rbRlfWidth, 1, wx.TOP, 18)
 		hb.Add(bmWRlf)
+		hb.AddSpacer(10)
 		self.Bind(wx.EVT_RADIOBUTTON, self.onWRelief, self.rbRlfWidth)
 		staticboxsizer.Add(hb)
 		
 		staticboxsizer.AddSpacer(10)
 		t = wx.StaticText(self, wx.ID_ANY, "Tool Diameter: ", size=(90, -1))
-		tc = wx.TextCtrl(self, wx.ID_ANY, DIMFORMAT % self.tooldiam, size=(70, -1), style=wx.TE_RIGHT)
-		self.tcToolDiam = tc
 
-		tc.Bind(wx.EVT_KILL_FOCUS, self.onTextToolDiam)
+		vmin, vmax, vinc, digits = self.getSpinValues(self.settings.metric, "tooldiam")
+		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.tooldiam, min=vmin, max=vmax, inc=vinc, size=SPINSIZE)
+		sc.SetValue(self.tooldiam)
+		sc.SetDigits(digits)
+		self.scToolDiam = sc
+
+		sc.Bind(wx.EVT_TEXT, self.onTextToolDiam)
+		sc.Bind(wx.EVT_SPINCTRL, self.onSpinToolDiam)
 		
 		hb = wx.BoxSizer(wx.HORIZONTAL)
 		hb.AddSpacer(30)
 		hb.Add(t, 0, wx.TOP|wx.LEFT, 10)
-		hb.Add(tc, 0, wx.TOP|wx.LEFT, 10)
+		hb.Add(sc, 0, wx.TOP|wx.LEFT, 10)
 		staticboxsizer.Add(hb)
 		
 		staticboxsizer.AddSpacer(10)
-		vsizer.Add(staticboxsizer)
+		vsizer.Add(staticboxsizer, 1, wx.ALL|wx.EXPAND, 10)
 		vsizer.AddSpacer(20)
 		
 		ohsizer.Add(vsizer)
@@ -206,12 +224,13 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		
 		sbox = wx.StaticBox(self, -1, "Front/Back to Left/Right Joints")
 		staticboxsizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
+		staticboxsizer.AddSpacer(10)
 
 		self.rbFSTabs = wx.RadioButton(self, wx.ID_ANY, " Front/Back Tabs ", style = wx.RB_GROUP )
 		self.rbFSSlots = wx.RadioButton(self, wx.ID_ANY, " Front/Back Slots " )
-		staticboxsizer.Add(self.rbFSTabs)
+		staticboxsizer.Add(self.rbFSTabs, 1, wx.LEFT, 10)
 		staticboxsizer.AddSpacer(10)
-		staticboxsizer.Add(self.rbFSSlots)
+		staticboxsizer.Add(self.rbFSSlots, 1, wx.LEFT, 10)
 		self.Bind(wx.EVT_RADIOBUTTON, self.onFSTabs, self.rbFSTabs)
 		self.Bind(wx.EVT_RADIOBUTTON, self.onFSSlots, self.rbFSSlots)
 		
@@ -225,9 +244,12 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		sz.Add(t, 1, wx.TOP, 3)
 		sz.AddSpacer(10)
 		sz.Add(sc)
+		sz.AddSpacer(10)
 		staticboxsizer.AddSpacer(10)
 		staticboxsizer.Add(sz)
 		self.Bind(wx.EVT_SPINCTRL, self.onSpinFSCount, sc)
+		
+		staticboxsizer.AddSpacer(5)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Tab/Slot length:")
 		sc = wx.SpinCtrl(self, wx.ID_ANY, "length", size=(50, -1))
@@ -239,21 +261,23 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		sz.Add(t, 1, wx.TOP, 3)
 		sz.AddSpacer(10)
 		sz.Add(sc)
-		staticboxsizer.AddSpacer(10)
+		sz.AddSpacer(10)
 		staticboxsizer.Add(sz)
+		staticboxsizer.AddSpacer(10)
 		self.Bind(wx.EVT_SPINCTRL, self.onSpinFSLength, sc)
 		
-		vsizer.Add(staticboxsizer)
+		vsizer.Add(staticboxsizer, 1, wx.ALL|wx.EXPAND, 10)
 		vsizer.AddSpacer(10)
 		
 		sbox = wx.StaticBox(self, -1, "Front/Back to Top/Bottom Joints")
 		staticboxsizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
+		staticboxsizer.AddSpacer(10)
 
 		self.rbFTBTabs = wx.RadioButton(self, wx.ID_ANY, " Front/Back Tabs ", style = wx.RB_GROUP )
 		self.rbFTBSlots = wx.RadioButton(self, wx.ID_ANY, " Front/Back Slots " )
-		staticboxsizer.Add(self.rbFTBTabs)
+		staticboxsizer.Add(self.rbFTBTabs, 1, wx.LEFT, 10)
 		staticboxsizer.AddSpacer(10)
-		staticboxsizer.Add(self.rbFTBSlots)
+		staticboxsizer.Add(self.rbFTBSlots, 1, wx.LEFT, 10)
 		self.Bind(wx.EVT_RADIOBUTTON, self.onFTBTabs, self.rbFTBTabs)
 		self.Bind(wx.EVT_RADIOBUTTON, self.onFTBSlots, self.rbFTBSlots)
 		
@@ -267,9 +291,12 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		sz.Add(t, 1, wx.TOP, 3)
 		sz.AddSpacer(10)
 		sz.Add(sc)
+		sz.AddSpacer(10)
 		staticboxsizer.AddSpacer(10)
 		staticboxsizer.Add(sz)
 		self.Bind(wx.EVT_SPINCTRL, self.onSpinFTBCount, sc)
+		
+		staticboxsizer.AddSpacer(5)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Tab/Slot length:")
 		sc = wx.SpinCtrl(self, wx.ID_ANY, "length", size=(50, -1))
@@ -281,21 +308,23 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		sz.Add(t, 1, wx.TOP, 3)
 		sz.AddSpacer(10)
 		sz.Add(sc)
-		staticboxsizer.AddSpacer(10)
+		sz.AddSpacer(10)
 		staticboxsizer.Add(sz)
+		staticboxsizer.AddSpacer(10)
 		self.Bind(wx.EVT_SPINCTRL, self.onSpinFTBLength, sc)
 		
-		vsizer.Add(staticboxsizer)
+		vsizer.Add(staticboxsizer, 1, wx.ALL|wx.EXPAND, 10)
 		vsizer.AddSpacer(10)
 		
 		sbox = wx.StaticBox(self, -1, "Left/Right to Top/Bottom Joints")
 		staticboxsizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
+		staticboxsizer.AddSpacer(10)
 
 		self.rbSTBTabs = wx.RadioButton(self, wx.ID_ANY, " Left/Right Tabs ", style = wx.RB_GROUP )
 		self.rbSTBSlots = wx.RadioButton(self, wx.ID_ANY, " Left/Right Slots " )
-		staticboxsizer.Add(self.rbSTBTabs)
+		staticboxsizer.Add(self.rbSTBTabs, 1, wx.LEFT, 10)
 		staticboxsizer.AddSpacer(10)
-		staticboxsizer.Add(self.rbSTBSlots)
+		staticboxsizer.Add(self.rbSTBSlots, 1, wx.LEFT, 10)
 		self.Bind(wx.EVT_RADIOBUTTON, self.onSTBTabs, self.rbSTBTabs)
 		self.Bind(wx.EVT_RADIOBUTTON, self.onSTBSlots, self.rbSTBSlots)
 		
@@ -309,9 +338,12 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		sz.Add(t, 1, wx.TOP, 3)
 		sz.AddSpacer(10)
 		sz.Add(sc)
+		sz.AddSpacer(10)
 		staticboxsizer.AddSpacer(10)
 		staticboxsizer.Add(sz)
 		self.Bind(wx.EVT_SPINCTRL, self.onSpinSTBCount, sc)
+		
+		staticboxsizer.AddSpacer(5)
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Tab/Slot length:")
 		sc = wx.SpinCtrl(self, wx.ID_ANY, "length", size=(50, -1))
@@ -323,11 +355,12 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		sz.Add(t, 1, wx.TOP, 3)
 		sz.AddSpacer(10)
 		sz.Add(sc)
-		staticboxsizer.AddSpacer(10)
+		sz.AddSpacer(10)
 		staticboxsizer.Add(sz)
+		staticboxsizer.AddSpacer(10)
 		self.Bind(wx.EVT_SPINCTRL, self.onSpinSTBLength, sc)
 		
-		vsizer.Add(staticboxsizer)
+		vsizer.Add(staticboxsizer, 1, wx.ALL|wx.EXPAND, 10)
 		vsizer.AddSpacer(10)
 		
 		
@@ -346,6 +379,9 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		self.cbBottomBlind = wx.CheckBox(self, wx.ID_ANY, " Bottom")
 		self.Bind(wx.EVT_CHECKBOX, self.onCheckBlind, self.cbBottomBlind)
 		v2sz.Add(self.cbBottomBlind)
+		
+		v1sz.AddSpacer(10)
+		v2sz.AddSpacer(10)
 
 		self.cbLeftBlind = wx.CheckBox(self, wx.ID_ANY, " Left")
 		self.Bind(wx.EVT_CHECKBOX, self.onCheckBlind, self.cbLeftBlind)
@@ -354,6 +390,9 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		self.Bind(wx.EVT_CHECKBOX, self.onCheckBlind, self.cbRightBlind)
 		v2sz.Add(self.cbRightBlind)
 		
+		v1sz.AddSpacer(10)
+		v2sz.AddSpacer(10)
+
 		self.cbFrontBlind = wx.CheckBox(self, wx.ID_ANY, " Front")
 		self.Bind(wx.EVT_CHECKBOX, self.onCheckBlind, self.cbFrontBlind)
 		v1sz.Add(self.cbFrontBlind)
@@ -361,11 +400,12 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		self.Bind(wx.EVT_CHECKBOX, self.onCheckBlind, self.cbBackBlind)
 		v2sz.Add(self.cbBackBlind)
 		
-		staticboxsizer.AddSpacer(20)
+		staticboxsizer.AddSpacer(30)
 		staticboxsizer.Add(v1sz)
+		staticboxsizer.AddSpacer(30)
 		staticboxsizer.Add(v2sz)
 		
-		vsizer.Add(staticboxsizer)
+		vsizer.Add(staticboxsizer, 1, wx.ALL|wx.EXPAND, 10)
 		vsizer.AddSpacer(10)
 		
 	
@@ -633,32 +673,29 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		e.Skip()
 			
 	def onTextWall(self, e):
-		print("kf: wall")
-		d = self.tcWall.GetValue()
-		try:
-			dv = float(d)
-			if dv != self.bx.Wall:
-				self.bx.setWall(dv, self.tooldiam)
-				self.tcWall.SetValue(DIMFORMAT % self.bx.Wall)
-				self.render();
-				self.setModified()
-		except:
-			self.illegalTcValue("Wall Thickness")
-			self.tcWall.SetValue(DIMFORMAT % self.bx.Wall)
+		print("txt: wall")
+		d = self.scWall.GetValue()
+		self.bx.setWall(d, self.tooldiam)
+		self.render();
+		self.setModified()
+		e.Skip()
 			
+	def onSpinWall(self, e):
+		print("spn: wall")
+		d = self.scWall.GetValue()
+		self.bx.setWall(d, self.tooldiam)
+		self.render();
+		self.setModified()
 		e.Skip()
 			
 	def onTextToolDiam(self, e):
-		d = self.tcToolDiam.GetValue()
-		try:
-			dv = float(d)
-			self.tooldiam = dv
-			self.tcToolDiam.SetValue(DIMFORMAT % self.tooldiam)
-			self.render();
-		except:
-			self.illegalTcValue("Tool Radius")
-			self.tcToolDiam.SetValue(DIMFORMAT % self.tooldiam)
+		self.tooldiam = self.scToolDiam.GetValue()
+		self.render();
+		e.Skip()
 			
+	def onSpinToolDiam(self, e):
+		self.tooldiam = self.scToolDiam.GetValue()
+		self.render();
 		e.Skip()
 			
 	def illegalTcValue(self, name):
@@ -845,7 +882,7 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		self.tcDepth.SetValue(DIMFORMAT % self.bx.Depth)
 		self.tcWidth.SetValue(DIMFORMAT % self.bx.Width)
 		self.tcHeight.SetValue(DIMFORMAT % self.bx.Height)
-		self.tcWall.SetValue(DIMFORMAT % self.bx.Wall)
+		self.scWall.SetValue(self.bx.Wall)
 		if self.bx.Relief == cncbox.NRELIEF:
 			self.rbRlfNone.SetValue(1)
 		elif self.bx.Relief == cncbox.WRELIEF:

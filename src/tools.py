@@ -27,7 +27,7 @@ class EditToolDlg(wx.Dialog):
 		vsizer = wx.BoxSizer(wx.VERTICAL)
 		vsizer.AddSpacer(20)
 
-		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.properties["diameter"], min=0.01, max=5.0, inc=0.01, size=SPINSIZE)
+		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.properties["diameter"], min=0.01, max=10.0, inc=0.01, size=SPINSIZE)
 		sc.SetValue(self.properties["diameter"])
 		sc.SetDigits(2)
 		self.scDiam = sc

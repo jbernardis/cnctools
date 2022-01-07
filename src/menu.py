@@ -1,3 +1,4 @@
+from sys import platform
 import os, wx
 import inspect
 
@@ -144,31 +145,37 @@ class MainFrame(wx.Frame):
 		self.bLine.SetToolTip("Generate G Code for a straight line")
 		szContours.Add(self.bLine)
 		self.Bind(wx.EVT_BUTTON, self.bLinePressed, self.bLine)
+		szContours.AddSpacer(5)
 		
 		self.bRect = wx.BitmapButton(boxCont, wx.ID_ANY, self.images.pngContourrectangle, size=BTNDIM)
 		self.bRect.SetToolTip("Generate G Code for a rectangle")
 		szContours.Add(self.bRect)
 		self.Bind(wx.EVT_BUTTON, self.bRectPressed, self.bRect)
+		szContours.AddSpacer(5)
 		
 		self.bCirc = wx.BitmapButton(boxCont, wx.ID_ANY, self.images.pngContourcircle, size=BTNDIM)
 		self.bCirc.SetToolTip("Generate G Code for a circle")
 		szContours.Add(self.bCirc)
 		self.Bind(wx.EVT_BUTTON, self.bCircPressed, self.bCirc)
+		szContours.AddSpacer(5)
 		
 		self.bArc = wx.BitmapButton(boxCont, wx.ID_ANY, self.images.pngContourarc, size=BTNDIM)
 		self.bArc.SetToolTip("Generate G Code for an arc")
 		szContours.Add(self.bArc)
 		self.Bind(wx.EVT_BUTTON, self.bArcPressed, self.bArc)
+		szContours.AddSpacer(5)
 		
 		self.bPolygon = wx.BitmapButton(boxCont, wx.ID_ANY, self.images.pngContourpolygon, size=BTNDIM)
 		self.bPolygon.SetToolTip("Generate G Code for a regular polygon")
 		szContours.Add(self.bPolygon)
 		self.Bind(wx.EVT_BUTTON, self.bPolygonPressed, self.bPolygon)
+		szContours.AddSpacer(5)
 		
 		self.bPolyline = wx.BitmapButton(boxCont, wx.ID_ANY, self.images.pngContourpolyline, size=BTNDIM)
 		self.bPolyline.SetToolTip("Generate G Code for an open or close path")
 		szContours.Add(self.bPolyline)
 		self.Bind(wx.EVT_BUTTON, self.bPolylinePressed, self.bPolyline)
+		szContours.AddSpacer(5)
 		
 		self.bRSlot = wx.BitmapButton(boxCont, wx.ID_ANY, self.images.pngContourroundedslot, size=BTNDIM)
 		self.bRSlot.SetToolTip("Generate G Code for a rounded slot")
@@ -176,8 +183,8 @@ class MainFrame(wx.Frame):
 		self.Bind(wx.EVT_BUTTON, self.bRSlotPressed, self.bRSlot)
 		
 		szContours.AddSpacer(10)
-		
-		bsizer.Add(szContours)
+
+		bsizer.Add(szContours, 0, wx.ALL, 5)
 		bsizer.AddSpacer(10)
 		boxCont.SetSizer(bsizer)
 		msizer.Add(boxCont, weightSingle, wx.EXPAND|wx.ALL, 10)
@@ -196,18 +203,20 @@ class MainFrame(wx.Frame):
 		self.bDrillRect.SetToolTip("Generate G Code for a rectangular drill pattern")
 		szDrills.Add(self.bDrillRect)
 		self.Bind(wx.EVT_BUTTON, self.bDrillRectPressed, self.bDrillRect)
+		szDrills.AddSpacer(5)
 		
 		self.bDrillCirc = wx.BitmapButton(boxDrills, wx.ID_ANY, self.images.pngDrillcircle, size=BTNDIM)
 		self.bDrillCirc.SetToolTip("Generate G Code for a circular drill pattern")
 		szDrills.Add(self.bDrillCirc)
 		self.Bind(wx.EVT_BUTTON, self.bDrillCircPressed, self.bDrillCirc)
+		szDrills.AddSpacer(5)
 		
 		self.bDrillLine = wx.BitmapButton(boxDrills, wx.ID_ANY, self.images.pngDrilllinear, size=BTNDIM)
 		self.bDrillLine.SetToolTip("Generate G Code for a linear drill pattern")
 		szDrills.Add(self.bDrillLine)
 		self.Bind(wx.EVT_BUTTON, self.bDrillLinePressed, self.bDrillLine)
 
-		bsizer.Add(szDrills)
+		bsizer.Add(szDrills, 0, wx.ALL, 5)
 		bsizer.AddSpacer(10)
 		boxDrills.SetSizer(bsizer)
 		msizer.Add(boxDrills, weightSingle, wx.EXPAND|wx.ALL, 10)
@@ -225,18 +234,20 @@ class MainFrame(wx.Frame):
 		self.bGrid.SetToolTip("Generate G Code for a grid pattern")
 		szCarving.Add(self.bGrid)
 		self.Bind(wx.EVT_BUTTON, self.bGridPressed, self.bGrid)
+		szCarving.AddSpacer(5)
 		
 		self.bDiamonds = wx.BitmapButton(boxCarve, wx.ID_ANY, self.images.pngCarvediamond, size=BTNDIM)
 		self.bDiamonds.SetToolTip("Generate G Code for a diamond pattern")
 		szCarving.Add(self.bDiamonds)
 		self.Bind(wx.EVT_BUTTON, self.bDiamondPressed, self.bDiamonds)
+		szCarving.AddSpacer(5)
 
 		self.bHatch = wx.BitmapButton(boxCarve, wx.ID_ANY, self.images.pngCarvehatch, size=BTNDIM)
 		self.bHatch.SetToolTip("Generate G Code for a cross-hatch pattern")
 		szCarving.Add(self.bHatch)
 		self.Bind(wx.EVT_BUTTON, self.bHatchPressed, self.bHatch)
 
-		bsizer.Add(szCarving)
+		bsizer.Add(szCarving, 0, wx.ALL, 5)
 		bsizer.AddSpacer(10)
 		boxCarve.SetSizer(bsizer)
 		msizer.Add(boxCarve, weightSingle, wx.EXPAND|wx.ALL, 10)
@@ -256,21 +267,21 @@ class MainFrame(wx.Frame):
 		szObjects.Add(self.bTichy)
 		self.Bind(wx.EVT_BUTTON, self.bTichyPressed, self.bTichy)
 		
-		szObjects.AddSpacer(10)
+		szObjects.AddSpacer(5)
 		
 		self.bBox = wx.BitmapButton(boxObject, wx.ID_ANY, self.images.pngBox, size=BTNDIM)
 		self.bBox.SetToolTip("Generate G Code for a tabbed box")
 		szObjects.Add(self.bBox)
 		self.Bind(wx.EVT_BUTTON, self.bBoxPressed, self.bBox)
 		
-		szObjects.AddSpacer(10)
+		szObjects.AddSpacer(5)
 		
 		self.bStringer = wx.BitmapButton(boxObject, wx.ID_ANY, self.images.pngStringer, size=BTNDIM)
 		self.bStringer.SetToolTip("Generate G Code for a stair stringers")
 		szObjects.Add(self.bStringer)
 		self.Bind(wx.EVT_BUTTON, self.bStringerPressed, self.bStringer)
 		
-		bsizer.Add(szObjects)
+		bsizer.Add(szObjects, 0, wx.ALL, 5)
 		bsizer.AddSpacer(10)
 		boxObject.SetSizer(bsizer)
 		msizer.Add(boxObject, weightSingle, wx.EXPAND|wx.ALL, 10)

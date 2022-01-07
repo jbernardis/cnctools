@@ -12,6 +12,47 @@ import os
 wildcard = "JSON Code (*.json)|*.json|"	 \
 		   "All files (*.*)|*.*"
 
+metricspinvals = {
+	"extradepth": [ 0.0, 5.0, 0.1, 1],
+	"feedxyg0":   [ 1, 10000, 1, 1 ],
+	"feedxyg1":   [ 1, 10000, 1, 1 ],
+	"feedzg0":    [ 1, 10000, 1, 1 ],
+	"feedzg1":    [ 1, 10000, 1, 1 ],
+	"holediam":   [ 1, 30, 0.1, 1 ],
+	"passdepth":  [ 0.1, 5.0, 0.1, 1 ],
+	"rise":       [ 0.1, 10.0, 0.1, 1 ],
+	"run":        [ 0.1, 10.0, 0.1, 1 ],
+	"safez":      [ 0.1, 5.0, 0.1, 1 ],
+	"spacing":    [ 0.1, 20, 0.1, 1 ],
+	"tooldiam":   [ 0.25, 8, 0.01, 2 ],
+	"totaldepth": [ 0.1, 8.0, 0.1, 1 ],
+}
+
+imperialspinvals = {
+	"extradepth": [ 0.0, 0.5, 0.01, 2],
+	"feedxyg0":   [ 1, 10000, 1, 1 ],
+	"feedxyg1":   [ 1, 10000, 1, 1 ],
+	"feedzg0":    [ 1, 10000, 1, 1 ],
+	"feedzg1":    [ 1, 10000, 1, 1 ],
+	"holediam":   [ 0.01, 1, 0.01, 2 ],
+	"passdepth":  [ 0.01, 0.5, 0.01, 2 ],
+	"rise":       [ 0.01, 0.5, 0.01, 2 ],
+	"run":        [ 0.01, 0.5, 0.01, 2 ],
+	"safez":      [ 0.01, 0.5, 0.01, 2 ],
+	"spacing":    [ 0.01, 1.0, 0.01, 2 ],
+	"tooldiam":   [ 0.01, 0.3, 0.01, 2 ],
+	"totaldepth": [ 0.01, 0.5, 0.01, 2 ],
+}
+
+spinvals = {
+	"angle":      [ 0, 359.9, 0.1, 1 ],
+	"holecount":  [ 1, 50, 1, 1 ],
+	"segments":   [ 1, 50, 1, 1 ],
+	"sidecount":  [ 3, 50, 1, 1 ],
+	"steps":      [ 3, 50, 1, 1 ],
+	"tracks":     [ 1, 50, 1, 1 ],
+}
+
 class CNCObject:
 	def __init__(self, parent, objectType):
 		self.parent = parent
@@ -59,6 +100,23 @@ class CNCObject:
 		self.Bind(wx.EVT_BUTTON, self.bLoadDataPressed, self.bLoadData)
 		
 		return bsz
+	
+	def getSpinValues(self, metric, fname):
+		try:
+			return spinvals[fname]
+		except KeyError:
+			pass
+		
+		if metric:
+			vals = metricspinvals
+		else:
+			vals = imperialspinvals
+			
+		try:
+			return vals[fname]
+		except KeyError:
+			print("unknown field name: (%s)" % fname)
+			return [ 0, 1, 0.1, 1 ]
 		
 	def addWidget(self, wdg, name):
 		self.widgets[name] = wdg
