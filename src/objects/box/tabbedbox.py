@@ -198,9 +198,11 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		t = wx.StaticText(self, wx.ID_ANY, "Tool Diameter: ", size=(90, -1))
 
 		vmin, vmax, vinc, digits = self.getSpinValues(self.settings.metric, "tooldiam")
+		self.databaseToolDiam = round(self.tooldiam, digits)
 		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.tooldiam, min=vmin, max=vmax, inc=vinc, size=SPINSIZE)
 		sc.SetValue(self.tooldiam)
 		sc.SetDigits(digits)
+		self.tooldiam = sc.GetValue()
 		self.scToolDiam = sc
 
 		sc.Bind(wx.EVT_TEXT, self.onTextToolDiam)
@@ -570,7 +572,6 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		self.render()
 		
 	def keyDown(self, evt):
-		print("key down")
 		evt.Skip()
 		
 	def updateFileName(self, fn):
@@ -625,7 +626,6 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		self.Layout()
 			
 	def onTextHeight(self, e):
-		print("kf: height")
 		h = self.tcHeight.GetValue()
 		try:
 			hv = float(h)
@@ -641,7 +641,6 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		e.Skip()
 			
 	def onTextWidth(self, e):
-		print("kf: width")
 		w = self.tcWidth.GetValue()
 		try:
 			wv = float(w)
@@ -657,7 +656,6 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		e.Skip()
 			
 	def onTextDepth(self, e):
-		print("kf: depth")
 		d = self.tcDepth.GetValue()
 		try:
 			dv = float(d)
@@ -673,7 +671,6 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		e.Skip()
 			
 	def onTextWall(self, e):
-		print("txt: wall")
 		d = self.scWall.GetValue()
 		self.bx.setWall(d, self.tooldiam)
 		self.render();
@@ -681,7 +678,6 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		e.Skip()
 			
 	def onSpinWall(self, e):
-		print("spn: wall")
 		d = self.scWall.GetValue()
 		self.bx.setWall(d, self.tooldiam)
 		self.render();

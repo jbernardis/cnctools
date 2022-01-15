@@ -90,5 +90,17 @@
                 "stepover": 0.75
             }
         }
+    },
+    "125": {
+        "diameter": 0.125,
+        "metric": false,
+        "name": "1/8 inch end mill",
+        "speeds": {}
+    },
+    "130": {
+        "diameter": 3.0,
+        "metric": true,
+        "name": "3mm end mill",
+        "speeds": {}
     }
 }

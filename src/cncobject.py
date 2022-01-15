@@ -24,7 +24,7 @@ metricspinvals = {
 	"run":        [ 0.1, 10.0, 0.1, 1 ],
 	"safez":      [ 0.1, 5.0, 0.1, 1 ],
 	"spacing":    [ 0.1, 20, 0.1, 1 ],
-	"tooldiam":   [ 0.25, 8, 0.01, 2 ],
+	"tooldiam":   [ 0.001, 8, 0.001, 3 ],
 	"totaldepth": [ 0.1, 8.0, 0.1, 1 ],
 }
 
@@ -40,7 +40,7 @@ imperialspinvals = {
 	"run":        [ 0.01, 0.5, 0.01, 2 ],
 	"safez":      [ 0.01, 0.5, 0.01, 2 ],
 	"spacing":    [ 0.01, 1.0, 0.01, 2 ],
-	"tooldiam":   [ 0.01, 0.3, 0.01, 2 ],
+	"tooldiam":   [ 0.001, 8, 0.001, 3 ],
 	"totaldepth": [ 0.01, 0.5, 0.01, 2 ],
 }
 
@@ -272,9 +272,9 @@ class CNCObject:
 		if self.settings.annotate:
 			code.append("({})".format(title))
 			if toolname is None:
-				code.append("(Tool diameter %6.2f %s)" % (tooldiam, "mm" if settings.metric else "in"))
+				code.append("(Tool diameter %7.3f %s)" % (tooldiam, "mm" if settings.metric else "in"))
 			else:
-				code.append("(Tool %s - diameter %6.2f %s)" % (
+				code.append("(Tool %s - diameter %7.3f %s)" % (
 					toolname, tooldiam, "mm" if settings.metric else "in"))
 
 		code.append("G90")

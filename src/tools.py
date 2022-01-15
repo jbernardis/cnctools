@@ -27,9 +27,9 @@ class EditToolDlg(wx.Dialog):
 		vsizer = wx.BoxSizer(wx.VERTICAL)
 		vsizer.AddSpacer(20)
 
-		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.properties["diameter"], min=0.01, max=10.0, inc=0.01, size=SPINSIZE)
+		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.properties["diameter"], min=0.001, max=10.0, inc=0.001, size=SPINSIZE)
 		sc.SetValue(self.properties["diameter"])
-		sc.SetDigits(2)
+		sc.SetDigits(3)
 		self.scDiam = sc
 
 		hsz = wx.BoxSizer(wx.HORIZONTAL)
@@ -251,7 +251,7 @@ class ToolsList(wx.ListCtrl):
 		elif col == 1:
 			return "%s" % self.tools.json[nm]["name"]
 		elif col == 2:
-			s = "%12.2f" % self.tools.json[nm]["diameter"]
+			s = "%12.3f" % self.tools.json[nm]["diameter"]
 			if self.tools.json[nm]["metric"]:
 				s += " mm"
 			else:

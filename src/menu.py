@@ -93,6 +93,7 @@ class MainFrame(wx.Frame):
 		self.speedInfo = self.tools.getToolSpeeds(self.settings.tool, self.settings.material, self.materials)
 		
 		self.images = Images(os.path.join(cmdFolder, "images"))
+		self.tichyImages = None
 			
 		self.CreateStatusBar()
 		
@@ -689,7 +690,10 @@ class MainFrame(wx.Frame):
 		if self.wtichy:
 			self.wtichy.SetFocus()
 		else:
-			self.wtichy = tichy.MainFrame(self.toolInfo, self.speedInfo, self)
+			if self.tichyImages is None:
+				self.tichyImages = Images(os.path.join(cmdFolder, "images", "tichy"))
+
+			self.wtichy = tichy.MainFrame(self.toolInfo, self.speedInfo, self.tichyImages, self)
 			self.wtichy.Bind(wx.EVT_CLOSE, self.tichyClose)
 			self.wtichy.Show()
 		

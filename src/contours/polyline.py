@@ -53,7 +53,7 @@ class PolyPanel(wx.Panel, CNCObject):
 
 		t = wx.StaticText(self, wx.ID_ANY, "Point List")
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.tePoints = wx.TextCtrl(self, wx.ID_ANY, "", style=wx.TE_RIGHT + wx.TE_READONLY)
+		self.tePoints = wx.TextCtrl(self, wx.ID_ANY, "[[0, 0], [10, 0]]", style=wx.TE_LEFT + wx.TE_READONLY)
 		self.addWidget(self.tePoints, "pointlist")
 		sizer.Add(self.tePoints, pos=(ln, 1), span=(1,2), flag=wx.EXPAND, border=10)
 		self.bEditPoints = wx.Button(self, wx.ID_ANY, "...", size=(30, 20))
@@ -95,6 +95,7 @@ class PolyPanel(wx.Panel, CNCObject):
 		td = self.resolveToolDiameter(toolInfo)
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		vmin, vmax, vinc, digits = self.getSpinValues(self.settings.metric, "tooldiam")
+		self.databaseToolDiam = round(td, digits)
 		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=td, min=vmin, max=vmax, inc=vinc, size=SPINSIZE)
 		sc.SetValue(td)
 		sc.SetDigits(digits)
@@ -279,6 +280,8 @@ class PolyPanel(wx.Panel, CNCObject):
 		dlg = PointListEditDialog(self, data, minVal)
 		rc = dlg.ShowModal()
 		if rc == wx.ID_OK:
+			s = str(dlg.getValues())
+			print("(%s)" % s)
 			self.tePoints.SetValue(str(dlg.getValues()))
 			self.setState(True, False)
 			
@@ -327,7 +330,7 @@ class PolyPanel(wx.Panel, CNCObject):
 		if not ValidateRange(self, stepover, 0.001, 1.0, "Stepover", "0 < x <= 1.0"):
 			return
 
-		if self.toolInfo["diameter"] == tdiam:
+		if self.databaseToolDiam == tdiam:
 			toolname = self.toolInfo["name"]
 		else:
 			toolname = None

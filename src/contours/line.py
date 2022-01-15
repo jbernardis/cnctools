@@ -123,6 +123,7 @@ class LinePanel(wx.Panel, CNCObject):
 		td = self.resolveToolDiameter(toolInfo)
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		vmin, vmax, vinc, digits = self.getSpinValues(self.settings.metric, "tooldiam")
+		self.databaseToolDiam = round(td, digits)
 		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=td, min=vmin, max=vmax, inc=vinc, size=SPINSIZE)
 		sc.SetValue(td)
 		sc.SetDigits(digits)
@@ -288,7 +289,7 @@ class LinePanel(wx.Panel, CNCObject):
 		depth = self.scTotalDepth.GetValue()
 		tdiam = self.scToolDiam.GetValue()
 			
-		if self.toolInfo["diameter"] == tdiam:
+		if self.databaseToolDiam == tdiam:
 			toolname = self.toolInfo["name"]
 		else:
 			toolname = None

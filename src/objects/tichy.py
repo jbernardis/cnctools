@@ -9,142 +9,147 @@ TYPE_RECTANGLE = 1
 TYPE_CIRCLE = 2
 TYPE_ROUNDTOP = 3
 TYPE_ARCTOP = 4
+TYPE_HALFROUND = 5
 tichyWindows = {
-	"8010": { "type": TYPE_RECTANGLE, "params": [ 13.21, 11.94 ] },
-	"8014": { "type": TYPE_RECTANGLE, "params": [ 10.92, 17.27 ] },
-	"8023": { "type": TYPE_RECTANGLE, "params": [ 9.40, 8.38 ] },
-	"8024": { "type": TYPE_RECTANGLE, "params": [ 11.68, 19.81 ] },
-	"8025": { "type": TYPE_RECTANGLE, "params": [ 9.14, 19.05 ] },
-	"8026": { "type": TYPE_RECTANGLE, "params": [ 12.95, 8.89 ] },
-	"8028": { "type": TYPE_RECTANGLE, "params": [ 9.40, 19.81 ] },
-	"8029": { "type": TYPE_RECTANGLE, "params": [ 8.64, 15.75 ] },
-	"8030": { "type": TYPE_RECTANGLE, "params": [ 10.16, 24.89 ] },
-	"8031": { "type": TYPE_RECTANGLE, "params": [ 9.65, 21.08 ] },
-	"8042": { "type": TYPE_RECTANGLE, "params": [ 16.26, 10.67 ] },
-	"8043": { "type": TYPE_RECTANGLE, "params": [ 11.43, 19.81 ] },
-	"8047": { "type": TYPE_ROUNDTOP,  "params": [ 9.65, 17.02 ] },
-	"8048": { "type": TYPE_ROUNDTOP,  "params": [ 5.59, 10.16 ] },
-	"8054": { "type": TYPE_RECTANGLE, "params": [ 13.72, 27.18 ] },
-	"8055": { "type": TYPE_ARCTOP,    "params": [ 13.72, 27.18, -2.0 ] },
-	"8056": { "type": TYPE_RECTANGLE, "params": [ 11.94, 28.19 ] },
-	"8057": { "type": TYPE_RECTANGLE, "params": [ 8.64, 28.19 ] },
-	"8061": { "type": TYPE_RECTANGLE, "params": [ 12.70, 25.40 ] },
-	"8062": { "type": TYPE_RECTANGLE, "params": [ 8.32, 18.03 ] },
-	"8063": { "type": TYPE_RECTANGLE, "params": [ 17.15, 18.03 ] },
-	"8064": { "type": TYPE_RECTANGLE, "params": [ 14.99, 16.26 ] },
-	"8065": { "type": TYPE_RECTANGLE, "params": [ 53.59, 20.32 ] },
-	"8069": { "type": TYPE_RECTANGLE, "params": [ 9.40, 19.81 ] },
-	"8070": { "type": TYPE_RECTANGLE, "params": [ 19.05, 19.94 ] },
-	"8071": { "type": TYPE_RECTANGLE, "params": [ 11.56, 15.49 ] },
-	"8072": { "type": TYPE_ARCTOP,    "params": [ 9.91, 18.03, -2.0 ] },
-	"8074": { "type": TYPE_RECTANGLE, "params": [ 12.70, 3.86 ] },
-	"8088": { "type": TYPE_RECTANGLE, "params": [ 11.18, 24.89 ] },
-	"8089": { "type": TYPE_RECTANGLE, "params": [ 16.51, 13.46 ] },
-	"8090": { "type": TYPE_RECTANGLE, "params": [ 11.18, 19.81 ] },
-	"8094": { "type": TYPE_RECTANGLE, "params": [ 29.97, 27.94 ] },
-	"8095": { "type": TYPE_RECTANGLE, "params": [ 20.07, 27.94 ] },
-	"8096": { "type": TYPE_RECTANGLE, "params": [ 9.78, 27.94 ] },
-	"8097": { "type": TYPE_RECTANGLE, "params": [ 9.40, 20.96 ] },
-	"8098": { "type": TYPE_RECTANGLE, "params": [ 19.94, 21.08 ] },
-	"8100": { "type": TYPE_RECTANGLE, "params": [ 13.46, 41.40 ] },
-	"8102": { "type": TYPE_RECTANGLE, "params": [ 12.70, 25.40 ] },
-	"8103": { "type": TYPE_RECTANGLE, "params": [ 19.05, 19.05 ] },
-	"8104": { "type": TYPE_RECTANGLE, "params": [ 28.96, 19.05 ] },
-	"8105": { "type": TYPE_RECTANGLE, "params": [ 9.14, 14.73 ] },
-	"8106": { "type": TYPE_RECTANGLE, "params": [ 19.05, 14.73 ] },
-	"8113": { "type": TYPE_ROUNDTOP,  "params": [ 8.64, 20.96 ] },
-	"8126": { "type": TYPE_RECTANGLE, "params": [ 20.57, 24.89 ] },
-	"8127": { "type": TYPE_RECTANGLE, "params": [ 31.12, 24.89 ] },
-	"8131": { "type": TYPE_RECTANGLE, "params": [ 9.14, 19.81 ] },
-	"8136": { "type": TYPE_RECTANGLE, "params": [ 10.16, 19.05 ] },
-	"8137": { "type": TYPE_RECTANGLE, "params": [ 24.26, 19.30 ] },
-	"8138": { "type": TYPE_RECTANGLE, "params": [ 23.50, 25.40 ] },
-	"8139": { "type": TYPE_RECTANGLE, "params": [ 9.91, 12.70 ] },
-	"8149": { "type": TYPE_CIRCLE,    "params": [ 10.54 ] },
-	"8153": { "type": TYPE_RECTANGLE, "params": [ 9.78, 20.57 ] },
-	"8157": { "type": TYPE_RECTANGLE, "params": [ 11.94, 27.94 ] },
-	"8159": { "type": TYPE_RECTANGLE, "params": [ 23.88, 19.81 ] },
-	"8161": { "type": TYPE_RECTANGLE, "params": [ 36.07, 19.81 ] },
-	"8163": { "type": TYPE_RECTANGLE, "params": [ 11.68, 25.91 ] },
-	"8200": { "type": TYPE_ROUNDTOP,  "params": [ 8.51, 17.65 ] },
-	"8201": { "type": TYPE_RECTANGLE, "params": [ 9.40, 21.34 ] },
-	"8202": { "type": TYPE_ROUNDTOP,  "params": [ 8.64, 23.11 ] },
-	"8203": { "type": TYPE_ROUNDTOP,  "params": [ 8.64, 11.18 ] },
-	"8205": { "type": TYPE_ROUNDTOP,  "params": [ 8.64, 20.96 ] },
-	"8217": { "type": TYPE_RECTANGLE, "params": [ 10.16, 17.53 ] },
-	"8218": { "type": TYPE_RECTANGLE, "params": [ 8.64, 15.24 ] },
-	"8236": { "type": TYPE_RECTANGLE, "params": [ 6.35, 17.40 ] },
-	"8237": { "type": TYPE_RECTANGLE, "params": [ 8.89, 17.40 ] },
-	"8238": { "type": TYPE_RECTANGLE, "params": [ 6.35, 17.40 ] },
-	"8239": { "type": TYPE_RECTANGLE, "params": [ 8.89, 17.40 ] },
-	"8240": { "type": TYPE_RECTANGLE, "params": [ 9.65, 20.57 ] },
-	"8241": { "type": TYPE_RECTANGLE, "params": [ 10.29, 20.57 ] },
-	"8242": { "type": TYPE_RECTANGLE, "params": [ 6.35, 12.70 ] },
-	"8243": { "type": TYPE_RECTANGLE, "params": [ 14.22, 8.64 ] },
-	"8244": { "type": TYPE_RECTANGLE, "params": [ 9.53, 23.75 ] },
-	"8245": { "type": TYPE_RECTANGLE, "params": [ 13.34, 23.75 ] },
-	"8250": { "type": TYPE_RECTANGLE, "params": [ 9.78, 16.26 ] },
-	"8251": { "type": TYPE_RECTANGLE, "params": [ 8.00, 22.48 ] },
-	"8301": { "type": TYPE_RECTANGLE, "params": [ 11.18, 25.40 ] },
-	"8302": { "type": TYPE_RECTANGLE, "params": [ 11.43, 22.73 ] },
-	"8303": { "type": TYPE_RECTANGLE, "params": [ 11.43, 13.59 ] },
-	"8304": { "type": TYPE_RECTANGLE, "params": [ 6.73, 9.27 ] },
-	"8305": { "type": TYPE_RECTANGLE, "params": [ 6.22, 6.22 ] },
-	"8306": { "type": TYPE_RECTANGLE, "params": [ 10.16, 9.27 ] },
-	"8323": { "type": TYPE_RECTANGLE, "params": [ 8.00, 11.05 ] },
+	"8010": { "type": TYPE_RECTANGLE, "params": [ 13.21, 11.94 ], "desc": "6 LITE WINDOW" },
+	"8014": { "type": TYPE_RECTANGLE, "params": [ 10.92, 17.27 ], "desc": "4/4 DOUBLE HUNG WINDOW" },
+	"8023": { "type": TYPE_RECTANGLE, "params": [ 9.40, 8.38 ], "desc": "6 LITE ATTIC WINDOW" },
+	"8024": { "type": TYPE_RECTANGLE, "params": [ 11.68, 19.81 ], "desc": "6/6 DOUBLE HUNG WINDOW" },
+	"8025": { "type": TYPE_RECTANGLE, "params": [ 9.14, 19.05 ], "desc": "2/2 DOUBLE HUNG WINDOW" },
+	"8026": { "type": TYPE_RECTANGLE, "params": [ 12.95, 8.89 ], "desc": "6 LITE WINDOW" },
+	"8028": { "type": TYPE_RECTANGLE, "params": [ 9.40, 19.81 ], "desc": "4/4 DOUBLE HUNG WINDOW" },
+	"8029": { "type": TYPE_RECTANGLE, "params": [ 8.64, 15.75 ], "desc": "4/4 DOUBLE HUNG WINDOW" },
+	"8030": { "type": TYPE_RECTANGLE, "params": [ 10.16, 24.89 ], "desc": "4/4 DOUBLE HUNG WINDOW" },
+	"8031": { "type": TYPE_RECTANGLE, "params": [ 9.65, 21.08 ], "desc": "2/2 DOUBLE HUNG WINDOW" },
+	"8042": { "type": TYPE_RECTANGLE, "params": [ 16.26, 10.67 ], "desc": "HORIZONTAL SLIDER" },
+	"8043": { "type": TYPE_RECTANGLE, "params": [ 11.43, 19.81 ], "desc": "2/2 DOUBLE HUNG WINDOW" },
+	"8047": { "type": TYPE_ROUNDTOP,  "params": [ 9.65, 17.02 ], "desc": "ROUND TOP WINDOW" },
+	"8048": { "type": TYPE_ROUNDTOP,  "params": [ 5.59, 10.16 ], "desc": "ROUND TOP WINDOW" },
+	"8054": { "type": TYPE_RECTANGLE, "params": [ 13.72, 27.18 ], "desc": "9/9 DOUBLE HUNG WINDOW" },
+	"8055": { "type": TYPE_ARCTOP,    "params": [ 13.72, 27.18, -2.0 ], "desc": "9/9 DOUBLE HUNG ARCH TOP WINDOW" },
+	"8056": { "type": TYPE_RECTANGLE, "params": [ 11.94, 28.19 ], "desc": "9/9 DOUBLE HUNG WINDOW" },
+	"8057": { "type": TYPE_RECTANGLE, "params": [ 8.64, 28.19 ], "desc": "6/6 DOUBLE HUNG WINDOW" },
+	"8061": { "type": TYPE_RECTANGLE, "params": [ 12.70, 25.40 ], "desc": "2/2 DOUBLE HUNG WINDOW" },
+	"8062": { "type": TYPE_RECTANGLE, "params": [ 8.32, 18.03 ], "desc": "2/2 DOUBLE HUNG WINDOW" },
+	"8063": { "type": TYPE_RECTANGLE, "params": [ 17.15, 18.03 ], "desc": "2/2 DOUBLE UNIT DBL HUNG WINDOW" },
+	"8064": { "type": TYPE_RECTANGLE, "params": [ 14.99, 16.26 ], "desc": "4/4 DBL HUNG TWO UNIT WINDOW" },
+	"8065": { "type": TYPE_RECTANGLE, "params": [ 53.59, 20.32 ], "desc": "4/4 DBL HUNG SIX UNIT WINDOW" },
+	"8067": { "type": TYPE_RECTANGLE, "params": [ 9.4, 9.14 ], "desc": "WORK CAR WINDOW" },
+	"8068": { "type": TYPE_RECTANGLE, "params": [ 6.6, 9.4 ], "desc": "WORK CAR WINDOW" },
+	"8069": { "type": TYPE_RECTANGLE, "params": [ 9.40, 19.81 ], "desc": "4/4 DBL HUNG OPEN WINDOWS" },
+	"8070": { "type": TYPE_RECTANGLE, "params": [ 19.05, 19.94 ], "desc": "4/4 DBL HUNG TWO UNIT WINDOW" },
+	"8071": { "type": TYPE_RECTANGLE, "params": [ 11.56, 15.49 ], "desc": "8/8 DBL HUNG WINDOW" },
+	"8072": { "type": TYPE_ARCTOP,    "params": [ 9.91, 18.03, -2.0 ], "desc": "2/2 ARCH TOP WINDOW" },
+	"8074": { "type": TYPE_RECTANGLE, "params": [ 12.70, 3.86 ], "desc": "2 PANE SMALL WINDOW" },
+	"8088": { "type": TYPE_RECTANGLE, "params": [ 11.18, 24.89 ], "desc": "4/4 DBL HUNG ADJUSTABLE SASH" },
+	"8089": { "type": TYPE_RECTANGLE, "params": [ 16.51, 13.46 ], "desc": "HORIZONTAL SLIDER WITH ADJUSTABLE SASH" },
+	"8090": { "type": TYPE_RECTANGLE, "params": [ 11.18, 19.81 ], "desc": "6 PANE WINDOW WITH 2 PANE TILT OUT TOP SASH" },
+	"8094": { "type": TYPE_RECTANGLE, "params": [ 29.97, 27.94 ], "desc": "1/1 TRIPLE UNIT WINDOW" },
+	"8095": { "type": TYPE_RECTANGLE, "params": [ 20.07, 27.94 ], "desc": "1/1 DOUBLE UNIT WINDOW" },
+	"8096": { "type": TYPE_RECTANGLE, "params": [ 9.78, 27.94 ], "desc": "1/1 DOUBLE HUNG WINDOW" },
+	"8097": { "type": TYPE_RECTANGLE, "params": [ 9.40, 20.96 ], "desc": "1/1 DOUBLE HUNG WINDOW" },
+	"8098": { "type": TYPE_RECTANGLE, "params": [ 19.94, 21.08 ], "desc": "2/2 DOUBLE UNIT DBL HUNG WINDOW" },
+	"8100": { "type": TYPE_RECTANGLE, "params": [ 13.46, 41.40 ], "desc": "27 PANE WINDOW" },
+	"8102": { "type": TYPE_RECTANGLE, "params": [ 12.70, 25.40 ], "desc": "SINGLE SASH WINDOW" },
+	"8103": { "type": TYPE_RECTANGLE, "params": [ 19.05, 19.05 ], "desc": "DOUBLE 2/2 DBL HUNG WINDOW" },
+	"8104": { "type": TYPE_RECTANGLE, "params": [ 28.96, 19.05 ], "desc": "#8104 TRIPLE 2/2 DBL HUNG WINDOW" },
+	"8105": { "type": TYPE_RECTANGLE, "params": [ 9.14, 14.73 ], "desc": "2/2 DOUBLE HUNG WINDOW" },
+	"8106": { "type": TYPE_RECTANGLE, "params": [ 19.05, 14.73 ], "desc": "DOUBLE 2/2 DBL HUNG WINDOW" },
+	"8113": { "type": TYPE_ROUNDTOP,  "params": [ 8.64, 20.96 ], "desc": "ROUND TOP WINDOW" },
+	"8126": { "type": TYPE_RECTANGLE, "params": [ 20.57, 24.89 ], "desc": "4/4 DBL HUNG DBL UNIT WINDOW" },
+	"8127": { "type": TYPE_RECTANGLE, "params": [ 31.12, 24.89 ], "desc": "4/4 TRIPLE UNIT WINDOW" },
+	"8131": { "type": TYPE_RECTANGLE, "params": [ 9.14, 19.81 ], "desc": "4/4 DOUBLE HUNG WINDOW" },
+	"8136": { "type": TYPE_RECTANGLE, "params": [ 10.16, 19.05 ], "desc": "12/12 DOUBLE HUNG WINDOW" },
+	"8137": { "type": TYPE_RECTANGLE, "params": [ 24.26, 19.30 ], "desc": "4/4 DBL HUNG DBL UNIT WINDOW" },
+	"8138": { "type": TYPE_RECTANGLE, "params": [ 23.50, 25.40 ], "desc": "2/2 STOREFRONT WINDOW" },
+	"8139": { "type": TYPE_RECTANGLE, "params": [ 9.91, 12.70 ], "desc": "DOUBLE CASEMENT WINDOW" },
+	"8149": { "type": TYPE_CIRCLE,    "params": [ 10.54 ], "desc": "ROUND WINDOW" },
+	"8153": { "type": TYPE_RECTANGLE, "params": [ 9.78, 20.57 ], "desc": "6/6 DOUBLE HUNG WINDOW" },
+	"8157": { "type": TYPE_RECTANGLE, "params": [ 11.94, 27.94 ], "desc": "18 PANE TOP TILT OUT INDUSTRIAL WINDOW" },
+	"8159": { "type": TYPE_RECTANGLE, "params": [ 23.88, 19.81 ], "desc": "#8159 6/6 DOUBLE HUNG DOUBLE UNIT WINDOW" },
+	"8161": { "type": TYPE_RECTANGLE, "params": [ 36.07, 19.81 ], "desc": "#8161 6/6 DOUBLE HUNG TRIPLE UNIT WINDOW" },
+	"8163": { "type": TYPE_RECTANGLE, "params": [ 11.68, 25.91 ], "desc": "CENTER TILTING INDUSTRIAL WINDOW" },
+	"8200": { "type": TYPE_ROUNDTOP,  "params": [ 8.51, 17.65 ], "desc": "1/1 ROUND TOP WINDOW" },
+	"8201": { "type": TYPE_RECTANGLE, "params": [ 9.40, 21.34 ], "desc": "1/1 DOUBLE HUNG WINDOW" },
+	"8202": { "type": TYPE_ROUNDTOP,  "params": [ 8.64, 23.11 ], "desc": "4/4 ROUND TOP WINDOW" },
+	"8203": { "type": TYPE_ROUNDTOP,  "params": [ 8.64, 11.18 ], "desc": "4 PANE ROUND TOP WINDOW" },
+	"8205": { "type": TYPE_ROUNDTOP,  "params": [ 8.64, 20.96 ], "desc": "4/4 ROUND TOP WINDOW" },
+	"8217": { "type": TYPE_RECTANGLE, "params": [ 10.16, 17.53 ], "desc": "6/6 DOUBLE HUNG WINDOW" },
+	"8218": { "type": TYPE_RECTANGLE, "params": [ 8.64, 15.24 ], "desc": "2/1 DOUBLE HUNG WINDOW" },
+	"8229": { "type": TYPE_RECTANGLE, "params": [ 9.4, 5.33 ], "desc": "WORK CAR WINDOW" },
+	"8236": { "type": TYPE_RECTANGLE, "params": [ 6.35, 17.40 ], "desc": "1/1 DOUBLE HUNG WINDOW" },
+	"8237": { "type": TYPE_RECTANGLE, "params": [ 8.89, 17.40 ], "desc": "1/1 DOUBLE HUNG WINDOW" },
+	"8238": { "type": TYPE_RECTANGLE, "params": [ 6.35, 17.40 ], "desc": "1/1 DOUBLE HUNG WINDOW" },
+	"8239": { "type": TYPE_RECTANGLE, "params": [ 8.89, 17.40 ], "desc": "1/1 DOUBLE HUNG WINDOW" },
+	"8240": { "type": TYPE_RECTANGLE, "params": [ 9.65, 20.57 ], "desc": "1/1 DOUBLE HUNG WINDOW" },
+	"8241": { "type": TYPE_RECTANGLE, "params": [ 10.29, 20.57 ], "desc": "1/1 DOUBLE HUNG WINDOW" },
+	"8242": { "type": TYPE_RECTANGLE, "params": [ 6.35, 12.70 ], "desc": "1/1 DOUBLE HUNG WINDOW" },
+	"8243": { "type": TYPE_RECTANGLE, "params": [ 14.22, 8.64 ], "desc": "3 PANE HORIZONTAL WINDOW" },
+	"8244": { "type": TYPE_RECTANGLE, "params": [ 9.53, 23.75 ], "desc": "1/1 DOUBLE HUNG WINDOW" },
+	"8245": { "type": TYPE_RECTANGLE, "params": [ 13.34, 23.75 ], "desc": "1/1 DOUBLE HUNG WINDOW" },
+	"8250": { "type": TYPE_RECTANGLE, "params": [ 9.78, 16.26 ], "desc": "1/1 DOUBLE HUNG WINDOW" },
+	"8251": { "type": TYPE_RECTANGLE, "params": [ 8.00, 22.48 ], "desc": "1/1 DOUBLE HUNG WINDOW" },
+	"8301": { "type": TYPE_RECTANGLE, "params": [ 11.18, 25.40 ], "desc": "DURANGO STATION WINDOW" },
+	"8302": { "type": TYPE_RECTANGLE, "params": [ 11.43, 22.73 ], "desc": "RGS STATION WINDOW" },
+	"8303": { "type": TYPE_RECTANGLE, "params": [ 11.43, 13.59 ], "desc": "2 PANE PEAKED WINDOW" },
+	"8304": { "type": TYPE_RECTANGLE, "params": [ 6.73, 9.27 ], "desc": "VICTORIAN ATTIC WINDOW" },
+	"8305": { "type": TYPE_RECTANGLE, "params": [ 6.22, 6.22 ], "desc": "SHED/ATTIC WINDOW" },
+	"8306": { "type": TYPE_RECTANGLE, "params": [ 10.16, 9.27 ], "desc": "6 LITE WINDOW" },
+	"8323": { "type": TYPE_RECTANGLE, "params": [ 8.00, 11.05 ], "desc": "6 PANE WINDOW" },
 }
 
 tichyDoors = {
-	"8009": { "type": TYPE_RECTANGLE, "params": [ 9.65, 23.88 ] },
-	"8015": { "type": TYPE_RECTANGLE, "params": [ 21.59, 24.89 ] },
-	"8022": { "type": TYPE_ARCTOP,    "params": [ 24.38, 34.29, -13.9 ] },
-	"8032": { "type": TYPE_RECTANGLE, "params": [ 10.16, 24.38 ] },
-	"8033": { "type": TYPE_RECTANGLE, "params": [ 9.65, 29.46 ] },
-	"8038": { "type": TYPE_RECTANGLE, "params": [ 30.48, 34.54 ] },
-	"8049": { "type": TYPE_RECTANGLE, "params": [ 11.18, 23.88 ] },
-	"8050": { "type": TYPE_RECTANGLE, "params": [ 11.18, 23.88 ] },
-	"8053": { "type": TYPE_RECTANGLE, "params": [ 28.45, 28.45 ] },
-	"8066": { "type": TYPE_RECTANGLE, "params": [ 27.94, 27.18 ] },
-	"8108": { "type": TYPE_RECTANGLE, "params": [ 12.70, 17.78 ] },
-	"8111": { "type": TYPE_RECTANGLE, "params": [ 22.23, 34.54 ] },
-	"8112": { "type": TYPE_RECTANGLE, "params": [ 14.48, 33.02 ] },
-	"8116": { "type": TYPE_RECTANGLE, "params": [ 11.94, 29.85 ] },
-	"8118": { "type": TYPE_RECTANGLE, "params": [ 12.70, 34.29 ] },
-	"8119": { "type": TYPE_RECTANGLE, "params": [ 12.70, 34.29 ] },
-	"8121": { "type": TYPE_RECTANGLE, "params": [ 27.31, 38.86 ] },
-	"8124": { "type": TYPE_RECTANGLE, "params": [ 16.76, 24.77 ] },
-	"8125": { "type": TYPE_RECTANGLE, "params": [ 24.13, 32.77 ] },
-	"8130": { "type": TYPE_RECTANGLE, "params": [ 11.43, 29.21 ] },
-	"8132": { "type": TYPE_RECTANGLE, "params": [ 10.67, 33.27 ] },
-	"8140": { "type": TYPE_RECTANGLE, "params": [ 19.30, 33.53 ] },
-	"8150": { "type": TYPE_RECTANGLE, "params": [ 10.54, 24.26 ] },
-	"8151": { "type": TYPE_RECTANGLE, "params": [ 20.07, 24.13 ] },
-	"8189": { "type": TYPE_RECTANGLE, "params": [ 24.51, 34.54 ] },
-	"8190": { "type": TYPE_RECTANGLE, "params": [ 24.51, 34.54 ] },
-	"8191": { "type": TYPE_RECTANGLE, "params": [ 11.94, 25.02 ] },
-	"8192": { "type": TYPE_RECTANGLE, "params": [ 22.23, 25.07 ] },
-	"8194": { "type": TYPE_RECTANGLE, "params": [ 11.68, 29.92 ] },
-	"8195": { "type": TYPE_RECTANGLE, "params": [ 11.68, 24.89 ] },
-	"8196": { "type": TYPE_RECTANGLE, "params": [ 11.68, 29.92 ] },
-	"8197": { "type": TYPE_RECTANGLE, "params": [ 11.68, 24.89 ] },
-	"8198": { "type": TYPE_RECTANGLE, "params": [ 22.23, 24.89 ] },
-	"8199": { "type": TYPE_RECTANGLE, "params": [ 22.23, 24.89 ] },
-	"8324": { "type": TYPE_RECTANGLE, "params": [ 8.00, 23.75 ] },
+	"8009": { "type": TYPE_RECTANGLE, "params": [ 9.65, 23.88 ], "desc": "4 LITE DOOR" },
+	"8015": { "type": TYPE_RECTANGLE, "params": [ 21.59, 24.89 ], "desc": "DOUBLE STEEL DOOR" },
+	"8022": { "type": TYPE_ARCTOP,    "params": [ 24.38, 34.29, -13.9 ], "desc": "FREIGHT DOOR" },
+	"8032": { "type": TYPE_RECTANGLE, "params": [ 10.16, 24.38 ], "desc": "4 PANEL DOOR" },
+	"8033": { "type": TYPE_RECTANGLE, "params": [ 9.65, 29.46 ], "desc": "4 LITE DOOR & TRANSOM" },
+	"8038": { "type": TYPE_RECTANGLE, "params": [ 30.48, 34.54 ], "desc": "BAGGAGE DOOR" },
+	"8049": { "type": TYPE_RECTANGLE, "params": [ 11.18, 23.88 ], "desc": "4 PANEL DOOR" },
+	"8050": { "type": TYPE_RECTANGLE, "params": [ 11.18, 23.88 ], "desc": "2 LITE DOOR" },
+	"8053": { "type": TYPE_RECTANGLE, "params": [ 28.45, 28.45 ], "desc": "BAGGAGE DOOR" },
+	"8066": { "type": TYPE_RECTANGLE, "params": [ 27.94, 27.18 ], "desc": "LOADING DOCK DOOR" },
+	"8108": { "type": TYPE_RECTANGLE, "params": [ 12.70, 17.78 ], "desc": "4 PANEL UTILITY DOOR" },
+	"8111": { "type": TYPE_RECTANGLE, "params": [ 22.23, 34.54 ], "desc": "DOUBLE DOOR WITH TRANSOM" },
+	"8112": { "type": TYPE_RECTANGLE, "params": [ 14.48, 33.02 ], "desc": "DOOR WITH IRON SHUTTERS" },
+	"8116": { "type": TYPE_RECTANGLE, "params": [ 11.94, 29.85 ], "desc": "RESIDENTIAL DOOR" },
+	"8118": { "type": TYPE_RECTANGLE, "params": [ 12.70, 34.29 ], "desc": "FACTORY DOOR 8118" },
+	"8119": { "type": TYPE_RECTANGLE, "params": [ 12.70, 34.29 ], "desc": "FACTORY DOOR" },
+	"8121": { "type": TYPE_RECTANGLE, "params": [ 27.31, 38.86 ], "desc": "DOUBLE DOOR WITH TRANSOM" },
+	"8124": { "type": TYPE_RECTANGLE, "params": [ 16.76, 24.77 ], "desc": "DOUBLE 5 PANEL DOOR" },
+	"8125": { "type": TYPE_RECTANGLE, "params": [ 24.13, 32.77 ], "desc": "FREIGHT DOOR/TRANSOM" },
+	"8130": { "type": TYPE_RECTANGLE, "params": [ 11.43, 29.21 ], "desc": "RESIDENTIAL DOOR/TRANSOM" },
+	"8132": { "type": TYPE_RECTANGLE, "params": [ 10.67, 33.27 ], "desc": "6 LITE DOOR & TRANSOM" },
+	"8140": { "type": TYPE_RECTANGLE, "params": [ 19.30, 33.53 ], "desc": "DOUBLE DOOR WITH TRANSOM & IRON SHUTTERS" },
+	"8150": { "type": TYPE_RECTANGLE, "params": [ 10.54, 24.26 ], "desc": "6 LITE DOOR" },
+	"8151": { "type": TYPE_RECTANGLE, "params": [ 20.07, 24.13 ], "desc": "DOUBLE 6 LITE DOOR" },
+	"8189": { "type": TYPE_RECTANGLE, "params": [ 24.51, 34.54 ], "desc": "DOUBLE DOOR & FRAME" },
+	"8190": { "type": TYPE_RECTANGLE, "params": [ 24.51, 34.54 ], "desc": "DOUBLE DOOR & MASONRY FRAME" },
+	"8191": { "type": TYPE_RECTANGLE, "params": [ 11.94, 25.02 ], "desc": "DOOR & FRAME" },
+	"8192": { "type": TYPE_RECTANGLE, "params": [ 22.23, 25.07 ], "desc": "DOUBLE DOOR & FRAME" },
+	"8194": { "type": TYPE_RECTANGLE, "params": [ 11.68, 29.92 ], "desc": "GLASS DOOR & FRAME" },
+	"8195": { "type": TYPE_RECTANGLE, "params": [ 11.68, 24.89 ], "desc": "GLASS DOOR & FRAME" },
+	"8196": { "type": TYPE_RECTANGLE, "params": [ 11.68, 29.92 ], "desc": "5 PANEL DOOR & FRAME" },
+	"8197": { "type": TYPE_RECTANGLE, "params": [ 11.68, 24.89 ], "desc": "5 PANEL DOOR & FRAME" },
+	"8198": { "type": TYPE_RECTANGLE, "params": [ 22.23, 24.89 ], "desc": "DOUBLE GLASS DOOR & FRAME" },
+	"8199": { "type": TYPE_RECTANGLE, "params": [ 22.23, 24.89 ], "desc": "DOUBLE 5 PANEL DOOR & FRAME" },
+	"8324": { "type": TYPE_RECTANGLE, "params": [ 8.00, 23.75 ], "desc": "6 LITE DOOR HO" },
 }
 
 margin = 0.5
 
 class MainFrame(wx.Frame):
-	def __init__(self, toolInfo, speedInfo, parent):
+	def __init__(self, toolInfo, speedInfo, tichyImages, parent):
 		self.parent = parent
 		self.settings = parent.settings
 		self.images = self.parent.images
+		self.tichyImages = tichyImages
 		
 		wx.Frame.__init__(self, None, size=(480, 800), title="")
 		self.Bind(wx.EVT_CLOSE, self.onClose)
 
 		sizer = wx.BoxSizer(wx.HORIZONTAL)		
-		self.panel = TichyPanel(toolInfo, speedInfo, self)
+		self.panel = TichyPanel(toolInfo, speedInfo, tichyImages, self)
 		sizer.Add(self.panel)
 		
 		self.SetSizer(sizer)
@@ -159,7 +164,7 @@ class MainFrame(wx.Frame):
 
 class TichyPanel(wx.Panel, CNCObject):
 	seqNo = 1
-	def __init__(self, toolInfo, speedInfo, parent):
+	def __init__(self, toolInfo, speedInfo, tichyImages, parent):
 		CNCObject.__init__(self, parent, "object:tichy")
 		self.toolInfo = toolInfo
 		
@@ -167,6 +172,7 @@ class TichyPanel(wx.Panel, CNCObject):
 		self.unsaved = False
 		self.viewTitle = "Tichy %d" % TichyPanel.seqNo
 		self.titleText = "G Code Generator: %s" % self.viewTitle
+		self.tichyImages = tichyImages
 		TichyPanel.seqNo += 1
 		
 		wx.Panel.__init__(self, parent, wx.ID_ANY, style=wx.TAB_TRAVERSAL)
@@ -177,6 +183,15 @@ class TichyPanel(wx.Panel, CNCObject):
 		
 		self.setTitleFlag()
 
+		t = wx.StaticText(self, wx.ID_ANY, "Tichy Category")
+		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		sizer.Add(self.getTichyCategories(), pos=(ln, 1), border=5, flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_VERTICAL)	
+
+		
+		self.bmpTichyImage = wx.StaticBitmap(self, wx.ID_ANY, size=(75,75))
+		sizer.Add(self.bmpTichyImage, pos=(ln, 2), span=(1,2), flag=wx.ALIGN_CENTER_VERTICAL+wx.ALIGN_CENTER_HORIZONTAL, border=20)	
+		ln += 1	
+		
 		t = wx.StaticText(self, wx.ID_ANY, "Tichy Part Number")
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		
@@ -192,6 +207,9 @@ class TichyPanel(wx.Panel, CNCObject):
 		st = wx.StaticText(self, wx.ID_ANY, "")
 		sizer.Add(st, pos=(ln, 2), span=(1, 2), flag=wx.LEFT, border=20)
 		self.stInfo = st
+		ln += 1
+		
+		sizer.Add(20, 20, wx.GBPosition(ln, 0))
 		ln += 1
 
 		t = wx.StaticText(self, wx.ID_ANY, "Start X")
@@ -228,6 +246,7 @@ class TichyPanel(wx.Panel, CNCObject):
 		td = self.resolveToolDiameter(toolInfo)
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		vmin, vmax, vinc, digits = self.getSpinValues(self.settings.metric, "tooldiam")
+		self.databaseToolDiam = round(td, digits)
 		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=td, min=vmin, max=vmax, inc=vinc, size=SPINSIZE)
 		sc.SetValue(td)
 		sc.SetDigits(digits)
@@ -350,12 +369,20 @@ class TichyPanel(wx.Panel, CNCObject):
 		self.Bind(wx.EVT_TEXT, self.onChange)
 		self.Bind(wx.EVT_RADIOBUTTON, self.onChange)
 		self.Bind(wx.EVT_SPINCTRL, self.onChange)
+		for rb in self.rbTichyCat:
+			self.Bind(wx.EVT_RADIOBUTTON, self.onTichyCategory, rb)
 		
-		self.enableStartingPoints()
+		self.updateTichyDisplay()
 		
 		self.SetSizer(sizer)
 		self.Layout()
 		self.Fit();
+		
+	def onTichyCategory(self, evt):
+		rb = evt.GetEventObject()
+		l = rb.GetLabel().strip()
+		print(l)
+
 		
 	def getTichyPartType(self, cbv):
 		if cbv in tichyWindows.keys():
@@ -384,22 +411,10 @@ class TichyPanel(wx.Panel, CNCObject):
 			self.startPoints.append([labels[i], r])
 		return sz
 		
-	def enableStartingPoints(self):
+	def updateTichyDisplay(self):
 		cbv = self.cbTichyPart.GetValue()
 		tp = self.getTichyPartType(cbv)
 		p = self.getTichyPartParams(cbv)
-		if tp == TYPE_RECTANGLE:
-			info = "Rectangle %6.2fw x %6.2fh" % (p[0], p[1])
-		elif tp == TYPE_ROUNDTOP:
-			info = "Round Top %6.2fw x %6.2fh" % (p[0], p[1])
-		elif tp == TYPE_ARCTOP:
-			info = "Arc Top %6.2fw x %6.2fh y offset %6.2f" % (p[0], p[1], p[2])
-		elif tp == TYPE_CIRCLE:
-			info = "Circle diameter %6.2f" % p[0]
-		else:
-			info = ""
-			
-		self.stInfo.SetLabel(info)
 		
 		for l, r in self.startPoints:
 			if l != "Center":
@@ -408,9 +423,43 @@ class TichyPanel(wx.Panel, CNCObject):
 				else:
 					r.Enable(True)
 			else:
-				if l == "Center":
-					if tp == TYPE_CIRCLE:
-						r.SetValue(True)
+				if tp == TYPE_CIRCLE:
+					r.SetValue(True)
+
+		p0 = p[0] if self.settings.metric else p[0]/25.4
+		try:
+			p1 = p[1] if self.settings.metric else p[1]/25.4
+		except:
+			p1 = 0
+		try:
+			p2 = p[2] if self.settings.metric else p[2]/25.4
+		except:
+			p2 = 0
+			
+		if self.settings.metric:
+			units = "mm"
+		else:
+			units = "in"
+
+		if tp == TYPE_RECTANGLE:
+			info = "Rectangle %6.2f %s w x %6.2f %s h" % (p0, units, p1, units)
+		elif tp == TYPE_ROUNDTOP:
+			info = "Round Top %6.2f %s w x %6.2f %s h" % (p0, units, p1, units)
+		elif tp == TYPE_ARCTOP:
+			info = "Arc Top %6.2f %s w x %6.2f %s h,  y offset %6.2f %s" % (p0, units, p1, units, p2, units)
+		elif tp == TYPE_CIRCLE:
+			info = "Circle diameter %6.2f %s" % (p0, units)
+		else:
+			info = ""
+			
+		self.stInfo.SetLabel(info)
+		bmp = self.tichyImages.getByName(cbv)
+		if bmp is None:
+			# no image found - clear the bitmap display
+			bmp = wx.Bitmap(1,1)
+			bmp.SetMaskColour('black')
+			
+		self.bmpTichyImage.SetBitmap(bmp)
 	
 	def getCuttingDirection(self):
 		labels = ["Clockwise", "Counter Clockwise"]
@@ -426,6 +475,21 @@ class TichyPanel(wx.Panel, CNCObject):
 			sz.Add(r)
 			self.rbCutDir.append(r)
 		return sz
+	
+	def getTichyCategories(self):
+		labels = ["Framed windows", "Doors"]
+		self.rbTichyCat = []
+		sz = wx.BoxSizer(wx.VERTICAL)
+		for i in range(len(labels)):
+			if i == 0:
+				style = wx.RB_GROUP
+			else:
+				style = 0
+			r = wx.RadioButton(self, wx.ID_ANY, labels[i], style=style)
+			self.addWidget(r, labels[i])
+			sz.Add(r)
+			self.rbTichyCat.append(r)
+		return sz
 		
 	def onCbAddSpeed(self, _):
 		self.setState(True, False)
@@ -436,7 +500,7 @@ class TichyPanel(wx.Panel, CNCObject):
 		self.scFeedZG1.Enable(flag)
 		
 	def onCbTichyPart(self, _):
-		self.enableStartingPoints()
+		self.updateTichyDisplay()
 		
 	def bGeneratePressed(self, _):
 		self.bSave.Enable(False)
@@ -500,7 +564,7 @@ class TichyPanel(wx.Panel, CNCObject):
 		if not ValidateToolSize(self, tdiam, width, "Width"):
 			return
 
-		if self.toolInfo["diameter"] == tdiam:
+		if self.databaseToolDiam == tdiam:
 			toolname = self.toolInfo["name"]
 		else:
 			toolname = None
@@ -626,7 +690,7 @@ class TichyPanel(wx.Panel, CNCObject):
 		if not ValidateToolSize(self, tdiam, width, "Width"):
 			return
 
-		if self.toolInfo["diameter"] == tdiam:
+		if self.databaseToolDiam == tdiam:
 			toolname = self.toolInfo["name"]
 		else:
 			toolname = None			
@@ -768,7 +832,7 @@ class TichyPanel(wx.Panel, CNCObject):
 		diam -= tdiam
 		rad = diam/2
 
-		if self.toolInfo["diameter"] == tdiam:
+		if self.databaseToolDiam == tdiam:
 			toolname = self.toolInfo["name"]
 		else:
 			toolname = None			

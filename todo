@@ -3,26 +3,18 @@ allow for lowest layer to leave some material behind
 verify y offset values for tichy arc top windows (can't really do unless I have windows in hand)
 
 show image of tichy parts when chosen
+	need to do masonry windows (will need to add halk-round window type
 
 either complete implementation of blind faces in box, or remove feature
 
-polyline - initial value for points
-
 
 rectangle - rounded corners
-
-verify plotting of imperial g code - scale may not be right
-
-look into when to NOT use a tool name - it tool is metric and object is imperial or vice versa, it will never report the tool name (except in box because of a different bug)
-	
-
-
 
 
 	
 	
 	carve: diamond, grid, hatch
-	contour: arc, circle, line, polyline, rectangle, reg polygon, rounded slot
+	contour: arc, circle, line, polyline, reg polygon, rounded slot
 	drills: circle, linear, rectangle
 	objects: box, stringer, tichy
 	

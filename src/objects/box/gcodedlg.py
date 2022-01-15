@@ -22,7 +22,6 @@ class GCodeDlg(wx.Dialog):
 		self.SetBackgroundColour("white")
 
 		self.tooldiam = self.parent.tooldiam
-		print("got td=%f" % self.tooldiam)
 		self.depthPerCut = speedinfo["depthperpass"]
 		self.feedG1XY = speedinfo["G1XY"]
 		self.feedG1Z = speedinfo["G1Z"]
@@ -471,7 +470,13 @@ class GCodeDlg(wx.Dialog):
 		tdiam = self.tooldiam
 		trad = float(tdiam)/2.0
 		gcomment = "%s - %s" % (self.parent.viewTitle, faceName)
-		gcode = self.parent.preamble(self.settings, gcomment, tdiam, self.toolinfo["name"], self.settings.metric)					
+
+		if self.parent.databaseToolDiam == tdiam:
+			toolname = self.toolinfo["name"]
+		else:
+			toolname = None
+
+		gcode = self.parent.preamble(self.settings, gcomment, tdiam, toolname, self.settings.metric)					
 		gcode.append(("G0 Z"+self.fmt+self.addSpeedTerm("G0Z")) % safez)
 
 		self.offsetX = 0
