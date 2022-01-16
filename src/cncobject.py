@@ -53,6 +53,17 @@ spinvals = {
 	"tracks":     [ 1, 50, 1, 1 ],
 }
 
+class WidgetProxy:
+	def __init__(self):
+		self.svalue = ""
+		
+	def SetValue(self, v):
+		self.svalue = v
+		
+	def GetValue(self):
+		return self.svalue
+
+
 class CNCObject:
 	def __init__(self, parent, objectType):
 		self.parent = parent
@@ -210,10 +221,10 @@ class CNCObject:
 		
 	def checkEnable(self):
 		f = self.cbAddSpeed.IsChecked()
-		self.teFeedXYG0.Enable(f)
-		self.teFeedXYG1.Enable(f)
-		self.teFeedZG0.Enable(f)
-		self.teFeedZG1.Enable(f)
+		self.scFeedXYG0.Enable(f)
+		self.scFeedXYG1.Enable(f)
+		self.scFeedZG0.Enable(f)
+		self.scFeedZG1.Enable(f)
 		
 	def setChosen(self, ids, label):
 		for i in ids:

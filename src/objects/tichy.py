@@ -1,7 +1,7 @@
 import wx
 import math
 from gcodelist import GCodeList
-from cncobject import CNCObject
+from cncobject import CNCObject, WidgetProxy
 from validators import ValidateToolSize, ValidateNoEntryErrors
 from settings import SPINSIZE
 
@@ -10,6 +10,7 @@ TYPE_CIRCLE = 2
 TYPE_ROUNDTOP = 3
 TYPE_ARCTOP = 4
 TYPE_HALFROUND = 5
+
 tichyWindows = {
 	"8010": { "type": TYPE_RECTANGLE, "params": [ 13.21, 11.94 ], "desc": "6 LITE WINDOW" },
 	"8014": { "type": TYPE_RECTANGLE, "params": [ 10.92, 17.27 ], "desc": "4/4 DOUBLE HUNG WINDOW" },
@@ -136,6 +137,37 @@ tichyDoors = {
 	"8324": { "type": TYPE_RECTANGLE, "params": [ 8.00, 23.75 ], "desc": "6 LITE DOOR HO" },
 }
 
+tichyMasonryWindows = {
+	"8036": { "type": TYPE_RECTANGLE, "params": [ 17.27, 36.83 ],       "desc": "20/20 DOUBLE HUNG MASONRY WINDOW" },
+	"8037": { "type": TYPE_CIRCLE,    "params": [ 18.8 ],               "desc": "ROUND MASONRY WINDOW" },
+	"8044": { "type": TYPE_ARCTOP,    "params": [ 12.7, 30.23, -3.0 ],  "desc": "DOUBLE HUNG ARCH TOP MASONRY WINDOW" },
+	"8046": { "type": TYPE_RECTANGLE, "params": [ 16.76, 11.43 ],       "desc": "9 PANE MASONRY WINDOW" },
+	"8051": { "type": TYPE_RECTANGLE, "params": [ 20.83, 30.48 ],       "desc": "12 PANE MASONRY WINDOW" },
+	"8052": { "type": TYPE_RECTANGLE, "params": [ 10.16, 19.81 ],       "desc": "6/6 DOUBLE HUNG MASONRY WINDOW" },
+	"8058": { "type": TYPE_RECTANGLE, "params": [ 10.16, 22.1 ],        "desc": "6/6 DOUBLE HUNG MASONRY WINDOW" },
+	"8073": { "type": TYPE_ROUNDTOP,  "params": [ 3.56, 29.34 ],        "desc": "NARROW ROUND TOP WINDOW" },
+	"8086": { "type": TYPE_RECTANGLE, "params": [ 12.57, 21.08 ],       "desc": "8/8 DBL HUNG MASONRY WINDOW" },
+	"8087": { "type": TYPE_RECTANGLE, "params": [ 30.48,  33.66 ],      "desc": "20 PANE INDUSTRIAL WINDOW" },
+	"8107": { "type": TYPE_RECTANGLE, "params": [ 10.16, 10.16 ],       "desc": "2 PANE WINDOW" },
+	"8115": { "type": TYPE_RECTANGLE, "params": [ 12.19, 26.16 ],       "desc": "FOUR PANE FACTORY WINDOW" },
+	"8120": { "type": TYPE_RECTANGLE, "params": [ 19.05, 33.66 ],       "desc": "STORE WINDOW" },
+	"8128": { "type": TYPE_HALFROUND, "params": [ 8.64 ],               "desc": "13 PANE HALF ROUND MASONRY WINDOW" },
+	"8133": { "type": TYPE_RECTANGLE, "params": [ 17.27, 30.23 ],       "desc": "25 PANE MASONRY TILT OUT" },
+	"8154": { "type": TYPE_RECTANGLE, "params": [ 11.81, 16.0 ],        "desc": "12 PANE MASONRY WINDOW" },
+	"8162": { "type": TYPE_RECTANGLE, "params": [ 12.57, 21.08 ],       "desc": "1/1 DOUBLE HUNG MASONRY WINDOW" },
+	"8187": { "type": TYPE_RECTANGLE, "params": [ 28.7, 29.34 ],        "desc": "STORE WINDOW" },
+	"8210": { "type": TYPE_RECTANGLE, "params": [ 11.94, 4.95 ],        "desc": "3 PANE TRANSOM WINDOW" },
+	"8295": { "type": TYPE_RECTANGLE, "params": [ 15.24, 30.48 ],       "desc": "40 PANE MASONRY WINDOW" },
+	"8307": { "type": TYPE_RECTANGLE, "params": [ 13.84, 25.02 ],       "desc": "12/12 DOUBLE HUNG MASONRY WINDOW" },
+	"8308": { "type": TYPE_RECTANGLE, "params": [ 11.18, 19.94 ],       "desc": "6/6 DOUBLE HUNG MASONRY WINDOW" },
+}
+
+tichyParts = {
+	"Framed Windows": tichyWindows,
+	"Doors": tichyDoors,
+	"Masonry Windows": tichyMasonryWindows
+}
+
 margin = 0.5
 
 class MainFrame(wx.Frame):
@@ -195,18 +227,24 @@ class TichyPanel(wx.Panel, CNCObject):
 		t = wx.StaticText(self, wx.ID_ANY, "Tichy Part Number")
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		
-		self.cbTichyPart = wx.ComboBox(self, wx.ID_ANY, "", 
-				 choices=sorted(tichyWindows.keys()) + sorted(tichyDoors.keys()),
-				 style=wx.CB_DROPDOWN
+		self.cbTichyPart = wx.Choice(self, wx.ID_ANY, 
+				 choices=[]
 				 )
 		self.cbTichyPart.SetSelection(0)
-		self.Bind(wx.EVT_COMBOBOX, self.onCbTichyPart, self.cbTichyPart)
-		self.addWidget(self.cbTichyPart, "tichypart")
+		self.Bind(wx.EVT_CHOICE, self.onCbTichyPart, self.cbTichyPart)
+		self.cbTichyPart.Bind(wx.EVT_KEY_UP, self.onKeyUp)
+		self.proxTichyPart = WidgetProxy()
+		self.addWidget(self.proxTichyPart, "tichypart")
 		sizer.Add(self.cbTichyPart, pos=(ln, 1), flag=wx.LEFT, border=10)
 		
 		st = wx.StaticText(self, wx.ID_ANY, "")
 		sizer.Add(st, pos=(ln, 2), span=(1, 2), flag=wx.LEFT, border=20)
-		self.stInfo = st
+		self.stDesc = st
+		ln += 1
+		
+		st = wx.StaticText(self, wx.ID_ANY, "")
+		sizer.Add(st, pos=(ln, 2), span=(1, 2), flag=wx.LEFT, border=20)
+		self.stDimension = st
 		ln += 1
 		
 		sizer.Add(20, 20, wx.GBPosition(ln, 0))
@@ -371,28 +409,44 @@ class TichyPanel(wx.Panel, CNCObject):
 		self.Bind(wx.EVT_SPINCTRL, self.onChange)
 		for rb in self.rbTichyCat:
 			self.Bind(wx.EVT_RADIOBUTTON, self.onTichyCategory, rb)
+			
+		self.tichyCategory = None
+		self.updateTichyCategory(sorted(tichyParts.keys())[0])
 		
-		self.updateTichyDisplay()
+		self.Bind(wx.EVT_BUTTON, self.bSaveDataPressed, self.bSaveData)
+		self.Bind(wx.EVT_BUTTON, self.bLoadDataPressed, self.bLoadData)		
 		
 		self.SetSizer(sizer)
 		self.Layout()
-		self.Fit();
-		
-	def onTichyCategory(self, evt):
-		rb = evt.GetEventObject()
-		l = rb.GetLabel().strip()
-		print(l)
+		self.Fit()
 
+	def onKeyUp(self, evt):
+		sn = self.cbTichyPart.GetCurrentSelection()
+		if sn != wx.NOT_FOUND:
+			tpn = self.cbTichyPart.GetString(sn)
+			self.updateTichyDisplay(tpn)
+			
+		evt.Skip()
 		
-	def getTichyPartType(self, cbv):
-		if cbv in tichyWindows.keys():
-			return tichyWindows[cbv]["type"]
-		return tichyDoors[cbv]["type"]
+	def bLoadDataPressed(self, evt):
+		CNCObject.bLoadDataPressed(self, evt)
+		tc = self.getChosen(self.rbTichyCat)
+		self.updateTichyCategory(tc, updateDisplay=False)
 		
-	def getTichyPartParams(self, cbv):
-		if cbv in tichyWindows.keys():
-			return tichyWindows[cbv]["params"]
-		return tichyDoors[cbv]["params"]
+		tpn = self.proxTichyPart.GetValue()
+		tpnx = self.cbTichyPart.FindString(tpn)
+		if tpnx != wx.NOT_FOUND:
+			self.cbTichyPart.SetSelection(tpnx)
+			self.updateTichyDisplay()
+			
+	def bSaveDataPressed(self, evt):
+		self.proxTichyPart.SetValue(self.cbTichyPart.GetStringSelection())
+		CNCObject.bSaveDataPressed(self, evt)
+			
+	def onTichyCategory(self, evt):
+		tc = self.getChosen(self.rbTichyCat)
+		self.updateTichyCategory(tc)
+		self.setState(True, False)
 		
 	def getStartingPoints(self):
 		labels = ["Lower Left", "Upper Left", "Lower Right", "Upper Right", "Center"]
@@ -410,21 +464,37 @@ class TichyPanel(wx.Panel, CNCObject):
 			self.rbStartPoints.append(r)
 			self.startPoints.append([labels[i], r])
 		return sz
+	
+	def updateTichyCategory(self, cat, updateDisplay=True):
+		self.tichyCategory = cat
+		self.cbTichyPart.SetItems(sorted(tichyParts[cat].keys()))
+		self.cbTichyPart.SetSelection(0)
+
+		if updateDisplay:
+			self.updateTichyDisplay()
 		
-	def updateTichyDisplay(self):
-		cbv = self.cbTichyPart.GetValue()
-		tp = self.getTichyPartType(cbv)
-		p = self.getTichyPartParams(cbv)
+	def updateTichyDisplay(self, cbv=None):
+		if cbv is None:
+			cbv = self.cbTichyPart.GetStringSelection()
 		
+		tp = tichyParts[self.tichyCategory][cbv]["type"]
+		p = tichyParts[self.tichyCategory][cbv]["params"]
+		d = tichyParts[self.tichyCategory][cbv]["desc"]	
+		
+		sp = self.getChosen(self.rbStartPoints)
 		for l, r in self.startPoints:
-			if l != "Center":
-				if tp == TYPE_CIRCLE:
-					r.Enable(False)
-				else:
-					r.Enable(True)
-			else:
-				if tp == TYPE_CIRCLE:
+			if tp == TYPE_HALFROUND:
+				r.Enable(l in [ "Center", "Lower Left", "Lower Right" ])
+				if l == "Center" and sp not in [ "Center", "Lower Left", "Lower Right" ]:
 					r.SetValue(True)
+					
+			elif tp == TYPE_CIRCLE:
+				r.Enable(l == "Center")
+				if l == "Center":
+					r.SetValue(True)
+					
+			else:
+				r.Enable(True)
 
 		p0 = p[0] if self.settings.metric else p[0]/25.4
 		try:
@@ -442,17 +512,20 @@ class TichyPanel(wx.Panel, CNCObject):
 			units = "in"
 
 		if tp == TYPE_RECTANGLE:
-			info = "Rectangle %6.2f %s w x %6.2f %s h" % (p0, units, p1, units)
+			dim = "%.2f %s w x %.2f %s h" % (p0, units, p1, units)
 		elif tp == TYPE_ROUNDTOP:
-			info = "Round Top %6.2f %s w x %6.2f %s h" % (p0, units, p1, units)
+			dim = "%.2f %s w x %.2f %s h" % (p0, units, p1, units)
 		elif tp == TYPE_ARCTOP:
-			info = "Arc Top %6.2f %s w x %6.2f %s h,  y offset %6.2f %s" % (p0, units, p1, units, p2, units)
-		elif tp == TYPE_CIRCLE:
-			info = "Circle diameter %6.2f %s" % (p0, units)
+			dim = "%.2f %s w x %.2f %s h,  y offset %.2f %s" % (p0, units, p1, units, p2, units)
+		elif tp in [ TYPE_CIRCLE, TYPE_HALFROUND ]:
+			dim = "diameter %.2f %s" % (p0, units)
 		else:
-			info = ""
+			dim = ""
 			
-		self.stInfo.SetLabel(info)
+		self.stDimension.SetLabel(dim)
+		
+		self.stDesc.SetLabel(d)
+		
 		bmp = self.tichyImages.getByName(cbv)
 		if bmp is None:
 			# no image found - clear the bitmap display
@@ -477,7 +550,7 @@ class TichyPanel(wx.Panel, CNCObject):
 		return sz
 	
 	def getTichyCategories(self):
-		labels = ["Framed windows", "Doors"]
+		labels = sorted(tichyParts.keys())
 		self.rbTichyCat = []
 		sz = wx.BoxSizer(wx.VERTICAL)
 		for i in range(len(labels)):
@@ -501,6 +574,7 @@ class TichyPanel(wx.Panel, CNCObject):
 		
 	def onCbTichyPart(self, _):
 		self.updateTichyDisplay()
+		self.setState(True, False)
 		
 	def bGeneratePressed(self, _):
 		self.bSave.Enable(False)
@@ -508,9 +582,41 @@ class TichyPanel(wx.Panel, CNCObject):
 		self.gcl.clear()
 		self.gcode = []
 		
-		tpn = self.cbTichyPart.GetValue()
-		tp = self.getTichyPartType(tpn)
-		p = self.getTichyPartParams(tpn)
+		self.fmt = "%%0.%df" % self.settings.decimals
+
+		errs = []
+		try:
+			self.sx = float(self.teStartX.GetValue())
+		except:
+			errs.append("Start X")	
+		try:
+			self.sy = float(self.teStartY.GetValue())
+		except:
+			self.errs.append("Start Y")	
+		try:
+			self.sz = float(self.teStartZ.GetValue())
+		except:
+			errs.append("Start Z")	
+			
+		self.safez = self.scSafeZ.GetValue()
+			
+		self.addspeed = self.cbAddSpeed.IsChecked()
+		self.feedzG0 = self.scFeedZG0.GetValue()
+		self.feedzG1 = self.scFeedZG1.GetValue()
+		self.feedxyG0 = self.scFeedXYG0.GetValue()
+		self.feedxyG1 = self.scFeedXYG1.GetValue()
+		self.passdepth = self.scPassDepth.GetValue()
+		self.depth = self.scTotalDepth.GetValue()
+		self.tDiam = self.scToolDiam.GetValue()
+
+		if not ValidateNoEntryErrors(self, errs):
+			return
+		
+		tpn = self.cbTichyPart.GetStringSelection()
+		p = tichyParts[self.tichyCategory][tpn]["params"]
+		tp = tichyParts[self.tichyCategory][tpn]["type"]	
+		self.partDesc = tichyParts[self.tichyCategory][tpn]["desc"]	
+		self.partNumber = tpn
 		
 		if tp == TYPE_RECTANGLE:
 			self.tichyRectangle(p, self.settings.metric)
@@ -520,7 +626,8 @@ class TichyPanel(wx.Panel, CNCObject):
 			self.tichyRoundTop(p, self.settings.metric)
 		elif tp == TYPE_CIRCLE:
 			self.tichyCircle(p, self.settings.metric)
-		
+		elif tp == TYPE_HALFROUND:
+			self.tichyHalfRound(p, self.settings.metric)
 			
 	def tichyRectangle(self, p, metric):
 		width = p[0] + margin
@@ -528,56 +635,26 @@ class TichyPanel(wx.Panel, CNCObject):
 		if not metric:
 			width = float(width) / 25.4;
 			height = float(height) / 25.4
-		
-		self.fmt = "%%0.%df" % self.settings.decimals
-
-		errs = []
-		try:
-			sx = float(self.teStartX.GetValue())
-		except:
-			errs.append("Start X")	
-		try:
-			sy = float(self.teStartY.GetValue())
-		except:
-			errs.append("Start Y")	
-		try:
-			sz = float(self.teStartZ.GetValue())
-		except:
-			errs.append("Start Z")	
-			
-		safez = self.scSafeZ.GetValue()
-			
-		addspeed = self.cbAddSpeed.IsChecked()
-		feedzG0 = self.scFeedZG0.GetValue()
-		feedzG1 = self.scFeedZG1.GetValue()
-		feedxyG0 = self.scFeedXYG0.GetValue()
-		feedxyG1 = self.scFeedXYG1.GetValue()
-		passdepth = self.scPassDepth.GetValue()
-		depth = self.scTotalDepth.GetValue()
-		tdiam = self.scToolDiam.GetValue()
-
-		if not ValidateNoEntryErrors(self, errs):
+					
+		if not ValidateToolSize(self, self.tDiam, height, "Height"):
 			return
-			
-		if not ValidateToolSize(self, tdiam, height, "Height"):
-			return
-		if not ValidateToolSize(self, tdiam, width, "Width"):
+		if not ValidateToolSize(self, self.tDiam, width, "Width"):
 			return
 
-		if self.databaseToolDiam == tdiam:
+		if self.databaseToolDiam == self.tDiam:
 			toolname = self.toolInfo["name"]
 		else:
 			toolname = None
 			
-		self.gcode = self.preamble(self.settings, self.viewTitle, tdiam, toolname, self.settings.metric)					
-		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % safez)
+		self.gcode = self.preamble(self.settings, self.viewTitle, self.tDiam, toolname, self.settings.metric)					
+		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG0)) % self.safez)
 		
-		self.tDiam = tdiam
-		rad = float(tdiam)/2.0
-		if self.settings.annotate:
-			self.gcode.append("(Tichy Rectangle (%6.2f,%6.2f) to (%6.2f,%6.2f) depth from %6.2f to %6.2f) dpp %6.2f" % (sx, sy, width, height, sz, depth, passdepth))
+		rad = float(self.tDiam)/2.0
+		if self.settings.annotate:			
+			self.gcode.append("(Tichy Part Number: %s - %s)" % (self.partNumber, self.partDesc))			
+			self.gcode.append("(Start Location (%6.2f,%6.2f) opening (%6.2fw x %6.2fh) depth from %6.2f to %6.2f) dpp %6.2f" % (self.sx, self.sy, width, height, self.sz, self.depth, self.passdepth))
 
-		points = [[sx, sy], [sx, sy+height], [sx+width, sy+height], [sx+width, sy], [sx, sy]]
+		points = [[self.sx, self.sy], [self.sx, self.sy+height], [self.sx+width, self.sy+height], [self.sx+width, self.sy], [self.sx, self.sy]]
 			
 		sp = self.getChosen(self.rbStartPoints)
 		adjx = 0
@@ -617,25 +694,25 @@ class TichyPanel(wx.Panel, CNCObject):
 			self.gcode.append("(Start point: %s)" % sp)
 			self.gcode.append("(Cutting direction: %s)" % cd)
 
-		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
-		self.gcode.append(("G0 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG0)) % (points[0][0], points[0][1]))
+		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG0)) % (self.safez))
+		self.gcode.append(("G0 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG0)) % (points[0][0], points[0][1]))
 
 		
-		passes = int(math.ceil(depth/passdepth))
+		passes = int(math.ceil(self.depth/self.passdepth))
 		
-		cz = sz
+		cz = self.sz
 		for i in range(passes):
-			cz -= passdepth
-			if cz < -depth:
-				cz = -depth
+			cz -= self.passdepth
+			if cz < -self.depth:
+				cz = -self.depth
 			if self.settings.annotate:
 				self.gcode.append("(Pass number %d at depth %f)" % (i, cz))
 				
-			self.gcode.append(("G1 Z"+self.fmt+self.speedTerm(addspeed, feedzG1)) % (cz))
+			self.gcode.append(("G1 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG1)) % (cz))
 			for p in points[1:]:
-				self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % (p[0], p[1]))
+				self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % (p[0], p[1]))
 			
-		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
+		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG0)) % (self.safez))
 		if self.settings.annotate:
 			self.gcode.append("(End object %s)" % self.viewTitle)
 				
@@ -648,64 +725,38 @@ class TichyPanel(wx.Panel, CNCObject):
 		width = p[0] + margin
 		height = p[1] + margin
 		yoff = p[2]
+		if yoff != 0:
+			dlg = wx.MessageDialog(self, "G Code for arc-top doors/windows needs to be verified",
+							'Unverified G Code', wx.OK | wx.ICON_WARNING)
+			dlg.ShowModal()
+			dlg.Destroy()
+			
 		if not metric:
 			width = float(width) / 25.4;
 			height = float(height) / 25.4
 			yoff = yoff / 25.4
 		
-		self.fmt = "%%0.%df" % self.settings.decimals
-
-		errs = []
-		try:
-			sx = float(self.teStartX.GetValue())
-		except:
-			errs.append("Start X")	
-		try:
-			sy = float(self.teStartY.GetValue())
-		except:
-			errs.append("Start Y")	
-		try:
-			sz = float(self.teStartZ.GetValue())
-		except:
-			errs.append("Start Z")	
-			
-		safez = self.scSafeZ.GetValue()
-			
-		addspeed = self.cbAddSpeed.IsChecked()
-		feedzG0 = self.scFeedZG0.GetValue()
-		feedzG1 = self.scFeedZG1.GetValue()
-		feedxyG0 = self.scFeedXYG0.GetValue()
-		feedxyG1 = self.scFeedXYG1.GetValue()
-
-		passdepth = self.scPassDepth.GetValue()
-
-		depth = self.scTotalDepth.GetValue()
-		tdiam = self.scToolDiam.GetValue()
-
-		if not ValidateNoEntryErrors(self, errs):
+		if not ValidateToolSize(self, self.tDiam, height, "Height"):
 			return
-			
-		if not ValidateToolSize(self, tdiam, height, "Height"):
-			return
-		if not ValidateToolSize(self, tdiam, width, "Width"):
+		if not ValidateToolSize(self, self.tDiam, width, "Width"):
 			return
 
-		if self.databaseToolDiam == tdiam:
+		if self.databaseToolDiam == self.tDiam:
 			toolname = self.toolInfo["name"]
 		else:
 			toolname = None			
 
-		self.gcode = self.preamble(self.settings, self.viewTitle, tdiam, toolname, self.settings.metric)					
+		self.gcode = self.preamble(self.settings, self.viewTitle, self.tDiam, toolname, self.settings.metric)					
 		
-		self.tDiam = tdiam
-		rad = float(tdiam)/2.0
+		rad = float(self.tDiam)/2.0
 		if self.settings.annotate:
+			self.gcode.append("(Tichy Part Number: %s - %s)" % (self.partNumber, self.partDesc))			
 			if yoff == 0:
-				self.gcode.append("(Tichy Round Top (%6.2f,%6.2f) to (%6.2f,%6.2f) depth from %6.2f to %6.2f) dpp %6.2f" % (sx, sy, width, height, sz, depth, passdepth))
+				self.gcode.append("(Start Location (%6.2f,%6.2f) opening (%6.2f,%6.2f) depth from %6.2f to %6.2f) dpp %6.2f" % (self.sx, self.sy, width, height, self.sz, self.depth, self.passdepth))
 			else:
-				self.gcode.append("(Tichy Arc Top (%6.2f,%6.2f) to (%6.2f,%6.2f) y offset %6.2f depth from %6.2f to %6.2f) dpp %6.2f" % (sx, sy, width, height, yoff, sz, depth, passdepth))
+				self.gcode.append("(Start Location (%6.2f,%6.2f) opening (%6.2f,%6.2f) y offset %6.2f depth from %6.2f to %6.2f) dpp %6.2f" % (self.sx, self.sy, width, height, yoff, self.sz, self.depth, self.passdepth))
 
-		points = [[sx, sy], [sx, sy+height], [sx+width, sy+height], [sx+width, sy], [sz, sy]]
+		points = [[self.sx, self.sy], [self.sx, self.sy+height], [self.sx+width, self.sy+height], [self.sx+width, self.sy], [self.sz, self.sy]]
 			
 		sp = self.getChosen(self.rbStartPoints)
 		adjx = 0
@@ -746,40 +797,132 @@ class TichyPanel(wx.Panel, CNCObject):
 			cw = True
 			cmd = "G2"
 			
-		wrad = (float(width)-float(tdiam))/2.0
+		wrad = (float(width)-float(self.tDiam))/2.0
 
 		if self.settings.annotate:
 			self.gcode.append("(Start point: %s)" % sp)
 			self.gcode.append("(Cutting direction: %s)" % cd)
 
-		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
-		self.gcode.append(("G0 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG0)) % (points[0][0], points[0][1]))
+		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG0)) % (self.safez))
+		self.gcode.append(("G0 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG0)) % (points[0][0], points[0][1]))
 		
-		passes = int(math.ceil(depth/passdepth))
+		passes = int(math.ceil(self.depth/self.passdepth))
 		
-		cz = sz
+		cz = self.sz
 		for i in range(passes):
-			cz -= passdepth
-			if cz < -depth:
-				cz = -depth
+			cz -= self.passdepth
+			if cz < -self.depth:
+				cz = -self.depth
 			if self.settings.annotate:
 				self.gcode.append("(Pass number %d at depth %f)" % (i, cz))
 				
-			self.gcode.append(("G1 Z"+self.fmt+self.speedTerm(addspeed, feedzG1)) % (cz))
-			self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % (points[1][0], points[1][1]))
+			self.gcode.append(("G1 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG1)) % (cz))
+			self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % (points[1][0], points[1][1]))
 			if cw:
 				# arc here to point 2
-				self.gcode.append((cmd+self.IJTerm("I", wrad)+self.IJTerm("J", yoff)+" X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1))
+				self.gcode.append((cmd+self.IJTerm("I", wrad)+self.IJTerm("J", yoff)+" X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1))
 								% (points[2][0], points[2][1]))
-				self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % (points[3][0], points[3][1]))
+				self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % (points[3][0], points[3][1]))
 			else:
-				self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % (points[2][0], points[2][1]))
+				self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % (points[2][0], points[2][1]))
 				# arc here to point 3
-				self.gcode.append((cmd+self.IJTerm("I", -wrad)+self.IJTerm("J", yoff)+" X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1))
+				self.gcode.append((cmd+self.IJTerm("I", -wrad)+self.IJTerm("J", yoff)+" X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1))
 								% (points[3][0], points[3][1]))
-			self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % (points[4][0], points[4][1]))
+			self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % (points[4][0], points[4][1]))
 			
-		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
+		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG0)) % (self.safez))
+		if self.settings.annotate:
+			self.gcode.append("(End object %s)" % self.viewTitle)
+				
+		self.gcl.updateList(self.gcode)
+		self.bSave.Enable()
+		self.bVisualize.Enable()
+		self.setState(False, True)
+			
+	def tichyHalfRound(self, p, metric):
+		diam = p[0] + margin
+		if not metric:
+			diam = float(diam) / 25.4;
+			
+		width = diam
+			
+		if not ValidateToolSize(self, self.tDiam, diam, "Half Round Diameter"):
+			return
+		
+		diam -= self.tDiam
+		
+		if self.databaseToolDiam == self.tDiam:
+			toolname = self.toolInfo["name"]
+		else:
+			toolname = None			
+
+		self.gcode = self.preamble(self.settings, self.viewTitle, self.tDiam, toolname, self.settings.metric)					
+		
+		rad = float(self.tDiam)/2.0
+		if self.settings.annotate:
+			self.gcode.append("(Tichy Part Number: %s - %s)" % (self.partNumber, self.partDesc))			
+			self.gcode.append("(Start Location (%6.2f,%6.2f) diameter (%6.2f) depth from %6.2f to %6.2f) dpp %6.2f" % (self.sx, self.sy, diam, self.sz, self.depth, self.passdepth))
+
+		points = [[self.sx, self.sy], [self.sx + self.sx+width, self.sy] ]
+			
+		sp = self.getChosen(self.rbStartPoints)
+		adjx = 0
+		adjy = 0
+		if sp == "Lower Right":
+			adjx = -width
+		elif sp == "Center":
+			adjx = -width/2
+			
+		for p in points:
+			p[0] += adjx
+			p[1] += adjy
+			
+		points[0][0] += rad
+		points[0][1] += rad
+		points[1][0] -= rad
+		points[1][1] += rad
+
+		cd = self.getChosen(self.rbCutDir)
+		if cd != "Clockwise":
+			cw = False
+			cmd = "G3"
+		else:
+			cw = True
+			cmd = "G2"
+			
+		wrad = (float(width)-float(self.tDiam))/2.0
+
+		if self.settings.annotate:
+			self.gcode.append("(Start point: %s)" % sp)
+			self.gcode.append("(Cutting direction: %s)" % cd)
+
+		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG0)) % (self.safez))
+		self.gcode.append(("G0 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG0)) % (points[0][0], points[0][1]))
+		
+		passes = int(math.ceil(self.depth/self.passdepth))
+		
+		cz = self.sz
+		yoff = 0
+		for i in range(passes):
+			cz -= self.passdepth
+			if cz < -self.depth:
+				cz = -self.depth
+			if self.settings.annotate:
+				self.gcode.append("(Pass number %d at depth %f)" % (i, cz))
+				
+			self.gcode.append(("G1 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG1)) % (cz))
+			if cw:
+				# arc 0 to 1 and line 1 to 0
+				self.gcode.append((cmd+self.IJTerm("I", wrad)+self.IJTerm("J", yoff)+" X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1))
+								% (points[1][0], points[1][1]))
+				self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % (points[0][0], points[0][1]))
+			else:
+				# line 0 to 1 and arc 1 to 0
+				self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % (points[1][0], points[1][1]))
+				self.gcode.append((cmd+self.IJTerm("I", -wrad)+self.IJTerm("J", yoff)+" X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1))
+								% (points[0][0], points[0][1]))
+			
+		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG0)) % (self.safez))
 		if self.settings.annotate:
 			self.gcode.append("(End object %s)" % self.viewTitle)
 				
@@ -793,55 +936,22 @@ class TichyPanel(wx.Panel, CNCObject):
 		if not metric:
 			diam = float(diam) / 25.4;
 			
-		self.fmt = "%%0.%df" % self.settings.decimals
-
-		errs = []
-		try:
-			sx = float(self.teStartX.GetValue())
-		except:
-			errs.append("Center X")
-		try:
-			sy = float(self.teStartY.GetValue())
-		except:
-			errs.append("Center Y")
-		try:
-			sz = float(self.teStartZ.GetValue())
-		except:
-			errs.append("Center Z")
-			
-		if not ValidateNoEntryErrors(self, errs):
-			return
-
-		safez = self.scSafeZ.GetValue()
-			
-		addspeed = self.cbAddSpeed.IsChecked()
-		feedzG0 = self.scFeedZG0.GetValue()
-		feedzG1 = self.scFeedZG1.GetValue()
-		feedxyG0 = self.scFeedXYG0.GetValue()
-		feedxyG1 = self.scFeedXYG1.GetValue()
-		
-		passdepth = self.scPassDepth.GetValue()
-		
-		depth = self.scTotalDepth.GetValue()
-		tdiam = self.scToolDiam.GetValue()
-
-			
-		if not ValidateToolSize(self, tdiam, diam, "Circle Diameter"):
+		if not ValidateToolSize(self, self.tDiam, diam, "Circle Diameter"):
 			return
 		
-		diam -= tdiam
+		diam -= self.tDiam
 		rad = diam/2
 
-		if self.databaseToolDiam == tdiam:
+		if self.databaseToolDiam == self.tDiam:
 			toolname = self.toolInfo["name"]
 		else:
 			toolname = None			
 
-		self.gcode = self.preamble(self.settings, self.viewTitle, tdiam, toolname, self.settings.metric)					
+		self.gcode = self.preamble(self.settings, self.viewTitle, self.tDiam, toolname, self.settings.metric)					
 			
-		self.tDiam = tdiam
 		if self.settings.annotate:
-			self.gcode.append("(Tichy Circle center (%6.2f,%6.2f) radius %6.2f depth from %6.2f to %6.2f dpp %6.2f" % (sx, sy, rad, sz, depth, passdepth))	
+			self.gcode.append("(Tichy Part Number: %s - %s)" % (self.partNumber, self.partDesc))			
+			self.gcode.append("(Start Location (%6.2f,%6.2f) diameter %6.2f depth from %6.2f to %6.2f dpp %6.2f" % (self.sx, self.sy, diam, self.sz, self.depth, self.passdepth))	
 			
 		cd = self.getChosen(self.rbCutDir)
 		if cd == "Clockwise":
@@ -849,29 +959,29 @@ class TichyPanel(wx.Panel, CNCObject):
 		else:
 			cmd = "G3"
 
-		passes = int(math.ceil(depth/passdepth))
+		passes = int(math.ceil(self.depth/self.passdepth))
 				
 		if self.settings.annotate:
 			self.gcode.append("(Cutting direction: %s)" % cd)
 
-		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
-		self.gcode.append(("G0 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG0)) % (sx, sy-rad))
+		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG0)) % (self.safez))
+		self.gcode.append(("G0 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG0)) % (self.sx, self.sy-rad))
 			
-		cz = sz
+		cz = self.sz
 		for i in range(passes):
-			cz -= passdepth
-			if cz < -depth:
-				cz = -depth
+			cz -= self.passdepth
+			if cz < -self.depth:
+				cz = -self.depth
 				
 			if self.settings.annotate:
 				self.gcode.append("(Pass number %d at depth %f)" % (i, cz))
 
-			self.gcode.append(("G1 Z"+self.fmt+self.speedTerm(addspeed, feedzG1)) % (cz))
+			self.gcode.append(("G1 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG1)) % (cz))
 
-			self.gcode.append((cmd+" J"+self.fmt+" X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % (rad, sx, sy-rad))
+			self.gcode.append((cmd+" J"+self.fmt+" X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % (rad, self.sx, self.sy-rad))
 
 					
-		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
+		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG0)) % (self.safez))
 		if self.settings.annotate:
 			self.gcode.append("(End object %s)" % self.viewTitle)
 		self.gcl.updateList(self.gcode)

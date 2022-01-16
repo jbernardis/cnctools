@@ -1,40 +1,22 @@
-#8036 20/20 DOUBLE HUNG MASONRY WINDOW   OPENING .68" x 1.45"
-#8037 ROUND MASONRY WINDOW        OPENING .74" DIAMETER
-#8044 DOUBLE HUNG ARCH TOP MASONRY WINDOW  OPENING .50" x 1.19"
-#8046 9 PANE MASONRY WINDOW   OPENING .66" x .45"
-#8051 12 PANE MASONRY WINDOW   OPENING .82" x1.20"
-#8052 6/6 DOUBLE HUNG MASONRY WINDOW  OPENING .40" x .78"
-#8058 6/6 DOUBLE HUNG MASONRY WINDOW   OPENING .40" x .87"
-#8073 NARROW ROUND TOP WINDOW   OPENING .14"w x 1.155"h
-#8086 8/8 DBL HUNG MASONRY WINDOW   OPENING .495" x .83"
-#8087 20 PANE INDUSTRIAL WINDOW   OPENING 1.2" W x 1.325" H
-#8107 2 PANE WINDOW       OPENING .4"w x .4"h
-#8115 FOUR PANE FACTORY WINDOW   OPENING .48" x 1.03"
-#8120 STORE WINDOW     OPENING .75" x 1.325"
-#8128 13 PANE HALF ROUND MASONRY WINDOW    OPENING .675" x .34"  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-#8133 25 PANE MASONRY TILT OUT   OPENING .68" W x 1.19" H
-#8154 12 PANE MASONRY WINDOW   OPENING .465w" x .63h"
-#8162 1/1 DOUBLE HUNG MASONRY WINDOW   OPENING .495" x .83"
-#8187 STORE WINDOW   OPENING 1.13w" x 1.155"h
-#8210 3 PANE TRANSOM WINDOW   OPENING .47"w x .195"h
-#8295 40 PANE MASONRY WINDOW   OPENING .6" x 1.2"   ---------------------------------------------------------
-#8307 12/12 DOUBLE HUNG MASONRY WINDOW   OPENING .545" x .985"
-#8308 6/6 DOUBLE HUNG MASONRY WINDOW   OPENING .44" x .785"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	"8036": { "type": TYPE_RECTANGLE, "params": [ 17.27, 36.83 ],       "desc": "20/20 DOUBLE HUNG MASONRY WINDOW" },
+	"8037": { "type": TYPE_CIRCLE,    "params": [ 18.8 ],               "desc": "ROUND MASONRY WINDOW" },
+	"8044": { "type": TYPE_ARCTOP,    "params": [ 12.7, 30.23, -3.0 ],  "desc": "DOUBLE HUNG ARCH TOP MASONRY WINDOW" },
+	"8046": { "type": TYPE_RECTANGLE, "params": [ 16.76, 11.43 ],       "desc": "9 PANE MASONRY WINDOW" },
+	"8051": { "type": TYPE_RECTANGLE, "params": [ 20.83, 30.48 ],       "desc": "12 PANE MASONRY WINDOW" },
+	"8052": { "type": TYPE_RECTANGLE, "params": [ 10.16, 19.81 ],       "desc": "6/6 DOUBLE HUNG MASONRY WINDOW" },
+	"8058": { "type": TYPE_RECTANGLE, "params": [ 10.16, 22.1 ],        "desc": "6/6 DOUBLE HUNG MASONRY WINDOW" },
+	"8073": { "type": TYPE_ROUNDTOP,  "params": [ 3.56, 29.34 ],        "desc": "NARROW ROUND TOP WINDOW" },
+	"8086": { "type": TYPE_RECTANGLE, "params": [ 12.57, 21.08 ],       "desc": "8/8 DBL HUNG MASONRY WINDOW" },
+	"8087": { "type": TYPE_RECTANGLE, "params": [ 30.48,  33.66 ],      "desc": "20 PANE INDUSTRIAL WINDOW" },
+	"8107": { "type": TYPE_RECTANGLE, "params": [ 10.16, 10.16 ],       "desc": "2 PANE WINDOW" },
+	"8115": { "type": TYPE_RECTANGLE, "params": [ 12.19, 26.16 ],       "desc": "FOUR PANE FACTORY WINDOW" },
+	"8120": { "type": TYPE_RECTANGLE, "params": [ 19.05, 33.66 ],       "desc": "STORE WINDOW" },
+	"8128": { "type": TYPE_HALFROUND, "params": [ 8.64 ],               "desc": "13 PANE HALF ROUND MASONRY WINDOW" },
+	"8133": { "type": TYPE_RECTANGLE, "params": [ 17.27, 30.23 ],       "desc": "25 PANE MASONRY TILT OUT" },
+	"8154": { "type": TYPE_RECTANGLE, "params": [ 11.81, 16.0 ],        "desc": "12 PANE MASONRY WINDOW" },
+	"8162": { "type": TYPE_RECTANGLE, "params": [ 12.57, 21.08 ],       "desc": "1/1 DOUBLE HUNG MASONRY WINDOW" },
+	"8187": { "type": TYPE_RECTANGLE, "params": [ 28.7, 29.34 ],        "desc": "STORE WINDOW" },
+	"8210": { "type": TYPE_RECTANGLE, "params": [ 11.94, 4.95 ],        "desc": "3 PANE TRANSOM WINDOW" },
+	"8295": { "type": TYPE_RECTANGLE, "params": [ 15.24, 30.48 ],       "desc": "40 PANE MASONRY WINDOW" },
+	"8307": { "type": TYPE_RECTANGLE, "params": [ 13.84, 25.02 ],       "desc": "12/12 DOUBLE HUNG MASONRY WINDOW" },
+	"8308": { "type": TYPE_RECTANGLE, "params": [ 11.18, 19.94 ],       "desc": "6/6 DOUBLE HUNG MASONRY WINDOW" },

@@ -1,9 +1,8 @@
-allow for lowest layer to leave some material behind
+allow for lowest layer to leave some material behind (tabs)
 
 verify y offset values for tichy arc top windows (can't really do unless I have windows in hand)
 
-show image of tichy parts when chosen
-	need to do masonry windows (will need to add halk-round window type
+tichy - message box when generating g code for arc-top window
 
 either complete implementation of blind faces in box, or remove feature
 
