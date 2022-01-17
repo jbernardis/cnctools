@@ -2,16 +2,11 @@ allow for lowest layer to leave some material behind (tabs)
 
 verify y offset values for tichy arc top windows (can't really do unless I have windows in hand)
 
-tichy - message box when generating g code for arc-top window
+decision: when a dialog box in modified, should I invalidate (or delete) and G Code and disable the view button?
 
 either complete implementation of blind faces in box, or remove feature
 
 
-rectangle - rounded corners
-
-
-	
-	
 	carve: diamond, grid, hatch
 	contour: arc, circle, line, polyline, reg polygon, rounded slot
 	drills: circle, linear, rectangle

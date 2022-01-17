@@ -72,6 +72,17 @@ class RectanglePanel(wx.Panel, CNCObject):
 		self.scAngle = sc
 		self.addWidget(self.scAngle, "angle")
 		sizer.Add(self.scAngle, pos=(ln, 1), flag=wx.LEFT, border=10)
+
+		t = wx.StaticText(self, wx.ID_ANY, "Corner Radius")
+		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)	
+			
+		vmin, vmax, vinc, digits = self.getSpinValues(self.settings.metric, "cornerrad")
+		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=0, min=vmin, max=vmax, inc=vinc, size=SPINSIZE)
+		sc.SetValue(0)
+		sc.SetDigits(digits)
+		self.scCornerRad = sc
+		self.addWidget(self.scCornerRad, "cornerrad")
+		sizer.Add(self.scCornerRad, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
 		
 		t = wx.StaticText(self, wx.ID_ANY, "Start X")
@@ -162,9 +173,11 @@ class RectanglePanel(wx.Panel, CNCObject):
 		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		sizer.Add(self.getCuttingDirection(), pos=(ln, 1), border=5, flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_VERTICAL)	
 
-		t = wx.StaticText(self, wx.ID_ANY, "Pocket")
-		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		sizer.Add(self.getPockets(), pos=(ln, 3), border=5, flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_VERTICAL)	
+		self.cbPocket = wx.CheckBox(self, wx.ID_ANY, "Pocket")
+		self.addWidget(self.cbPocket, "pocket")
+		sizer.Add(self.cbPocket, pos=(ln, 2), span=(1,2),
+				flag=wx.TOP+wx.BOTTOM+wx.ALIGN_CENTER_HORIZONTAL, border=5)
+		self.Bind(wx.EVT_CHECKBOX, self.onChange, self.cbPocket)
 		ln += 1
 
 		sizer.Add(20, 20, wx.GBPosition(ln, 0))
@@ -299,21 +312,6 @@ class RectanglePanel(wx.Panel, CNCObject):
 			sz.Add(r)
 			self.rbCutDir.append(r)
 		return sz
-	
-	def getPockets(self):
-		labels = ["None", "Horizontal", "Vertical", "Centered"]
-		self.rbPkts = []
-		sz = wx.BoxSizer(wx.VERTICAL)
-		for i in range(len(labels)):
-			if i == 0:
-				style = wx.RB_GROUP
-			else:
-				style = 0
-			r = wx.RadioButton(self, wx.ID_ANY, labels[i], style=style)
-			self.addWidget(r, labels[i])
-			sz.Add(r)
-			self.rbPkts.append(r)
-		return sz
 		
 	def onCbAddSpeed(self, _):
 		self.setState(True, False)
@@ -347,17 +345,18 @@ class RectanglePanel(wx.Panel, CNCObject):
 
 		safez = self.scSafeZ.GetValue()
 			
-		addspeed = self.cbAddSpeed.IsChecked()
-		feedzG0 = self.scFeedZG0.GetValue()
-		feedzG1 = self.scFeedZG1.GetValue()
-		feedxyG0 = self.scFeedXYG0.GetValue()
-		feedxyG1 = self.scFeedXYG1.GetValue()
+		self.addspeed = self.cbAddSpeed.IsChecked()
+		self.feedzG0 = self.scFeedZG0.GetValue()
+		self.feedzG1 = self.scFeedZG1.GetValue()
+		self.feedxyG0 = self.scFeedXYG0.GetValue()
+		self.feedxyG1 = self.scFeedXYG1.GetValue()
 
 		stepover = self.scStepover.GetValue()
 		passdepth = self.scPassDepth.GetValue()
 		depth = self.scTotalDepth.GetValue()
 		tdiam = self.scToolDiam.GetValue()
 		angle = self.scAngle.GetValue()
+		cornerrad = self.scCornerRad.GetValue()
 
 		try:
 			height = float(self.teHeight.GetValue())
@@ -387,217 +386,346 @@ class RectanglePanel(wx.Panel, CNCObject):
 			toolname = None
 			
 		self.gcode = self.preamble(self.settings, self.viewTitle, tdiam, toolname, self.settings.metric)					
-		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % safez)
-		
-		self.tDiam = tdiam
-		if self.settings.annotate:
-			if angle == 0:
-				self.gcode.append("(Rectangle (%6.2f,%6.2f) to (%6.2f,%6.2f) depth from %6.2f to %6.2f)" % (sx, sy, width, height, sz, depth))
-			else:
-				rx1, ry1 = rot.rotate(sx, sy)
-				rx2, ry2 = rot.rotate(width+sx, height+sy)
-				self.gcode.append("(Rectangle (%6.2f,%6.2f) to (%6.2f,%6.2f) depth from %6.2f to %6.2f rotated %6.2f)" % (rx1, ry1, rx2, ry2, sz, depth, angle))
-			
-		points = [[sx, sy], [sx, sy+height], [sx+width, sy+height], [sx+width, sy], [sx, sy]]
-			
-		sp = self.getChosen(self.rbStartPoints)
-		adjx = 0
-		adjy = 0
-		if sp == "Upper Left":
-			adjy = -height
-		elif sp == "Upper Right":
-			adjy = -height
-			adjx = -width
-		elif sp == "Lower Right":
-			adjx = -width
-		elif sp == "Center":
-			adjx = -width/2
-			adjy = -height/2
-			
-		for p in points:
-			p[0] += adjx
-			p[1] += adjy
-			
-		tm = self.getChosen(self.rbToolMove)
-		rad = float(tdiam)/2.0
-		if tm == "Inside Rectangle":
-			points[0][0] += rad
-			points[0][1] += rad
-			points[1][0] += rad
-			points[1][1] -= rad
-			points[2][0] -= rad
-			points[2][1] -= rad
-			points[3][0] -= rad
-			points[3][1] += rad
-			points[4][0] += rad
-			points[4][1] += rad
+		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG0)) % safez)
 
-		elif tm == "Outside Rectangle":
-			points[0][0] -= rad
-			points[0][1] -= rad
-			points[1][0] -= rad
-			points[1][1] += rad
-			points[2][0] += rad
-			points[2][1] += rad
-			points[3][0] += rad
-			points[3][1] -= rad
-			points[4][0] -= rad
-			points[4][1] -= rad
-			
-		cd = self.getChosen(self.rbCutDir)
-		if cd != "Clockwise":
-			np = points[::-1]
-			points = np
-			
-		pkt = self.getChosen(self.rbPkts)
-	
-		if self.settings.annotate:
-			self.gcode.append("(Start point: %s)" % sp)
-			self.gcode.append("(Cutting direction: %s)" % cd)
-			self.gcode.append("(Tool movement: %s)" % tm)
-			self.gcode.append("(Pocket: %s)" % pkt)
-
-		if pkt == "None":
-			self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
-			self.gcode.append(("G0 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG0)) % rot.rotate(points[0][0], points[0][1]))
-
-		
-		xmin = min(points[0][0], points[2][0]) + tdiam/2
-		xmax = max(points[0][0], points[2][0]) - tdiam/2
-		ymin = min(points[0][1], points[2][1]) + tdiam/2
-		ymax = max(points[0][1], points[2][1]) - tdiam/2
-		
-		passes = int(math.ceil(depth/passdepth))
-		
-		cz = sz
-		xlast = 0
-		ylast = 0
-		for i in range(passes):
-			cz -= passdepth
-			if cz < -depth:
-				cz = -depth
+		if cornerrad == 0:						
+			self.tDiam = tdiam
 			if self.settings.annotate:
-				self.gcode.append("(Pass number %d at depth %f)" % (i, cz))
-				
-			if pkt == "Horizontal":
-				first = True
-				alt = True
-				y = ymin
-				self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
-				self.gcode.append(("G0 X"+self.fmt+ " Y"+self.fmt+self.speedTerm(addspeed, feedxyG0)) % rot.rotate(xmin, ymin))
-				
-				self.gcode.append(("G1 Z"+self.fmt+self.speedTerm(addspeed, feedzG1)) % (cz))
-				while y <= ymax:
-					if not first:
-						self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(xlast, y))
-						
-					if alt:
-						self.gcode.append(("G1 X"+self.fmt+ " Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(xmax, y))
-						xlast = xmax
-					else:
-						self.gcode.append(("G1 X"+self.fmt+ " Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(xmin, y))
-						xlast = xmin
-					y += tdiam * stepover
-					first = False
-					alt = not alt
-				
-				self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
-				self.gcode.append(("G0 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG0)) % rot.rotate(points[0][0], points[0][1]))
-			
-			elif pkt == "Vertical":
-				first = True
-				alt = True
-				x = xmin
-				self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
-				self.gcode.append(("G0 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG0)) % rot.rotate(xmin, ymin))
-				
-				self.gcode.append(("G1 Z"+self.fmt+self.speedTerm(addspeed, feedzG1)) % (cz))
-				while x <= xmax:
-					if not first:
-						self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(x, ylast))
-						
-					if alt:
-						self.gcode.append(("G1 X"+self.fmt+ " Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(x, ymax))
-						ylast = ymax
-					else:
-						self.gcode.append(("G1 X"+self.fmt+ " Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(x, ymin))
-						ylast = ymin
-					x += tdiam * stepover
-					first = False
-					alt = not alt
-				
-				self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
-				self.gcode.append(("G0 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG0)) % rot.rotate(points[0][0], points[0][1]))
-			
-			elif pkt == "Centered":
-				vertical = False
-				if (xmax-xmin) > (ymax-ymin):
-					ya = (ymax+ymin)/2.0
-					yb = ya
-					d = ymax - ya
-					xa = xmin + d
-					xb = xmax - d
-				elif (xmax-xmin) < (ymax-ymin):
-					vertical = True
-					xa = (xmax+xmin)/2.0
-					xb = xa
-					d = xmax - xa
-					ya = ymin + d
-					yb = ymax - d
+				if angle == 0:
+					self.gcode.append("(Rectangle (%6.2f,%6.2f) to (%6.2f,%6.2f) depth from %6.2f to %6.2f)" % (sx, sy, width, height, sz, depth))
 				else:
-					xa = (xmax+xmin)/2.0
-					xb = xa
-					ya = (ymax+ymin)/2.0
-					yb = ya
-					
-				self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
-				self.gcode.append(("G0 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG0)) % rot.rotate(xb, yb))
-				self.gcode.append(("G1 Z"+self.fmt+self.speedTerm(addspeed, feedzG1)) % (cz))
-				self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(xa, ya))
+					rx1, ry1 = rot.rotate(sx, sy)
+					rx2, ry2 = rot.rotate(width+sx, height+sy)
+					self.gcode.append("(Rectangle (%6.2f,%6.2f) to (%6.2f,%6.2f) depth from %6.2f to %6.2f rotated %6.2f)" % (rx1, ry1, rx2, ry2, sz, depth, angle))
 				
-				d = stepover * tdiam
-				while (xa-d) >= xmin:
-					if cd == "Clockwise":
-						self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(xa-d, ya-d))
-						if vertical:
-							self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(xa-d, yb+d))
-						else:
-							self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(xa-d, ya+d))
-						self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(xb+d, yb+d))
-						if vertical:
-							self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(xb+d, ya-d))
-						else:
-							self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(xb+d, yb-d))
-						self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(xa-d, ya-d))
+			points = [[sx, sy], [sx, sy+height], [sx+width, sy+height], [sx+width, sy], [sx, sy]]
+				
+			sp = self.getChosen(self.rbStartPoints)
+			adjx = 0
+			adjy = 0
+			if sp == "Upper Left":
+				adjy = -height
+			elif sp == "Upper Right":
+				adjy = -height
+				adjx = -width
+			elif sp == "Lower Right":
+				adjx = -width
+			elif sp == "Center":
+				adjx = -width/2
+				adjy = -height/2
+				
+			for p in points:
+				p[0] += adjx
+				p[1] += adjy
+				
+			tm = self.getChosen(self.rbToolMove)
+			rad = float(tdiam)/2.0
+			if tm == "Inside Rectangle":
+				points[0][0] += rad
+				points[0][1] += rad
+				points[1][0] += rad
+				points[1][1] -= rad
+				points[2][0] -= rad
+				points[2][1] -= rad
+				points[3][0] -= rad
+				points[3][1] += rad
+				points[4][0] += rad
+				points[4][1] += rad
+	
+			elif tm == "Outside Rectangle":
+				points[0][0] -= rad
+				points[0][1] -= rad
+				points[1][0] -= rad
+				points[1][1] += rad
+				points[2][0] += rad
+				points[2][1] += rad
+				points[3][0] += rad
+				points[3][1] -= rad
+				points[4][0] -= rad
+				points[4][1] -= rad
+				
+			cd = self.getChosen(self.rbCutDir)
+			if cd != "Clockwise":
+				np = points[::-1]
+				points = np
+				
+			pkt = self.cbPocket.IsChecked()
+		
+			if self.settings.annotate:
+				self.gcode.append("(Start point: %s)" % sp)
+				self.gcode.append("(Cutting direction: %s)" % cd)
+				self.gcode.append("(Tool movement: %s)" % tm)
+				self.gcode.append("(Pocket: %s)" % pkt)
+	
+			if not pkt:
+				self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG0)) % (safez))
+				self.gcode.append(("G0 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG0)) % rot.rotate(points[0][0], points[0][1]))
+	
+			
+			xmin = min(points[0][0], points[2][0]) + tdiam/2
+			xmax = max(points[0][0], points[2][0]) - tdiam/2
+			ymin = min(points[0][1], points[2][1]) + tdiam/2
+			ymax = max(points[0][1], points[2][1]) - tdiam/2
+			
+			passes = int(math.ceil(depth/passdepth))
+			
+			
+			cz = sz
+			for i in range(passes):
+				cz -= passdepth
+				if cz < -depth:
+					cz = -depth
+				if self.settings.annotate:
+					self.gcode.append("(Pass number %d at depth %f)" % (i, cz))
+	
+				if pkt:
+					vertical = False
+					if (xmax-xmin) > (ymax-ymin):
+						ya = (ymax+ymin)/2.0
+						yb = ya
+						d = ymax - ya
+						xa = xmin + d
+						xb = xmax - d
+					elif (xmax-xmin) < (ymax-ymin):
+						vertical = True
+						xa = (xmax+xmin)/2.0
+						xb = xa
+						d = xmax - xa
+						ya = ymin + d
+						yb = ymax - d
 					else:
-						self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(xa-d, ya-d))
-						if vertical:
-							self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(xb+d, ya-d))
+						xa = (xmax+xmin)/2.0
+						xb = xa
+						ya = (ymax+ymin)/2.0
+						yb = ya
+						
+					self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG0)) % (safez))
+					self.gcode.append(("G0 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG0)) % rot.rotate(xb, yb))
+					self.gcode.append(("G1 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG1)) % (cz))
+					self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % rot.rotate(xa, ya))
+					
+					d = stepover * tdiam
+					while (xa-d) >= xmin:
+						if cd == "Clockwise":
+							self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % rot.rotate(xa-d, ya-d))
+							if vertical:
+								self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % rot.rotate(xa-d, yb+d))
+							else:
+								self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % rot.rotate(xa-d, ya+d))
+							self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % rot.rotate(xb+d, yb+d))
+							if vertical:
+								self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % rot.rotate(xb+d, ya-d))
+							else:
+								self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % rot.rotate(xb+d, yb-d))
+							self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % rot.rotate(xa-d, ya-d))
 						else:
-							self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(xb+d, yb-d))
-						self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(xb+d, yb+d))
-						if vertical:
-							self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(xa-d, yb+d))
-						else:
-							self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(xa-d, ya+d))
-						self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(xa-d, ya-d))
-					d += stepover * tdiam
+							self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % rot.rotate(xa-d, ya-d))
+							if vertical:
+								self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % rot.rotate(xb+d, ya-d))
+							else:
+								self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % rot.rotate(xb+d, yb-d))
+							self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % rot.rotate(xb+d, yb+d))
+							if vertical:
+								self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % rot.rotate(xa-d, yb+d))
+							else:
+								self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % rot.rotate(xa-d, ya+d))
+							self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % rot.rotate(xa-d, ya-d))
+						d += stepover * tdiam
+					
+					self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG0)) % (safez))
+					self.gcode.append(("G0 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG0)) % rot.rotate(points[0][0], points[0][1]))
 				
-				self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
-				self.gcode.append(("G0 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG0)) % rot.rotate(points[0][0], points[0][1]))
+				self.gcode.append(("G1 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG1)) % (cz))
+				for p in points[1:]:
+					self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % rot.rotate(p[0], p[1]))
+				
+			self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG0)) % (safez))
+			if self.settings.annotate:
+				self.gcode.append("(End object %s)" % self.viewTitle)
+				
+		else:
+			# cornerrad != 0
+			self.tDiam = tdiam
+			if self.settings.annotate:
+				if angle == 0:
+					self.gcode.append("(Rectangle (%6.2f,%6.2f) to (%6.2f,%6.2f) depth from %6.2f to %6.2f)" % (sx, sy, width, height, sz, depth))
+				else:
+					rx1, ry1 = rot.rotate(sx, sy)
+					rx2, ry2 = rot.rotate(width+sx, height+sy)
+					self.gcode.append("(Rectangle (%6.2f,%6.2f) to (%6.2f,%6.2f) depth from %6.2f to %6.2f rotated %6.2f)" % (rx1, ry1, rx2, ry2, sz, depth, angle))
+				
+			self.gcode.append("(Corner Radius = %.2f)" % cornerrad)
+			
+			points = [[sx, sy+cornerrad], [sx, sy+height-cornerrad],
+					[sx+cornerrad, sy+height], [sx+width-cornerrad, sy+height], 
+					[sx+width, sy+height-cornerrad], [sx+width, sy+cornerrad],
+					[sx+width-cornerrad, sy], [sx+cornerrad, sy]]
 			
 				
-			self.gcode.append(("G1 Z"+self.fmt+self.speedTerm(addspeed, feedzG1)) % (cz))
-			for p in points[1:]:
-				self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(addspeed, feedxyG1)) % rot.rotate(p[0], p[1]))
+			sp = self.getChosen(self.rbStartPoints)
+			adjx = 0
+			adjy = 0
+			if sp == "Upper Left":
+				adjy = -height
+			elif sp == "Upper Right":
+				adjy = -height
+				adjx = -width
+			elif sp == "Lower Right":
+				adjx = -width
+			elif sp == "Center":
+				adjx = -width/2
+				adjy = -height/2
+				
+			for p in points:
+				p[0] += adjx
+				p[1] += adjy
+				
+			tm = self.getChosen(self.rbToolMove)
+			rad = float(tdiam)/2.0
+			cRadAdj = 0
+			if tm == "Inside Rectangle":
+				cRadAdj = -rad
+				points[0][0] += rad
+				points[1][0] += rad
+				points[2][1] -= rad
+				points[3][1] -= rad
+				points[4][0] -= rad
+				points[5][0] -= rad
+				points[6][1] += rad
+				points[7][1] += rad
 			
-		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(addspeed, feedzG0)) % (safez))
-		if self.settings.annotate:
-			self.gcode.append("(End object %s)" % self.viewTitle)
+			elif tm == "Outside Rectangle":
+				cRadAdj = rad
+				points[0][0] -= rad
+				points[1][0] -= rad
+				points[2][1] += rad
+				points[3][1] += rad
+				points[4][0] += rad
+				points[5][0] += rad
+				points[6][1] -= rad
+				points[7][1] -= rad
+
+			baseOffset = cornerrad + cRadAdj
+			centerOffsets = [ [baseOffset, 0], [0, -baseOffset], [-baseOffset, 0], [0, baseOffset] ]
+				
+			self.arcCmd = "G2"
+			cd = self.getChosen(self.rbCutDir)
+			cw = True
+			if cd != "Clockwise":
+				np = points[::-1]
+				points = np
+				co = centerOffsets[::-1]
+				centerOffsets = co
+				self.arcCmd = "G3"
+				cw = False
+				
+			pkt = self.cbPocket.IsChecked()
+		
+			if self.settings.annotate:
+				self.gcode.append("(Start point: %s)" % sp)
+				self.gcode.append("(Cutting direction: %s)" % cd)
+				self.gcode.append("(Tool movement: %s)" % tm)
+				self.gcode.append("(Pocket: %s)" % pkt)
+				
+			self.gcode.append("(%s)" % str(points))
+			self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG0)) % (safez))
+			self.gcode.append(("G0 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG0)) % rot.rotate(points[0][0], points[0][1]))
+			
+			passes = int(math.ceil(depth/passdepth))
+			
+			points.append([points[0][0], points[0][1]])
+			
+			cz = sz
+			
+			for i in range(passes):
+				cz -= passdepth
+				if cz < -depth:
+					cz = -depth
+				if self.settings.annotate:
+					self.gcode.append("(Pass number %d at depth %f)" % (i, cz))
+					
+				self.gcode.append(("G1 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG1)) % (cz))
+				if pkt:
+					delta = stepover * tdiam
+					offset = baseOffset - delta
+					pts = [[x[0], x[1]] for x in points]
+					while offset > 0:
+						if cw:
+							co = [ [offset, 0], [0, -offset], [-offset, 0], [0, offset] ]
+							pts[0][0] += delta
+							pts[1][0] += delta
+							pts[8][0] += delta
+							
+							pts[2][1] -= delta
+							pts[3][1] -= delta
+							
+							pts[4][0] -= delta
+							pts[5][0] -= delta
+							
+							pts[6][1] += delta
+							pts[7][1] += delta
+						else:
+							co = [ [0, offset], [-offset, 0], [0, -offset], [offset, 0] ]
+							pts[0][1] += delta
+							pts[1][1] += delta
+							pts[8][1] += delta
+							
+							pts[2][0] -= delta
+							pts[3][0] -= delta
+							
+							pts[4][1] -= delta
+							pts[5][1] -= delta
+							
+							pts[6][0] += delta
+							pts[7][0] += delta
+
+						self.drawLoop(pts, co, rot)
+						offset -= delta
+						
+					if cw:
+						xlo, xhi, ylo, yhi = pts[7][0], pts[6][0], pts[0][1], pts[1][1]
+					else:
+						xlo, xhi, ylo, yhi = pts[0][0], pts[1][0], pts[7][1], pts[6][1]
+						
+					while (xlo <= xhi and ylo <= yhi):
+						if cw:
+							rpts = [[xlo, yhi], [xhi, yhi], [xhi, ylo], [xlo, ylo]]
+						else:
+							rpts = [[xhi, ylo], [xhi, yhi], [xlo, yhi], [xlo, ylo]]
+						self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % (xlo, ylo))
+						for p in rpts:
+							self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % (p[0], p[1]))
+						xlo += delta
+						ylo += delta
+						xhi -= delta
+						yhi -= delta
+				
+				self.gcode.append(("G1 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG1)) % (cz))
+				self.drawLoop(points, centerOffsets, rot)
+				
+			self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG0)) % (safez))
+			if self.settings.annotate:
+				self.gcode.append("(End object %s)" % self.viewTitle)
+
 				
 		self.gcl.updateList(self.gcode)
 		self.bSave.Enable()
 		self.bVisualize.Enable()
 		self.setState(False, True)
 
+	def drawLoop(self, points, centerOffsets, rot):
+		p0 = points[0]
+		rp0 = rot.rotate(p0[0], p0[1])
+		self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % (rp0[0], rp0[1]))
+		for i in range(4):
+			p1 = points[i*2+1]
+			rp1 = rot.rotate(p1[0], p1[1])
+			p2 = points[i*2+2]
+			rp2 = rot.rotate(p2[0], p2[1])
+			self.gcode.append(("G1 X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1)) % (rp1[0], rp1[1]))
+			cp = rot.rotate(p1[0] + centerOffsets[i][0], p1[1] + centerOffsets[i][1])
+			xoff = cp[0] - rp1[0]
+			yoff = cp[1] - rp1[1]
+			self.gcode.append((self.arcCmd+self.IJTerm("I", xoff)+self.IJTerm("J", yoff)+" X"+self.fmt+" Y"+self.fmt+self.speedTerm(self.addspeed, self.feedxyG1))
+						% (rp2[0], rp2[1]))
 

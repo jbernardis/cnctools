@@ -12,7 +12,9 @@ import os
 wildcard = "JSON Code (*.json)|*.json|"	 \
 		   "All files (*.*)|*.*"
 
+# min, max, step, digits
 metricspinvals = {
+	"cornerrad":  [ 0.0, 20.0, 0.1, 1],
 	"extradepth": [ 0.0, 5.0, 0.1, 1],
 	"feedxyg0":   [ 1, 10000, 1, 1 ],
 	"feedxyg1":   [ 1, 10000, 1, 1 ],
@@ -29,6 +31,7 @@ metricspinvals = {
 }
 
 imperialspinvals = {
+	"cornerrad":  [ 0.0, 1.0, 0.01, 2],
 	"extradepth": [ 0.0, 0.5, 0.01, 2],
 	"feedxyg0":   [ 1, 10000, 1, 1 ],
 	"feedxyg1":   [ 1, 10000, 1, 1 ],

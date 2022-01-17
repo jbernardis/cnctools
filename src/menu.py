@@ -310,7 +310,6 @@ class MainFrame(wx.Frame):
 			sz = self.GetSize()
 			sz[1] += 30
 			self.SetSize(sz)
-		print(self.GetSize())
 		
 	def createMaterialsMenu(self):		
 		self.menuMaterials = wx.Menu()
