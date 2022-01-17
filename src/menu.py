@@ -137,7 +137,8 @@ class MainFrame(wx.Frame):
 		boxCont = wx.StaticBox(self, wx.ID_ANY, " Contours ")
 		topBorder = boxCont.GetBordersForSizer()[0]
 		bsizer = wx.BoxSizer(wx.VERTICAL)
-		bsizer.AddSpacer(topBorder)
+		if platform != "linux":
+			bsizer.AddSpacer(topBorder)
 		
 		szContours = wx.BoxSizer(wx.HORIZONTAL)
 		szContours.AddSpacer(10)
@@ -184,9 +185,11 @@ class MainFrame(wx.Frame):
 		self.Bind(wx.EVT_BUTTON, self.bRSlotPressed, self.bRSlot)
 		
 		szContours.AddSpacer(10)
-
 		bsizer.Add(szContours, 0, wx.ALL, 5)
 		bsizer.AddSpacer(10)
+		if platform == "linux":
+			bsizer.AddSpacer(topBorder)
+
 		boxCont.SetSizer(bsizer)
 		msizer.Add(boxCont, weightSingle, wx.EXPAND|wx.ALL, 10)
 
@@ -194,7 +197,8 @@ class MainFrame(wx.Frame):
 		boxDrills = wx.StaticBox(self, wx.ID_ANY, " Drills ")
 		topBorder = boxDrills.GetBordersForSizer()[0]
 		bsizer = wx.BoxSizer(wx.VERTICAL)
-		bsizer.AddSpacer(topBorder)
+		if platform != "linux":
+			bsizer.AddSpacer(topBorder)
 		
 		szDrills = wx.BoxSizer(wx.HORIZONTAL)
 		
@@ -219,13 +223,16 @@ class MainFrame(wx.Frame):
 
 		bsizer.Add(szDrills, 0, wx.ALL, 5)
 		bsizer.AddSpacer(10)
+		if platform == "linux":
+			bsizer.AddSpacer(topBorder)
 		boxDrills.SetSizer(bsizer)
 		msizer.Add(boxDrills, weightSingle, wx.EXPAND|wx.ALL, 10)
 
 		boxCarve = wx.StaticBox(self, wx.ID_ANY, " Carvings ")
 		topBorder = boxCarve.GetBordersForSizer()[0]
 		bsizer = wx.BoxSizer(wx.VERTICAL)
-		bsizer.AddSpacer(topBorder)
+		if platform != "linux":
+			bsizer.AddSpacer(topBorder)
 		
 		szCarving = wx.BoxSizer(wx.HORIZONTAL)
 		
@@ -250,6 +257,8 @@ class MainFrame(wx.Frame):
 
 		bsizer.Add(szCarving, 0, wx.ALL, 5)
 		bsizer.AddSpacer(10)
+		if platform == "linux":
+			bsizer.AddSpacer(topBorder)
 		boxCarve.SetSizer(bsizer)
 		msizer.Add(boxCarve, weightSingle, wx.EXPAND|wx.ALL, 10)
 		
@@ -257,7 +266,8 @@ class MainFrame(wx.Frame):
 		boxObject = wx.StaticBox(self, wx.ID_ANY, " Objects ")
 		topBorder = boxObject.GetBordersForSizer()[0]
 		bsizer = wx.BoxSizer(wx.VERTICAL)
-		bsizer.AddSpacer(topBorder)
+		if platform != "linux":
+			bsizer.AddSpacer(topBorder)
 		
 		szObjects = wx.BoxSizer(wx.HORIZONTAL)
 		
@@ -284,6 +294,8 @@ class MainFrame(wx.Frame):
 		
 		bsizer.Add(szObjects, 0, wx.ALL, 5)
 		bsizer.AddSpacer(10)
+		if platform == "linux":
+			bsizer.AddSpacer(topBorder)
 		boxObject.SetSizer(bsizer)
 		msizer.Add(boxObject, weightSingle, wx.EXPAND|wx.ALL, 10)
 		
@@ -294,6 +306,11 @@ class MainFrame(wx.Frame):
 		self.SetSizer(sizer)
 		self.Layout()
 		self.Fit();
+		if platform == "linux":
+			sz = self.GetSize()
+			sz[1] += 30
+			self.SetSize(sz)
+		print(self.GetSize())
 		
 	def createMaterialsMenu(self):		
 		self.menuMaterials = wx.Menu()
