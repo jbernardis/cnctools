@@ -63,6 +63,7 @@ class GCodeList(wx.ListCtrl):
 	def onResize(self, evt):
 		cw = self.GetSize()[0]
 		self.SetColumnWidth(0, cw)
+		evt.Skip()
 
 	def OnGetItemText(self, item, col):
 		if item < 0 or item >= len(self.gcode):

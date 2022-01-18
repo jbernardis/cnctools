@@ -3,7 +3,7 @@ Created on Jan 31, 2020
 
 @author: jeffb
 '''
-from validators import verifyExitNoSave, verifyExitNoGenerate, verifyStaleGCodeSave
+from validators import verifyExitNoSave, verifyExitNoGenerate, verifyStaleGCodeSave, verifyStaleGCodeView
 from settings import BTNDIM
 import wx
 import json
@@ -220,7 +220,7 @@ class CNCObject:
 				self.widgets[w].SetValue(wvals[w])
 				
 		self.checkEnable()
-		self.setState(True, False)
+		self.setState(True, None)
 		
 	def checkEnable(self):
 		f = self.cbAddSpeed.IsChecked()
@@ -249,7 +249,9 @@ class CNCObject:
 		if self.modified:
 			title += " (modified)"
 			
-		if self.unsaved:
+		if self.modified and self.unsaved:
+			title += " (stale)"
+		elif self.unsaved:
 			title += " (unsaved)"
 		self.parent.SetTitle(title)
 		
@@ -300,7 +302,7 @@ class CNCObject:
 		return code
 	
 	def onChange(self, _):
-		self.setState(True, False)
+		self.setState(True, None)
 
 	def okToClose(self):
 		if self.modified:
@@ -317,10 +319,13 @@ class CNCObject:
 		if self.okToClose():
 			self.Destroy()
 			
-	def setState(self, mFlag=True, sFlag=False):
+	def setState(self, mFlag=True, sFlag=None):
 		if mFlag is not None:
 			self.modified = mFlag
-		self.unsaved = sFlag
+		
+		if sFlag is not None:
+			self.unsaved = sFlag
+			
 		self.setTitleFlag()
 	
 	def bSavePressed(self, _):
@@ -345,4 +350,8 @@ class CNCObject:
 			return " " + label + self.fmt % val
 
 	def bVisualizePressed(self, _):
+		if self.modified:
+			rc = verifyStaleGCodeView(self)
+			if not rc:
+				return 
 		self.gcl.visualize(title=self.viewTitle)

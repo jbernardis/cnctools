@@ -2,6 +2,7 @@ import wx
 import objects.box.cncbox as cncbox
 from gcodelist import GCodeList
 from settings import BTNDIM, SPINSIZE
+from validators import verifyStaleGCodeSave, verifyStaleGCodeView
 
 DEPTHFORMAT = "%8.2f"
 RATEFORMAT = "%8.2f"
@@ -315,8 +316,7 @@ class GCodeDlg(wx.Dialog):
 		self.modified = None
 		self.unsaved = None		
 		self.setState(modified=False, unsaved=False)
-
-		
+	
 	def setState(self, modified=None, unsaved=None):
 		updateTitle = False
 		if modified is not None:
@@ -339,13 +339,8 @@ class GCodeDlg(wx.Dialog):
 				title += " (unsaved)"
 			
 			self.SetTitle(title)
-			
-		if self.unsaved and self.modified:
-			self.bSave.Enable(False)
-		else:
-			self.bSave.Enable(self.unsaved)
 
-
+		self.bSave.Enable(self.unsaved)
 		
 	def doExit(self, e):
 		self.EndModal(wx.ID_OK)
@@ -600,9 +595,19 @@ class GCodeDlg(wx.Dialog):
 		self.setState(modified=False, unsaved=True)
 	
 	def bVisualizePressed(self, _):
+		if self.modified:
+			rc = verifyStaleGCodeView(self)
+			if not rc:
+				return 
+
 		self.gcl.visualize()
 		
 	def bSavePressed(self, _):
+		if self.modified:
+			rc = verifyStaleGCodeSave(self)
+			if not rc:
+				return 
+
 		if self.gcl.save(self.settings):
 			self.setState(modified=False, unsaved=False)
 

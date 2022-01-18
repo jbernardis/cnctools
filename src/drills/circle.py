@@ -295,7 +295,7 @@ class CirDrillPanel(wx.Panel, CNCObject):
 		return sz
 		
 	def onCbAddSpeed(self, _):
-		self.setState(True, False)
+		self.setState(True, None)
 		flag = self.cbAddSpeed.IsChecked()
 		self.scFeedXYG0.Enable(flag)
 		self.scFeedXYG1.Enable(flag)

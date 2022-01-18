@@ -331,12 +331,12 @@ class RecDrillPanel(wx.Panel, CNCObject):
 		return sz
 
 	def onCbPerimeter(self, _):
-		self.setState(True, False)
+		self.setState(True, None)
 		flag = self.cbPerimeter.IsChecked()
 		self.cbStagger.Enable(not flag)
 		
 	def onCbAddSpeed(self, _):
-		self.setState(True, False)
+		self.setState(True, None)
 		flag = self.cbAddSpeed.IsChecked()
 		self.scFeedXYG0.Enable(flag)
 		self.scFeedXYG1.Enable(flag)

@@ -73,6 +73,14 @@ def verifyStaleGCodeSave(parent):
 	dlg.Destroy()
 	return rc == wx.ID_YES
 	
+def verifyStaleGCodeView(parent):
+	dlg = wx.MessageDialog(parent, 'Generated G Code is stale\nPress yes to view anyway\notherwise press no to go back and re-generate',
+                               'Stale G Code',
+                               wx.YES_NO | wx.ICON_WARNING)
+	rc = dlg.ShowModal()
+	dlg.Destroy()
+	return rc == wx.ID_YES
+	
 def verifyExitNoGenerate(parent):
 	dlg = wx.MessageDialog(parent, 'Changes made, G Code not generated\nPress yes to exit anyway',
                                'Data has changed',

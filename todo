@@ -2,8 +2,6 @@ allow for lowest layer to leave some material behind (tabs)
 
 verify y offset values for tichy arc top windows (can't really do unless I have windows in hand)
 
-decision: when a dialog box in modified, should I invalidate (or delete) and G Code and disable the view button?
-
 either complete implementation of blind faces in box, or remove feature
 
 

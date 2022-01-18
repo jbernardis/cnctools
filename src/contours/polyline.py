@@ -257,7 +257,7 @@ class PolyPanel(wx.Panel, CNCObject):
 		return sz
 		
 	def onCbAddSpeed(self, _):
-		self.setState(True, False)
+		self.setState(True, None)
 		flag = self.cbAddSpeed.IsChecked()
 		self.scFeedXYG0.Enable(flag)
 		self.scFeedXYG1.Enable(flag)
@@ -265,7 +265,7 @@ class PolyPanel(wx.Panel, CNCObject):
 		self.scFeedZG1.Enable(flag)
 		
 	def onTracks(self, _):
-		self.setState(True, False)
+		self.setState(True, None)
 		
 	def bEditPointsPressed(self, _):
 		try:
@@ -283,7 +283,7 @@ class PolyPanel(wx.Panel, CNCObject):
 			s = str(dlg.getValues())
 			print("(%s)" % s)
 			self.tePoints.SetValue(str(dlg.getValues()))
-			self.setState(True, False)
+			self.setState(True, None)
 			
 		dlg.Destroy()
 				

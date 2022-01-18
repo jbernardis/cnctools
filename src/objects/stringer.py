@@ -262,14 +262,14 @@ class StringerPanel(wx.Panel, CNCObject):
 		self.Fit();
 		
 	def onRiseRunSpin(self, _):
-		self.setState(True, False)
+		self.setState(True, None)
 		self.run = self.scRun.GetValue()
 		self.rise = self.scRise.GetValue() 
 		
 		self.setAngle()
 		
 	def onRiseRunText(self, _):
-		self.setState(True, False)
+		self.setState(True, None)
 		self.run = self.scRun.GetValue()
 		self.rise = self.scRise.GetValue() 
 		
@@ -282,10 +282,10 @@ class StringerPanel(wx.Panel, CNCObject):
 		
 		
 	def onCbRotate(self, _):
-		self.setState(True, False)
+		self.setState(True, None)
 		
 	def onCbAddSpeed(self, _):
-		self.setState(True, False)
+		self.setState(True, None)
 		flag = self.cbAddSpeed.IsChecked()
 		self.scFeedXYG0.Enable(flag)
 		self.scFeedXYG1.Enable(flag)

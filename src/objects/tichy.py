@@ -446,7 +446,7 @@ class TichyPanel(wx.Panel, CNCObject):
 	def onTichyCategory(self, evt):
 		tc = self.getChosen(self.rbTichyCat)
 		self.updateTichyCategory(tc)
-		self.setState(True, False)
+		self.setState(True, None)
 		
 	def getStartingPoints(self):
 		labels = ["Lower Left", "Upper Left", "Lower Right", "Upper Right", "Center"]
@@ -565,7 +565,7 @@ class TichyPanel(wx.Panel, CNCObject):
 		return sz
 		
 	def onCbAddSpeed(self, _):
-		self.setState(True, False)
+		self.setState(True, None)
 		flag = self.cbAddSpeed.IsChecked()
 		self.scFeedXYG0.Enable(flag)
 		self.scFeedXYG1.Enable(flag)
@@ -574,7 +574,7 @@ class TichyPanel(wx.Panel, CNCObject):
 		
 	def onCbTichyPart(self, _):
 		self.updateTichyDisplay()
-		self.setState(True, False)
+		self.setState(True, None)
 		
 	def bGeneratePressed(self, _):
 		self.bSave.Enable(False)
