@@ -390,13 +390,6 @@ class RectanglePanel(wx.Panel, CNCObject):
 
 		if cornerrad == 0:						
 			self.tDiam = tdiam
-			if self.settings.annotate:
-				if angle == 0:
-					self.gcode.append("(Rectangle (%6.2f,%6.2f) to (%6.2f,%6.2f) depth from %6.2f to %6.2f)" % (sx, sy, width, height, sz, depth))
-				else:
-					rx1, ry1 = rot.rotate(sx, sy)
-					rx2, ry2 = rot.rotate(width+sx, height+sy)
-					self.gcode.append("(Rectangle (%6.2f,%6.2f) to (%6.2f,%6.2f) depth from %6.2f to %6.2f rotated %6.2f)" % (rx1, ry1, rx2, ry2, sz, depth, angle))
 				
 			points = [[sx, sy], [sx, sy+height], [sx+width, sy+height], [sx+width, sy], [sx, sy]]
 				
@@ -450,8 +443,20 @@ class RectanglePanel(wx.Panel, CNCObject):
 				points = np
 				
 			pkt = self.cbPocket.IsChecked()
-		
+
 			if self.settings.annotate:
+				sx = points[0][0]
+				sy = points[0][1]
+				
+				if angle == 0:
+					self.gcode.append("(Rectangle (%6.2f,%6.2f) to (%6.2f,%6.2f))" % (sx, sy, sx+width, sy+height))
+					self.gcode.append("(Depth from %6.2f to %6.2f)" % (sz, depth))
+				else:
+					rx1, ry1 = rot.rotate(sx, sy)
+					rx2, ry2 = rot.rotate(width+sx, height+sy)
+					self.gcode.append("(Rectangle (%6.2f,%6.2f) to (%6.2f,%6.2f))" % (rx1, ry1, rx2, ry2))
+					self.gcode.append("(Depth from %6.2f to %6.2f rotated %6.2f)" % (sz, depth, angle))
+		
 				self.gcode.append("(Start point: %s)" % sp)
 				self.gcode.append("(Cutting direction: %s)" % cd)
 				self.gcode.append("(Tool movement: %s)" % tm)
@@ -546,13 +551,6 @@ class RectanglePanel(wx.Panel, CNCObject):
 		else:
 			# cornerrad != 0
 			self.tDiam = tdiam
-			if self.settings.annotate:
-				if angle == 0:
-					self.gcode.append("(Rectangle (%6.2f,%6.2f) to (%6.2f,%6.2f) depth from %6.2f to %6.2f)" % (sx, sy, width, height, sz, depth))
-				else:
-					rx1, ry1 = rot.rotate(sx, sy)
-					rx2, ry2 = rot.rotate(width+sx, height+sy)
-					self.gcode.append("(Rectangle (%6.2f,%6.2f) to (%6.2f,%6.2f) depth from %6.2f to %6.2f rotated %6.2f)" % (rx1, ry1, rx2, ry2, sz, depth, angle))
 				
 			self.gcode.append("(Corner Radius = %.2f)" % cornerrad)
 			
@@ -622,6 +620,17 @@ class RectanglePanel(wx.Panel, CNCObject):
 			pkt = self.cbPocket.IsChecked()
 		
 			if self.settings.annotate:
+				sx = points[0][0]
+				sy = points[0][1]
+				if angle == 0:
+					self.gcode.append("(Rectangle (%6.2f,%6.2f) to (%6.2f,%6.2f))" % (sx, sy, sx+width, sy+height))
+					self.gcode.append("(Depth from %6.2f to %6.2f)" % (sz, depth))
+				else:
+					rx1, ry1 = rot.rotate(sx, sy)
+					rx2, ry2 = rot.rotate(width+sx, height+sy)
+					self.gcode.append("(Rectangle (%6.2f,%6.2f) to (%6.2f,%6.2f))" % (rx1, ry1, rx2, ry2))
+					self.gcode.append("(Depth from %6.2f to %6.2f rotated %6.2f)" % (sz, depth, angle))
+
 				self.gcode.append("(Start point: %s)" % sp)
 				self.gcode.append("(Cutting direction: %s)" % cd)
 				self.gcode.append("(Tool movement: %s)" % tm)
