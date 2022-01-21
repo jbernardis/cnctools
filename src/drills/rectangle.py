@@ -2,7 +2,7 @@ import wx
 import math
 from gcodelist import GCodeList
 from cncobject import CNCObject
-from validators import ValidateToolSize, ValidateMinLength, ValidateNoEntryErrors
+from validators import ValidateToolSize, ValidateMinValue, ValidateNoEntryErrors
 from rotator import Rotator 
 from settings import SPINSIZE
 
@@ -396,10 +396,10 @@ class RecDrillPanel(wx.Panel, CNCObject):
 		if not ValidateToolSize(self, tdiam, hdiam, "Hole Diameter"):
 			return
 
-		if not ValidateMinLength(self, height, hdiam+spacing, "Height", "Hole Diameter + Spacing"):
+		if not ValidateMinValue(self, height, hdiam+spacing, "Height", "Hole Diameter + Spacing"):
 			return
 
-		if not ValidateMinLength(self, width, hdiam+spacing, "Width", "Hole Diameter + Spacing"):
+		if not ValidateMinValue(self, width, hdiam+spacing, "Width", "Hole Diameter + Spacing"):
 			return
 			
 		if self.databaseToolDiam == tdiam:

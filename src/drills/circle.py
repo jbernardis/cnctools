@@ -2,7 +2,7 @@ import wx
 import math
 from gcodelist import GCodeList
 from cncobject import CNCObject
-from validators import ValidateToolSize, ValidateMinLength, ValidateNonZero, ValidateNoEntryErrors
+from validators import ValidateToolSize, ValidateMinValue, ValidateNonZero, ValidateNoEntryErrors
 from settings import SPINSIZE
 
 def triangulate(p1, p2):
@@ -355,7 +355,7 @@ class CirDrillPanel(wx.Panel, CNCObject):
 		if not ValidateToolSize(self, tdiam, hdiam, "Hole Diameter"):
 			return
 		
-		if not ValidateMinLength(self, cdiam, hdiam + spacing, "Overall diameter", "Hole diameter + spacing"):
+		if not ValidateMinValue(self, cdiam, hdiam + spacing, "Overall diameter", "Hole diameter + spacing"):
 			return
 
 		if self.databaseToolDiam == tdiam:

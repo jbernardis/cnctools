@@ -2,7 +2,7 @@ import wx
 import math
 from gcodelist import GCodeList
 from cncobject import CNCObject
-from validators import ValidateToolSize, ValidateRange, ValidateMinLength, ValidateNoEntryErrors
+from validators import ValidateToolSize, ValidateRange, ValidateMinValue, ValidateNoEntryErrors
 from settings import SPINSIZE
 
 class MainFrame(wx.Frame):
@@ -49,17 +49,17 @@ class SlotPanel(wx.Panel, CNCObject):
 		
 		self.setTitleFlag()
 
-		t = wx.StaticText(self, wx.ID_ANY, "Length")
-		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
-		self.teLength = wx.TextCtrl(self, wx.ID_ANY, "10", style=wx.TE_RIGHT)
-		self.addWidget(self.teLength, "length")
-		sizer.Add(self.teLength, pos=(ln, 1), flag=wx.LEFT, border=10)
-		
 		t = wx.StaticText(self, wx.ID_ANY, "Width")
-		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		sizer.Add(t, pos=(ln, 0), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
 		self.teWidth = wx.TextCtrl(self, wx.ID_ANY, "10", style=wx.TE_RIGHT)
 		self.addWidget(self.teWidth, "width")
-		sizer.Add(self.teWidth, pos=(ln, 3), flag=wx.LEFT, border=10)
+		sizer.Add(self.teWidth, pos=(ln, 1), flag=wx.LEFT, border=10)
+		
+		t = wx.StaticText(self, wx.ID_ANY, "Height")
+		sizer.Add(t, pos=(ln, 2), flag=wx.LEFT+wx.ALIGN_CENTER_VERTICAL, border=20)		
+		self.teHeight = wx.TextCtrl(self, wx.ID_ANY, "10", style=wx.TE_RIGHT)
+		self.addWidget(self.teHeight, "height")
+		sizer.Add(self.teHeight, pos=(ln, 3), flag=wx.LEFT, border=10)
 		ln += 1
 
 		t = wx.StaticText(self, wx.ID_ANY, "Rotation Angle")
@@ -345,9 +345,9 @@ class SlotPanel(wx.Panel, CNCObject):
 		angle = self.scAngle.GetValue()
 
 		try:
-			length = float(self.teLength.GetValue())
+			height = float(self.teHeight.GetValue())
 		except:
-			errs.append("Length")
+			errs.append("Height")
 		try:
 			width = float(self.teWidth.GetValue())
 		except:
@@ -356,7 +356,7 @@ class SlotPanel(wx.Panel, CNCObject):
 		if not ValidateNoEntryErrors(self, errs):
 			return
 			
-		if not ValidateToolSize(self, tdiam, length, "Length"):
+		if not ValidateToolSize(self, tdiam, height, "Height"):
 			return
 		if not ValidateToolSize(self, tdiam, width, "Width"):
 			return
@@ -364,7 +364,7 @@ class SlotPanel(wx.Panel, CNCObject):
 		if not ValidateRange(self, stepover, 0.001, 1.0, "Stepover", "0 < x <= 1.0"):
 			return
 		
-		if not ValidateMinLength(self, length, width, "Length", "Width"):
+		if not ValidateMinValue(self, width, height, "Width", "Height"):
 			return
 
 		if self.databaseToolDiam == tdiam:
@@ -376,27 +376,25 @@ class SlotPanel(wx.Panel, CNCObject):
 		self.gcode.append(("G0 Z"+self.fmt+self.speedTerm(self.addspeed, self.feedzG0)) % self.safez)
 		
 		self.tDiam = tdiam
-		if self.settings.annotate:
-			self.gcode.append("(Rounded slot start (%6.2f,%6.2f) length %6.2f width %6.2f depth from %6.2f to %6.2f)" % (sx, sy, width, length, sz, self.depth))
 		
-		length -= width
+		width -= height
 			
-		points = [[sx, sy], [sx, sy+width], [sx+length, sy+width], [sx+length, sy]]
-		centers = [[sx, sy+width/2], [sx+length, sy+width/2]]
-			
+		points = [[sx, sy], [sx, sy+height], [sx+width, sy+height], [sx+width, sy]]
+		centers = [[sx, sy+height/2], [sx+width, sy+height/2]]
+		
 		sp = self.getChosen(self.rbStartPoints)
 		adjx = 0
 		adjy = 0
 		if sp == "Upper Left":
-			adjy = -width
+			adjy = -height
 		elif sp == "Upper Right":
-			adjy = -width
-			adjx = -length
+			adjx = -width
+			adjy = -height
 		elif sp == "Lower Right":
-			adjx = -length
+			adjx = -width
 		elif sp == "Center":
-			adjx = -length/2
-			adjy = -width/2
+			adjy = -height/2
+			adjx = -width/2
 			
 		for p in points:
 			p[0] += adjx
@@ -436,6 +434,9 @@ class SlotPanel(wx.Panel, CNCObject):
 		pkt = self.cbPocket.IsChecked()
 	
 		if self.settings.annotate:
+			sx = np[0][0]
+			sy = np[0][1]
+			self.gcode.append("(Rounded slot start (%6.2f,%6.2f) width %6.2f height %6.2f depth from %6.2f to %6.2f)" % (sx, sy, width, height, sz, self.depth))
 			self.gcode.append("(Start point: %s)" % sp)
 			self.gcode.append("(Cutting direction: %s)" % cd)
 			self.gcode.append("(Tool movement: %s)" % tm)

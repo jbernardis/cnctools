@@ -12,7 +12,7 @@ def ValidateToolSize(parent, tool, item, name):
 
 	return False
 
-def ValidateMinLength(parent, size, minv, name, namemin):
+def ValidateMinValue(parent, size, minv, name, namemin):
 	if size >= minv:
 		return True
 	

@@ -2,7 +2,7 @@ import wx
 import math
 from gcodelist import GCodeList
 from cncobject import CNCObject
-from validators import ValidateToolSize, ValidateMinLength, ValidateNoEntryErrors
+from validators import ValidateToolSize, ValidateMinValue, ValidateNoEntryErrors
 from settings import SPINSIZE
 
 
@@ -334,7 +334,7 @@ class LinDrillPanel(wx.Panel, CNCObject):
 			return
 		if not ValidateToolSize(self, tdiam, hdiam, "Hole Diameter"):
 			return
-		if not ValidateMinLength(self, spacing, hdiam, "Hole Spacing", "Hole Diameter"):
+		if not ValidateMinValue(self, spacing, hdiam, "Hole Spacing", "Hole Diameter"):
 			return
 
 		if self.databaseToolDiam == tdiam:

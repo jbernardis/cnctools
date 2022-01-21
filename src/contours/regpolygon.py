@@ -2,7 +2,7 @@ import wx
 import math
 from gcodelist import GCodeList
 from cncobject import CNCObject
-from validators import ValidateRange, ValidateMinLength, ValidateNoEntryErrors
+from validators import ValidateRange, ValidateMinValue, ValidateNoEntryErrors
 from settings import SPINSIZE
 
 class MainFrame(wx.Frame):
