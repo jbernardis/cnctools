@@ -530,6 +530,14 @@ class GCodeDlg(wx.Dialog):
 		ocw = True
 		if self.rbOCCW.GetValue():
 			ocw = False
+			
+		mirrorSide = False			
+		if hasBlindSlots:
+			dlg = wx.MessageDialog(self, 'Blind slots requires cutting on back side\nPress yes to mirror side\notherwise press no cut as defined',
+                           'Mirror Side?',
+                           wx.YES_NO | wx.ICON_WARNING)
+			mirrorSide = dlg.ShowModal() == wx.ID_YES
+			dlg.Destroy()
 
 		pts, crc, rct = self.bx.render(ft, tdiam, stepover)
 		totalDepth = self.bx.Wall
@@ -545,15 +553,6 @@ class GCodeDlg(wx.Dialog):
 			cmd = "G2"
 		else:
 			cmd = "G3"
-
-		mirrorSide = False			
-		if hasBlindSlots:
-			dlg = wx.MessageDialog(self, 'Blind slots requires cutting on back side\nPress yes to mirror side\notherwise press no cut as defined',
-                           'Mirror Side?',
-                           wx.YES_NO | wx.ICON_WARNING)
-			mirrorSide = dlg.ShowModal() == wx.ID_YES
-			dlg.Destroy()
-
 
 		if len(crc) > 0:
 			gcode.append("( circles )")		
@@ -607,10 +606,15 @@ class GCodeDlg(wx.Dialog):
 			
 		if self.settings.annotate:
 			gcode.append("( perimeter )")
-		if ocw:
-			data = pts
+		
+		reversePoints = False
+		if (ocw and mirrorSide) or (not ocw and not mirrorSide):
+			reversePoints = True
+			
+		if reversePoints:
+			data = [[pt[0], pt[1]] for pt in pts[::-1]]
 		else:
-			data = pts[::-1]
+			data = [[pt[0], pt[1]] for pt in pts]
 			
 		dx = data[0][0]
 		dy = data[0][1]
@@ -625,10 +629,10 @@ class GCodeDlg(wx.Dialog):
 			if self.settings.annotate:
 				gcode.append(("( layer at depth "+DEPTHFORMAT + " )") % p)
 			pts = self.bx.render(ft, tdiam, stepover, -p >= totalDepth/2.0)[0]
-			if ocw:
-				data = [pt for pt in pts]
+			if reversePoints:
+				data = [[pt[0], pt[1]] for pt in pts[::-1]]
 			else:
-				data = [pt for pt in pts[::-1]]
+				data = [[pt[0], pt[1]] for pt in pts]
 
 			gcode.append(("G1 Z" + self.fmt + self.addSpeedTerm("G1Z")) % p)
 			for d in range(1, len(data)):
