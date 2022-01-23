@@ -96,21 +96,12 @@ class face:
 			self.htabct = n 
 			self.calcHTabs()
 		
-	def render(self, toolrad, blindDepth, faceBlind, adjacentBlind):
-		
-		if faceBlind and not blindDepth:
-			print("Dig out entire slot area")
-		elif faceBlind:
-			print("outline outside of slots")
-		else:
-			print("normal slots - outline only")
-			
-		print("adjacency matrix: ", adjacentBlind)
+	def render(self, toolrad, stepover, blindDepth, faceBlind, adjacentBlind):
 		sides = []
-		sides.append(self.renderHSide([-self.width/2.0, -self.height/2.0], [-self.width/2.0, self.height/2.0], -1, toolrad, blindDepth, faceBlind, adjacentBlind[0]))
-		sides.append(self.renderWSide([-self.width/2.0, self.height/2.0], [self.width/2.0, self.height/2.0], 1, toolrad, blindDepth, faceBlind, adjacentBlind[1]))
-		sides.append(self.renderHSide([self.width/2.0, self.height/2.0], [self.width/2.0, -self.height/2.0], 1, toolrad, blindDepth, faceBlind, adjacentBlind[2]))
-		sides.append(self.renderWSide([self.width/2.0, -self.height/2.0], [-self.width/2.0, -self.height/2.0], -1, toolrad, blindDepth, faceBlind, adjacentBlind[3]))
+		sides.append(self.renderHSide([-self.width/2.0, -self.height/2.0], [-self.width/2.0, self.height/2.0], -1, toolrad, stepover, blindDepth, faceBlind, adjacentBlind[0]))
+		sides.append(self.renderWSide([-self.width/2.0, self.height/2.0], [self.width/2.0, self.height/2.0], 1, toolrad, stepover, blindDepth, faceBlind, adjacentBlind[1]))
+		sides.append(self.renderHSide([self.width/2.0, self.height/2.0], [self.width/2.0, -self.height/2.0], 1, toolrad, stepover, blindDepth, faceBlind, adjacentBlind[2]))
+		sides.append(self.renderWSide([self.width/2.0, -self.height/2.0], [-self.width/2.0, -self.height/2.0], -1, toolrad, stepover, blindDepth, faceBlind, adjacentBlind[3]))
 		
 		sxMod = len(sides)
 		for sx in range(sxMod):
@@ -142,7 +133,7 @@ class face:
 			
 		c = self.renderCircles()
 		r = self.renderRects()
-		return points, c, r
+		return [p for p in points], [cp for cp in c], [rp for rp in r]
 	
 	def renderCircles(self):
 		return [[x[0], x[1]] for x in self.circles]
@@ -150,7 +141,7 @@ class face:
 	def renderRects(self):
 		return [[x[0], x[1], x[2]] for x in self.rects]
 	
-	def renderHSide(self, start, end, outDir, toolrad, renderBl, faceBl, adjBl):
+	def renderHSide(self, start, end, outDir, toolrad, stepover, renderBl, faceBl, adjBl):
 		points = []
 		td = outDir*toolrad
 		if self.htabct == 0:
@@ -164,51 +155,61 @@ class face:
 			if self.htabtype == TABS:
 				x = start[0]-outDir*self.thickness+td
 				xp = start[0]+td
+				if adjBl:
+					xp -= outDir*self.thickness/2
 				points.append([x, start[1]+td])
 				for t in self.htabs:
-					points.append([x, start[1]-outDir*(t[0]-t[1]/2.0)+td])
+					y1 = start[1]-outDir*(t[0]-t[1]/2.0)+td
+					y2 = start[1]-outDir*(t[0]+t[1]/2.0)-td
+					points.append([x, y1])
 					if self.wrelief:
-						points.append([x, start[1]-outDir*(t[0]-t[1]/2.0)])
-						points.append([x, start[1]-outDir*(t[0]-t[1]/2.0)+td])
+						points.append([x, y1-td])
+						points.append([x, y1])
 					elif self.hrelief:
-						points.append([x-td, start[1]-outDir*(t[0]-t[1]/2.0)+td])
-						points.append([x, start[1]-outDir*(t[0]-t[1]/2.0)+td])
-					points.append([xp, start[1]-outDir*(t[0]-t[1]/2.0)+td])
-					points.append([xp, start[1]-outDir*(t[0]+t[1]/2.0)-td])
-					points.append([x, start[1]-outDir*(t[0]+t[1]/2.0)-td])
+						points.append([x-td, y1])
+						points.append([x, y1])
+					points.append([xp, y1])
+					points.append([xp, y2])
+					points.append([x, y2])
 					if self.wrelief:
-						points.append([x, start[1]-outDir*(t[0]+t[1]/2.0)])
-						points.append([x, start[1]-outDir*(t[0]+t[1]/2.0)-td])
+						points.append([x, y2+td])
+						points.append([x, y2])
 					elif self.hrelief:
-						points.append([x-td, start[1]-outDir*(t[0]+t[1]/2.0)-td])
-						points.append([x, start[1]-outDir*(t[0]+t[1]/2.0)-td])
+						points.append([x-td, y2])
+						points.append([x, y2])
 				points.append([x, end[1]-td])
 			else:
 				x = start[0]+td
 				xp = start[0]+td-outDir*self.thickness
 				points.append([x, start[1]+td])
-				for t in self.htabs:
-					points.append([x, start[1]-outDir*(t[0]-t[1]/2.0)-td])
-					points.append([xp, start[1]-outDir*(t[0]-t[1]/2.0)-td])
-					if self.wrelief:
-						points.append([xp, start[1]-outDir*(t[0]-t[1]/2.0)])
-						points.append([xp, start[1]-outDir*(t[0]-t[1]/2.0)-td])
-					elif self.hrelief:
-						points.append([xp-td, start[1]-outDir*(t[0]-t[1]/2.0)-td])
-						points.append([xp, start[1]-outDir*(t[0]-t[1]/2.0)-td])
-					points.append([xp, start[1]-outDir*(t[0]+t[1]/2.0)+td])
-					if self.wrelief:
-						points.append([xp, start[1]-outDir*(t[0]+t[1]/2.0)])
-						points.append([xp, start[1]-outDir*(t[0]+t[1]/2.0)+td])
-					elif self.hrelief:
-						points.append([xp-td, start[1]-outDir*(t[0]+t[1]/2.0)+td])
-						points.append([xp, start[1]-outDir*(t[0]+t[1]/2.0)+td])
-					points.append([x, start[1]-outDir*(t[0]+t[1]/2.0)+td])
+				if not(renderBl and faceBl):
+					for t in self.htabs:
+						y1 = start[1]-outDir*(t[0]-t[1]/2.0)-td
+						y2 = start[1]-outDir*(t[0]+t[1]/2.0)+td
+						points.append([x, y1])
+						points.append([xp, y1])
+						if self.wrelief:
+							points.append([xp, y1+td])
+							points.append([xp, y1])
+						elif self.hrelief:
+							points.append([xp-td, y1])
+							points.append([xp, y1])
+						points.append([xp, y2])
+						if self.wrelief:
+							points.append([xp, y2-td])
+							points.append([xp, y2])
+						elif self.hrelief:
+							points.append([xp-td, y2])
+							points.append([xp, y2])
+						points.append([x, y2])
+						if faceBl:
+							points.extend(self.renderPocket(x, y2, xp, y1, toolrad, stepover))
+
 				points.append([x, end[1]-td])
 			
 		return points
 		
-	def renderWSide(self, start, end, outDir, toolrad, renderBl, faceBl, adjBl):
+	def renderWSide(self, start, end, outDir, toolrad, stepover, renderBl, faceBl, adjBl):
 		points = []
 		td = outDir*toolrad
 		if self.wtabct == 0:
@@ -222,48 +223,93 @@ class face:
 			if self.wtabtype == TABS:
 				y = start[1]-outDir*self.thickness+td
 				yp = start[1]+td
+				if adjBl:
+					yp -= outDir*self.thickness/2
 				points.append([start[0]-td, y])
 				for t in self.wtabs:
-					points.append([start[0]+outDir*(t[0]-t[1]/2.0)-td, y])
+					x1 = start[0]+outDir*(t[0]-t[1]/2.0)-td
+					x2 = start[0]+outDir*(t[0]+t[1]/2.0)+td
+					points.append([x1, y])
 					if self.hrelief:
-						points.append([start[0]+outDir*(t[0]-t[1]/2.0)-td, y-td])
-						points.append([start[0]+outDir*(t[0]-t[1]/2.0)-td, y])
+						points.append([x1, y-td])
+						points.append([x1, y])
 					elif self.wrelief:
-						points.append([start[0]+outDir*(t[0]-t[1]/2.0), y])
-						points.append([start[0]+outDir*(t[0]-t[1]/2.0)-td, y])
-					points.append([start[0]+outDir*(t[0]-t[1]/2.0)-td, yp])
-					points.append([start[0]+outDir*(t[0]+t[1]/2.0)+td, yp])
-					points.append([start[0]+outDir*(t[0]+t[1]/2.0)+td, y])
+						points.append([x1+td, y])
+						points.append([x1, y])
+					points.append([x1, yp])
+					points.append([x2, yp])
+					points.append([x2, y])
 					if self.hrelief:
-						points.append([start[0]+outDir*(t[0]+t[1]/2.0)+td, y-td])
-						points.append([start[0]+outDir*(t[0]+t[1]/2.0)+td, y])
+						points.append([x2, y-td])
+						points.append([x2, y])
 					elif self.wrelief:
-						points.append([start[0]+outDir*(t[0]+t[1]/2.0), y])
-						points.append([start[0]+outDir*(t[0]+t[1]/2.0)+td, y])
+						points.append([x2-td, y])
+						points.append([x2, y])
 	
 				points.append([end[0]+td, y])
 			else:
 				y = start[1]+td
 				yp = start[1]+td-outDir*self.thickness
 				points.append([start[0]-td, y])
-				for t in self.wtabs:
-					points.append([start[0]+outDir*(t[0]-t[1]/2.0)+td, y])
-					points.append([start[0]+outDir*(t[0]-t[1]/2.0)+td, yp])
-					if self.hrelief:
-						points.append([start[0]+outDir*(t[0]-t[1]/2.0)+td, yp-td])
-						points.append([start[0]+outDir*(t[0]-t[1]/2.0)+td, yp])
-					elif self.wrelief:
-						points.append([start[0]+outDir*(t[0]-t[1]/2.0), yp])
-						points.append([start[0]+outDir*(t[0]-t[1]/2.0)+td, yp])
-					points.append([start[0]+outDir*(t[0]+t[1]/2.0)-td, yp])
-					if self.hrelief:
-						points.append([start[0]+outDir*(t[0]+t[1]/2.0)-td, yp-td])
-						points.append([start[0]+outDir*(t[0]+t[1]/2.0)-td, yp])
-					elif self.wrelief:
-						points.append([start[0]+outDir*(t[0]+t[1]/2.0), yp])
-						points.append([start[0]+outDir*(t[0]+t[1]/2.0)-td, yp])
-					points.append([start[0]+outDir*(t[0]+t[1]/2.0)-td, y])
+				if not(renderBl and faceBl):
+					for t in self.wtabs:
+						x1 = start[0]+outDir*(t[0]-t[1]/2.0)+td
+						x2 = start[0]+outDir*(t[0]+t[1]/2.0)-td
+						points.append([x1, y])
+						points.append([x1, yp])
+						if self.hrelief:
+							points.append([x1, yp-td])
+							points.append([x1, yp])
+						elif self.wrelief:
+							points.append([x1-td, yp])
+							points.append([x1, yp])
+						points.append([x2, yp])
+						if self.hrelief:
+							points.append([x2, yp-td])
+							points.append([x2, yp])
+						elif self.wrelief:
+							points.append([x2+td, yp])
+							points.append([x2, yp])
+						points.append([x2, y])
+						if faceBl:
+							points.extend(self.renderPocket(x2, y, x1, yp, toolrad, stepover))
 	
 				points.append([end[0]+td, y])
 			
 		return points
+	
+	def renderPocket(self, x1, y1, x2, y2, toolrad, stepover):
+		delta = toolrad*2*stepover
+		pts = []
+		
+		if x1 < x2:
+			ya = y1
+			yb = y2
+			xp = x1
+			while True:
+				pts.append([xp, ya])
+				pts.append([xp, yb])
+				xp += delta
+				if xp > x2:
+					break
+				yx = ya
+				ya = yb
+				yb = yx
+		else:
+			ya = y1
+			yb = y2
+			xp = x1
+			while True:
+				pts.append([xp, ya])
+				pts.append([xp, yb])
+				xp -= delta
+				if xp < x2:
+					break
+				yx = ya
+				ya = yb
+				yb = yx
+
+		pts.append([x1, y1])				
+		return pts
+				
+			

@@ -164,7 +164,7 @@ class RectanglesCtrl(wx.ListCtrl):
 		self.parent.setSelected(False)
 		
 	def doListSelect(self, evt):
-		self.assertSelect(evt.m_itemIndex)
+		self.assertSelect(evt.Index)
 		
 	def assertSelect(self, sx):
 		x = self.selectedItem

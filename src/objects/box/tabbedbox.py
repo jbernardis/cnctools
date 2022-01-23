@@ -605,7 +605,7 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 			fx = cncbox.FACE_BACK
 
 		if fx is not None:
-			p, c, r = self.bx.render(fx, self.tooldiam)
+			p, c, r = self.bx.render(fx, self.tooldiam, 1.0)
 			if p is not None:
 				self.currentFace = fx
 				self.gcf.setData(p, c, r, self.tooldiam, self.hiLite[fx])  
@@ -784,7 +784,7 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		self.render()
 		
 	def onCheckBlind(self, e):
-		self.bx.setBlindTabs([self.cbTopBlind.IsChecked(), self.cbBottomBlind.IsChecked(),
+		self.bx.setBlindSlots([self.cbTopBlind.IsChecked(), self.cbBottomBlind.IsChecked(),
 							  self.cbLeftBlind.IsChecked(), self.cbRightBlind.IsChecked(),
 							  self.cbFrontBlind.IsChecked(), self.cbBackBlind.IsChecked()])
 		self.setModified()
@@ -909,12 +909,12 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		else:
 			self.rbSTBSlots.SetValue(1)
 			
-		self.cbTopBlind.SetValue(self.bx.BlindTabs[cncbox.FACE_TOP])
-		self.cbBottomBlind.SetValue(self.bx.BlindTabs[cncbox.FACE_BOTTOM])
-		self.cbLeftBlind.SetValue(self.bx.BlindTabs[cncbox.FACE_LEFT])
-		self.cbRightBlind.SetValue(self.bx.BlindTabs[cncbox.FACE_RIGHT])
-		self.cbFrontBlind.SetValue(self.bx.BlindTabs[cncbox.FACE_FRONT])
-		self.cbBackBlind.SetValue(self.bx.BlindTabs[cncbox.FACE_BACK])
+		self.cbTopBlind.SetValue(self.bx.BlindSlots[cncbox.FACE_TOP])
+		self.cbBottomBlind.SetValue(self.bx.BlindSlots[cncbox.FACE_BOTTOM])
+		self.cbLeftBlind.SetValue(self.bx.BlindSlots[cncbox.FACE_LEFT])
+		self.cbRightBlind.SetValue(self.bx.BlindSlots[cncbox.FACE_RIGHT])
+		self.cbFrontBlind.SetValue(self.bx.BlindSlots[cncbox.FACE_FRONT])
+		self.cbBackBlind.SetValue(self.bx.BlindSlots[cncbox.FACE_BACK])
 		
 	def bSavePressed(self, e):
 		if self.fileName is None:

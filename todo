@@ -2,8 +2,8 @@ allow for lowest layer to leave some material behind (tabs)
 
 verify y offset values for tichy arc top windows (can't really do unless I have windows in hand)
 
-either complete implementation of blind faces in box, or remove feature
-
+either complete implementation of blind faces in box, or remove feature - blind slots - should there be 2 pocket routines - one vertical and one horizontal
+	do I need to do anything about being reversed???
 
 	carve: diamond, grid, hatch
 	contour: arc, circle, line, polyline, reg polygon, rounded slot

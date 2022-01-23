@@ -102,6 +102,21 @@ class GCodeDlg(wx.Dialog):
 		vsizer.Add(hb)
 		vsizer.AddSpacer(5)
 		
+		t = wx.StaticText(self, wx.ID_ANY, "Stepover: ", size=(80, -1))
+		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=speedinfo["stepover"], min=0.1, max=1.0, inc=0.01, size=SPINSIZE)
+		sc.SetValue(speedinfo["stepover"])
+		sc.SetDigits(2)
+		self.scStepover = sc
+
+		sc.Bind(wx.EVT_TEXT, self.onTextStepover)
+		sc.Bind(wx.EVT_SPINCTRL, self.onSpinStepover)
+		
+		hb = wx.BoxSizer(wx.HORIZONTAL)
+		hb.Add(t, 1, wx.TOP, 5)
+		hb.Add(sc)
+		vsizer.Add(hb)
+		vsizer.AddSpacer(5)
+		
 		t = wx.StaticText(self, wx.ID_ANY, "Safe Z Height: ", size=(80, -1))
 		vmin, vmax, vinc, digits = self.parent.getSpinValues(self.settings.metric, "safez")
 		sc = wx.SpinCtrlDouble(self, wx.ID_ANY, "", initial=self.safez, min=vmin, max=vmax, inc=vinc, size=SPINSIZE)
@@ -404,6 +419,14 @@ class GCodeDlg(wx.Dialog):
 	def onSpinExtraDepth(self, e):
 		self.setState(modified=True)
 		e.Skip()
+		
+	def onTextStepover(self, e):
+		self.setState(modified=True)
+		e.Skip()
+		
+	def onSpinStepover(self, e):
+		self.setState(modified=True)
+		e.Skip()
 			
 	def illegalTcValue(self, name):
 		dlg = wx.MessageDialog(self,
@@ -457,6 +480,9 @@ class GCodeDlg(wx.Dialog):
 
 		extradepth = self.scExtraDepth.GetValue()
 		passdepth = self.scDPP.GetValue()
+		stepover = self.scStepover.GetValue()
+		
+		hasBlindSlots = self.bx.hasBlindSlots(ft)
 		
 		self.fmt = "%%0.%df" % self.settings.decimals
 		
@@ -505,7 +531,7 @@ class GCodeDlg(wx.Dialog):
 		if self.rbOCCW.GetValue():
 			ocw = False
 
-		pts, crc, rct = self.bx.render(ft, tdiam)
+		pts, crc, rct = self.bx.render(ft, tdiam, stepover)
 		totalDepth = self.bx.Wall
 				
 		steps = []
@@ -520,20 +546,34 @@ class GCodeDlg(wx.Dialog):
 		else:
 			cmd = "G3"
 
+		mirrorSide = False			
+		if hasBlindSlots:
+			dlg = wx.MessageDialog(self, 'Blind slots requires cutting on back side\nPress yes to mirror side\notherwise press no cut as defined',
+                           'Mirror Side?',
+                           wx.YES_NO | wx.ICON_WARNING)
+			mirrorSide = dlg.ShowModal() == wx.ID_YES
+			dlg.Destroy()
+
+
 		if len(crc) > 0:
 			gcode.append("( circles )")		
 		for c in crc:
+			cx = c[0][0]
+			cy = c[0][1]
+			if mirrorSide:
+				cx = -cx
+
 			crad = c[1] - trad
 			if self.settings.annotate:
 				gcode.append(("( New circle - center " + self.fmt + "," + self.fmt + " radius " + self.fmt + " " + self.fmt +" )")
-						 % (self.normalX(c[0][0]), self.normalY(c[0][1]), c[1], crad))
+						 % (self.normalX(cx), self.normalY(cy), c[1], crad))
 				
 			gcode.append(("G0 X" + self.fmt + " Y" + self.fmt + self.addSpeedTerm("G0XY")) 
-						% (self.normalX(c[0][0]), self.normalY(c[0][1] - crad)))
+						% (self.normalX(cx), self.normalY(cy - crad)))
 			for p in steps:
 				gcode.append(("G1 Z" + self.fmt + self.addSpeedTerm("G1Z")) % p)
 				gcode.append((cmd+" J" + self.fmt + " X" + self.fmt + " Y" + self.fmt + self.addSpeedTerm("G1XY"))
-						% (crad, self.normalX(c[0][0]), self.normalY(c[0][1]) - crad))
+						% (crad, self.normalX(cx), self.normalY(cy) - crad))
 			
 			gcode.append(("G0 Z" + self.fmt + self.addSpeedTerm("G0Z")) % self.safez)
 			
@@ -544,6 +584,9 @@ class GCodeDlg(wx.Dialog):
 			dy = r[2]/2.0 - trad
 			cx = r[0][0]
 			cy = r[0][1]
+			if mirrorSide:
+				cx = -cx
+				
 			if self.settings.annotate:
 				gcode.append(("( New rectangle - center " + self.fmt + "," + self.fmt + " width " + self.fmt + " " + self.fmt +" height " + self.fmt + " " + self.fmt +" )")
 						% (self.normalX(cx), self.normalY(cy), r[1], r[1]-2*trad, r[2], r[2]-2*trad))	
@@ -569,23 +612,32 @@ class GCodeDlg(wx.Dialog):
 		else:
 			data = pts[::-1]
 			
+		dx = data[0][0]
+		dy = data[0][1]
+		if mirrorSide:
+			dx = -dx
+			
 		gcode.append(("G0 X" + self.fmt + " Y" + self.fmt + self.addSpeedTerm("G0XY")) 
-					% (self.normalX(data[0][0]), self.normalY(data[0][1])))
+					% (self.normalX(dx), self.normalY(dy)))
 		
 		for i in range(len(steps)):
 			p = steps[i]
 			if self.settings.annotate:
 				gcode.append(("( layer at depth "+DEPTHFORMAT + " )") % p)
-			pts = self.bx.render(ft, trad, i >= (len(steps)-2))[0]
+			pts = self.bx.render(ft, tdiam, stepover, -p >= totalDepth/2.0)[0]
 			if ocw:
-				data = pts
+				data = [pt for pt in pts]
 			else:
-				data = pts[::-1]
+				data = [pt for pt in pts[::-1]]
 
 			gcode.append(("G1 Z" + self.fmt + self.addSpeedTerm("G1Z")) % p)
 			for d in range(1, len(data)):
+				dx = data[d][0]
+				dy = data[d][1]
+				if mirrorSide:
+					dx = -dx
 				gcode.append(("G1 X" + self.fmt + " Y" + self.fmt + self.addSpeedTerm("G1XY")) 
-						% (self.normalX(data[d][0]), self.normalY(data[d][1])))
+						% (self.normalX(dx), self.normalY(dy)))
 
 		gcode.append(("G0 Z" + self.fmt + self.addSpeedTerm("G0Z")) % self.safez)
 			

@@ -36,7 +36,7 @@ class cncbox:
 		self.TabType = [TABS, TABS, TABS]
 		self.Relief = NRELIEF
 		
-		self.BlindTabs = [False, False, False, False, False, False]
+		self.BlindSlots = [False, False, False, False, False, False]
 		
 		self.currentFace = None
 		self.initFaces()
@@ -85,10 +85,10 @@ class cncbox:
 		config.set(section, 'tabtype', str(self.TabType))
 		config.set(section, 'relief', str(self.Relief))
 		
-		section = "blindtabs"
+		section = "blindslots"
 		config.add_section(section)
 		for f in faceTypes:
-			config.set(section, "face_%d" % f, str(self.BlindTabs[f]))
+			config.set(section, "face_%d" % f, str(self.BlindSlots[f]))
 
 		for f in faceTypes:
 			c = self.faces[f].renderCircles()
@@ -112,8 +112,6 @@ class cncbox:
 			
 	def loadBox(self, fn, tooldiam):
 		global s, cx, cy, rad, lx, ly
-		
-		toolrad = float(tooldiam)/2.0
 
 		config = configparser.SafeConfigParser()
 		config.read(fn)
@@ -149,7 +147,7 @@ class cncbox:
 					except:
 						errors.append("invalid value in box file for wall")
 						w = 6
-					self.setWall(w, toolrad)
+					self.setWall(w, tooldiam)
 
 				elif n == 'tabcount':
 					try:
@@ -189,7 +187,7 @@ class cncbox:
 				else:
 					print("Unknown parameter: %s" % n)
 		
-		section = "blindtabs"
+		section = "blindslots"
 		if config.has_section(section):
 			for f in faceTypes:
 				try:
@@ -200,7 +198,7 @@ class cncbox:
 						flg = False
 				except:
 					flg = False
-				self.BlindTabs[f] = flg
+				self.BlindSlots[f] = flg
 					
 		for f in faceTypes:
 			section = "face_%d_circles" % f
@@ -286,15 +284,18 @@ class cncbox:
 		self.faces[FACE_LEFT].setWidth(nd)
 		self.faces[FACE_RIGHT].setWidth(nd)
 		
-	def setWall(self, nw, toolrad):
+	def setWall(self, nw, tooldiam):
 		self.Wall = nw
 		for fc in self.faces:
 			fc.setWall(nw)
 			
-		self.render(self.currentFace, toolrad)
+		self.render(self.currentFace, tooldiam, 1.0)
 		
-	def setBlindTabs(self, bt):
-		self.BlindTabs = bt
+	def setBlindSlots(self, bt):
+		self.BlindSlots = bt
+		
+	def hasBlindSlots(self, ft):
+		return self.BlindSlots[ft]
 		
 	def getFaceDim(self, ft):
 		return self.faces[ft].getDim()
@@ -375,29 +376,27 @@ class cncbox:
 	def setRectangles(self, facetype, r):
 		self.faces[facetype].setRectangles(r)
 
-	def render(self, faceType, tooldiam, blindDepth = False):
+	def render(self, faceType, tooldiam, stepover, blindDepth = False):
 		toolrad = float(tooldiam)/2.0
 		if faceType is None:
 			return 
 		
 		if faceType == FACE_TOP:
-			adj = [self.BlindTabs[FACE_LEFT], self.BlindTabs[FACE_BACK], self.BlindTabs[FACE_RIGHT], self.BlindTabs[FACE_FRONT]]
+			adj = [self.BlindSlots[FACE_LEFT], self.BlindSlots[FACE_BACK], self.BlindSlots[FACE_RIGHT], self.BlindSlots[FACE_FRONT]]
 		elif faceType == FACE_BOTTOM:
-			adj = [self.BlindTabs[FACE_RIGHT], self.BlindTabs[FACE_BACK], self.BlindTabs[FACE_LEFT], self.BlindTabs[FACE_FRONT]]
+			adj = [self.BlindSlots[FACE_RIGHT], self.BlindSlots[FACE_BACK], self.BlindSlots[FACE_LEFT], self.BlindSlots[FACE_FRONT]]
 		elif faceType == FACE_LEFT:
-			adj = [self.BlindTabs[FACE_BOTTOM], self.BlindTabs[FACE_BACK], self.BlindTabs[FACE_TOP], self.BlindTabs[FACE_FRONT]]
+			adj = [self.BlindSlots[FACE_BACK], self.BlindSlots[FACE_TOP], self.BlindSlots[FACE_FRONT], self.BlindSlots[FACE_BOTTOM]]
 		elif faceType == FACE_RIGHT:
-			adj = [self.BlindTabs[FACE_TOP], self.BlindTabs[FACE_BACK], self.BlindTabs[FACE_BOTTOM], self.BlindTabs[FACE_FRONT]]
+			adj = [self.BlindSlots[FACE_FRONT], self.BlindSlots[FACE_TOP], self.BlindSlots[FACE_BACK], self.BlindSlots[FACE_BOTTOM]]
 		elif faceType == FACE_FRONT:
-			adj = [self.BlindTabs[FACE_LEFT], self.BlindTabs[FACE_TOP], self.BlindTabs[FACE_RIGHT], self.BlindTabs[FACE_BOTTOM]]
+			adj = [self.BlindSlots[FACE_LEFT], self.BlindSlots[FACE_TOP], self.BlindSlots[FACE_RIGHT], self.BlindSlots[FACE_BOTTOM]]
 		elif faceType == FACE_BACK:
-			adj = [self.BlindTabs[FACE_RIGHT], self.BlindTabs[FACE_TOP], self.BlindTabs[FACE_LEFT], self.BlindTabs[FACE_BOTTOM]]
+			adj = [self.BlindSlots[FACE_RIGHT], self.BlindSlots[FACE_TOP], self.BlindSlots[FACE_LEFT], self.BlindSlots[FACE_BOTTOM]]
 		else:
 			return
 			
 		self.currentFace = faceType 
 		
-		print("rendering face %d blind = %s" % (faceType, blindDepth))
-		
-		return self.faces[faceType].render(toolrad, blindDepth, self.BlindTabs[faceType], adj)
+		return self.faces[faceType].render(toolrad, stepover, blindDepth, self.BlindSlots[faceType], adj)
 		
