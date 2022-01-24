@@ -96,12 +96,12 @@ class face:
 			self.htabct = n 
 			self.calcHTabs()
 		
-	def render(self, toolrad, stepover, blindDepth, faceBlind, adjacentBlind):
+	def render(self, toolrad, stepover, reversePockets, blindDepth, faceBlind, adjacentBlind):
 		sides = []
-		sides.append(self.renderHSide([-self.width/2.0, -self.height/2.0], [-self.width/2.0, self.height/2.0], -1, toolrad, stepover, blindDepth, faceBlind, adjacentBlind[0]))
-		sides.append(self.renderWSide([-self.width/2.0, self.height/2.0], [self.width/2.0, self.height/2.0], 1, toolrad, stepover, blindDepth, faceBlind, adjacentBlind[1]))
-		sides.append(self.renderHSide([self.width/2.0, self.height/2.0], [self.width/2.0, -self.height/2.0], 1, toolrad, stepover, blindDepth, faceBlind, adjacentBlind[2]))
-		sides.append(self.renderWSide([self.width/2.0, -self.height/2.0], [-self.width/2.0, -self.height/2.0], -1, toolrad, stepover, blindDepth, faceBlind, adjacentBlind[3]))
+		sides.append(self.renderHSide([-self.width/2.0, -self.height/2.0], [-self.width/2.0, self.height/2.0], -1, toolrad, stepover, reversePockets, blindDepth, faceBlind, adjacentBlind[0]))
+		sides.append(self.renderWSide([-self.width/2.0, self.height/2.0], [self.width/2.0, self.height/2.0], 1, toolrad, stepover, reversePockets, blindDepth, faceBlind, adjacentBlind[1]))
+		sides.append(self.renderHSide([self.width/2.0, self.height/2.0], [self.width/2.0, -self.height/2.0], 1, toolrad, stepover, reversePockets, blindDepth, faceBlind, adjacentBlind[2]))
+		sides.append(self.renderWSide([self.width/2.0, -self.height/2.0], [-self.width/2.0, -self.height/2.0], -1, toolrad, stepover, reversePockets, blindDepth, faceBlind, adjacentBlind[3]))
 		
 		sxMod = len(sides)
 		for sx in range(sxMod):
@@ -141,7 +141,7 @@ class face:
 	def renderRects(self):
 		return [[x[0], x[1], x[2]] for x in self.rects]
 	
-	def renderHSide(self, start, end, outDir, toolrad, stepover, renderBl, faceBl, adjBl):
+	def renderHSide(self, start, end, outDir, toolrad, stepover, reversePockets, renderBl, faceBl, adjBl):
 		points = []
 		td = outDir*toolrad
 		if self.htabct == 0:
@@ -203,13 +203,13 @@ class face:
 							points.append([xp, y2])
 						points.append([x, y2])
 						if faceBl:
-							points.extend(self.renderPocket(x, y2, xp, y1, toolrad, stepover))
+							points.extend(self.renderPocket(x, y2, xp, y1, toolrad, stepover, reversePockets))
 
 				points.append([x, end[1]-td])
 			
 		return points
 		
-	def renderWSide(self, start, end, outDir, toolrad, stepover, renderBl, faceBl, adjBl):
+	def renderWSide(self, start, end, outDir, toolrad, stepover, reversePockets, renderBl, faceBl, adjBl):
 		points = []
 		td = outDir*toolrad
 		if self.wtabct == 0:
@@ -272,13 +272,13 @@ class face:
 							points.append([x2, yp])
 						points.append([x2, y])
 						if faceBl:
-							points.extend(self.renderPocket(x2, y, x1, yp, toolrad, stepover))
+							points.extend(self.renderPocket(x2, y, x1, yp, toolrad, stepover, reversePockets))
 	
 				points.append([end[0]+td, y])
 			
 		return points
 	
-	def renderPocket(self, x1, y1, x2, y2, toolrad, stepover):
+	def renderPocket(self, x1, y1, x2, y2, toolrad, stepover, reversePockets):
 		delta = toolrad*2*stepover
 		pts = []
 		
@@ -310,6 +310,9 @@ class face:
 				yb = yx
 
 		pts.append([x1, y1])				
-		return pts
+		if reversePockets:
+			return pts[::-1]
+		else:
+			return pts
 				
 			

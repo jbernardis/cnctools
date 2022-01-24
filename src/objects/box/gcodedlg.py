@@ -628,7 +628,7 @@ class GCodeDlg(wx.Dialog):
 			p = steps[i]
 			if self.settings.annotate:
 				gcode.append(("( layer at depth "+DEPTHFORMAT + " )") % p)
-			pts = self.bx.render(ft, tdiam, stepover, -p >= totalDepth/2.0)[0]
+			pts = self.bx.render(ft, tdiam, stepover, reversePoints, -p >= totalDepth/2.0)[0]
 			if reversePoints:
 				data = [[pt[0], pt[1]] for pt in pts[::-1]]
 			else:

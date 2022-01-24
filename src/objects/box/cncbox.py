@@ -376,7 +376,7 @@ class cncbox:
 	def setRectangles(self, facetype, r):
 		self.faces[facetype].setRectangles(r)
 
-	def render(self, faceType, tooldiam, stepover, blindDepth = False):
+	def render(self, faceType, tooldiam, stepover, reversePockets=False, blindDepth=False):
 		toolrad = float(tooldiam)/2.0
 		if faceType is None:
 			return 
@@ -398,5 +398,5 @@ class cncbox:
 			
 		self.currentFace = faceType 
 		
-		return self.faces[faceType].render(toolrad, stepover, blindDepth, self.BlindSlots[faceType], adj)
+		return self.faces[faceType].render(toolrad, stepover, reversePockets, blindDepth, self.BlindSlots[faceType], adj)
 		
