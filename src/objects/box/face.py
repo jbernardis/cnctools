@@ -186,6 +186,8 @@ class face:
 					for t in self.htabs:
 						y1 = start[1]-outDir*(t[0]-t[1]/2.0)-td
 						y2 = start[1]-outDir*(t[0]+t[1]/2.0)+td
+						if faceBl and not reversePockets:
+							points.extend(self.renderPocket(x, y2, xp, y1, toolrad, stepover, reversePockets))
 						points.append([x, y1])
 						points.append([xp, y1])
 						if self.wrelief:
@@ -202,7 +204,7 @@ class face:
 							points.append([xp-td, y2])
 							points.append([xp, y2])
 						points.append([x, y2])
-						if faceBl:
+						if faceBl and reversePockets:
 							points.extend(self.renderPocket(x, y2, xp, y1, toolrad, stepover, reversePockets))
 
 				points.append([x, end[1]-td])
@@ -255,6 +257,8 @@ class face:
 					for t in self.wtabs:
 						x1 = start[0]+outDir*(t[0]-t[1]/2.0)+td
 						x2 = start[0]+outDir*(t[0]+t[1]/2.0)-td
+						if faceBl and not reversePockets:
+							points.extend(self.renderPocket(x2, y, x1, yp, toolrad, stepover, reversePockets))
 						points.append([x1, y])
 						points.append([x1, yp])
 						if self.hrelief:
@@ -271,7 +275,7 @@ class face:
 							points.append([x2+td, yp])
 							points.append([x2, yp])
 						points.append([x2, y])
-						if faceBl:
+						if faceBl and reversePockets:
 							points.extend(self.renderPocket(x2, y, x1, yp, toolrad, stepover, reversePockets))
 	
 				points.append([end[0]+td, y])
