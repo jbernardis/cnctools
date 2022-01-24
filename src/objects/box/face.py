@@ -45,7 +45,7 @@ class face:
 			self.htabs = []
 			step = self.height/float(self.htabct+1.0)
 			loc = 0;
-			for i in range(self.htabct):
+			for _ in range(self.htabct):
 				loc += step
 				self.htabs.append((loc, self.htablen))
 
@@ -58,7 +58,7 @@ class face:
 			self.wtabs = []
 			step = self.width/float(self.wtabct+1.0)
 			loc = 0;
-			for i in range(self.wtabct):
+			for _ in range(self.wtabct):
 				loc += step
 				self.wtabs.append((loc, self.wtablen))
 			
