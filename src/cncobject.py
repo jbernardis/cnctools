@@ -255,8 +255,6 @@ class CNCObject:
 			title += " (unsaved)"
 		self.parent.SetTitle(title)
 		
-		
-		
 	def resolveToolDiameter(self, toolInfo):	
 		tm = toolInfo["metric"]
 		if tm == self.settings.metric:
@@ -279,9 +277,6 @@ class CNCObject:
 		dlg.Destroy()
 		
 		return tdf
-		
-		
-		
 		
 	def preamble(self, settings, title, tooldiam, toolname, metric): #, toolinfo, feedZG0, safeZ):
 		code = []

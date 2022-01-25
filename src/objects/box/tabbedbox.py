@@ -67,7 +67,6 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		
 		wx.Panel.__init__(self, parent, wx.ID_ANY, style=wx.TAB_TRAVERSAL)
 
-		self.Bind(wx.EVT_CLOSE, self.onClose)
 		self.SetBackgroundColour("white")
 		self.Show()
 		
@@ -959,6 +958,8 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		rc = dlg.ShowModal()
 		if rc == wx.ID_OK:
 			self.circles = dlg.circles[:]
+			if dlg.wasModified():
+				self.setModified()
 			self.bx.setCircles(self.currentFace, self.circles)
 			self.render()
 		dlg.Destroy()
@@ -968,6 +969,8 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 		rc = dlg.ShowModal()
 		if rc == wx.ID_OK:
 			self.rects = dlg.rects[:]
+			if dlg.wasModified():
+				self.setModified()
 			self.bx.setRectangles(self.currentFace, self.rects)
 			self.render()
 		dlg.Destroy()
@@ -978,7 +981,7 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 	def onCbPath(self, e):
 		self.gcf.setPathOnly(self.cbPath.IsChecked())
 
-	def onClose(self, evt):
+	def okToClose(self):
 		if self.modified:
 			dlg = wx.MessageDialog(self, "Are you sure you want to exit with unsaved changes",
 				'Unsaved Changes', wx.YES_NO | wx.NO_DEFAULT | wx.ICON_INFORMATION)
@@ -987,9 +990,8 @@ class TabbedBoxPanel(wx.Panel, CNCObject):
 			dlg.Destroy()
 
 			if rc != wx.ID_YES:
-				return
+				return False
 			
-		#self.settings.saveSettings()
-		self.Destroy()
+		return True
 
 	

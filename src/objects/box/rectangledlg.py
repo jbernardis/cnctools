@@ -87,6 +87,9 @@ class RectangleDlg(wx.Dialog):
 	def doOk(self, e):
 		self.EndModal(wx.ID_OK)
 		
+	def wasModified(self):
+		return self.modified
+		
 	def doCancel(self, e):
 		if self.modified:
 			dlg = wx.MessageDialog(self, "Are you sure you want to exit with unsaved changes",
@@ -229,6 +232,7 @@ class RectanglesCtrl(wx.ListCtrl):
 		
 		self.rects[self.selectedItem] = [[cx, cy], lx, ly]
 		self.RefreshItem(self.selectedItem)
+		self.parent.setModified(True)
 
 class SingleRectangleDlg(wx.Dialog):
 	def __init__(self, parent, cx, cy, lx, ly, title, images):

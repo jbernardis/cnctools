@@ -21,6 +21,11 @@ class GCodeDlg(wx.Dialog):
 		self.settings = settings
 		wx.Dialog.__init__(self, parent, wx.ID_ANY, "")
 		self.SetBackgroundColour("white")
+		
+		self.modified = None
+		self.unsaved = None		
+
+		self.Bind(wx.EVT_CLOSE, self.doExit)
 
 		self.tooldiam = self.parent.tooldiam
 		self.depthPerCut = speedinfo["depthperpass"]
@@ -328,8 +333,6 @@ class GCodeDlg(wx.Dialog):
 		self.SetSizer(dsizer)  
 		dsizer.Fit(self)
 		
-		self.modified = None
-		self.unsaved = None		
 		self.setState(modified=False, unsaved=False)
 	
 	def setState(self, modified=None, unsaved=None):
@@ -358,6 +361,26 @@ class GCodeDlg(wx.Dialog):
 		self.bSave.Enable(self.unsaved)
 		
 	def doExit(self, e):
+		if self.unsaved and not self.modified:
+			dlg = wx.MessageDialog(self, 'Generated G Code has not been saved\nPress yes to exit anyway',
+                               'Unsaved G Code',
+                               wx.YES_NO | wx.ICON_WARNING)
+			rc = dlg.ShowModal()
+			if rc == wx.ID_NO:
+				return
+				
+			dlg.Destroy()
+			
+		elif self.unsaved and self.modified:
+			dlg = wx.MessageDialog(self, 'Generated G Code is stale and has not been saved\nPress yes to exit anyway',
+                               'Unsaved Stale G Code',
+                               wx.YES_NO | wx.ICON_WARNING)
+			rc = dlg.ShowModal()
+			if rc == wx.ID_NO:
+				return
+				
+			dlg.Destroy()
+
 		self.EndModal(wx.ID_OK)
 		
 	def onRb(self, e):

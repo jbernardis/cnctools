@@ -84,6 +84,9 @@ class CircleDlg(wx.Dialog):
 	def setModified(self, flag=True):
 		self.modified = flag
 		
+	def wasModified(self):
+		return self.modified
+		
 	def doOk(self, e):
 		self.EndModal(wx.ID_OK)
 		
@@ -231,6 +234,7 @@ class CirclesCtrl(wx.ListCtrl):
 		
 		self.circles[self.selectedItem] = [[cx, cy], r]
 		self.RefreshItem(self.selectedItem)
+		self.parent.setModified(True)
 
 class SingleCircleDlg(wx.Dialog):
 	def __init__(self, parent, cx, cy, rad, title, images):

@@ -187,7 +187,7 @@ class face:
 						y1 = start[1]-outDir*(t[0]-t[1]/2.0)-td
 						y2 = start[1]-outDir*(t[0]+t[1]/2.0)+td
 						if faceBl and not reversePockets:
-							points.extend(self.renderPocket(x, y2, xp, y1, toolrad, stepover, reversePockets))
+							points.extend(self.renderPocket(x, y1, xp, y2, toolrad, stepover, reversePockets))
 						points.append([x, y1])
 						points.append([xp, y1])
 						if self.wrelief:
@@ -258,7 +258,7 @@ class face:
 						x1 = start[0]+outDir*(t[0]-t[1]/2.0)+td
 						x2 = start[0]+outDir*(t[0]+t[1]/2.0)-td
 						if faceBl and not reversePockets:
-							points.extend(self.renderPocket(x2, y, x1, yp, toolrad, stepover, reversePockets))
+							points.extend(self.renderPocket(x1, y, x2, yp, toolrad, stepover, reversePockets))
 						points.append([x1, y])
 						points.append([x1, yp])
 						if self.hrelief:

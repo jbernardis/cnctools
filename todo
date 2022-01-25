@@ -1,8 +1,8 @@
-allow for lowest layer to leave some material behind (tabs)
-
 verify y offset values for tichy arc top windows (can't really do unless I have windows in hand)
 
-
+		
+		
+		
 	carve: diamond, grid, hatch
 	contour: arc, circle, line, polyline, reg polygon, rounded slot
 	drills: circle, linear, rectangle
