@@ -65,7 +65,7 @@ class Settings:
 				elif opt == 'lastjsondir':
 					self.lastjsondir = value
 				elif opt == "tool":
-					self.tool = value;
+					self.tool = value
 				elif opt == "material":
 					self.material = value
 				elif opt == 'annotate':
