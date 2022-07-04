@@ -196,7 +196,7 @@ class gMirror:
 
 class gParser:
 	gcmd = re.compile('^([GMT]\d+)(.*)')
-	gparm = re.compile('^([XYZFIJK] *-{0,1}\d*\.{0,1}\d+)(.*)')
+	gparm = re.compile('^([XYZFIJKS] *-{0,1}\d*\.{0,1}\d+)(.*)')
 
 	def __init__(self):
 		self.lastCmd = None
