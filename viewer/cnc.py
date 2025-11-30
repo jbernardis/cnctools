@@ -4,7 +4,8 @@ import math
 MT_NORMAL = 0
 MT_RAPID = 1
 
-gcRegex = re.compile("[-]?\d+[.]?\d*")	
+gcRegex = re.compile(r'[-]?\d+[.]?\d*')
+
 
 def get_float(which, pstr):
 	try:
@@ -13,6 +14,7 @@ def get_float(which, pstr):
 		return 0.0
 	except IndexError:
 		return 0.0
+
 
 def drawArc(cx, cy, cz, rad, angstart, angend, cw, numsegments):
 	pts = []
@@ -42,6 +44,7 @@ def drawArc(cx, cy, cz, rad, angstart, angend, cw, numsegments):
 		pts.append([cx + dx, cy + dy, cz]) 
 		
 	return pts
+
 
 def setQuadrant(sa, dx, dy):
 	a = math.degrees(sa)
@@ -75,6 +78,7 @@ def setQuadrant(sa, dx, dy):
 class GParseErrorSyntax(Exception):
 	pass
 
+
 class GParseErrorNoCommand(Exception):
 	pass
 
@@ -82,9 +86,10 @@ class GParseErrorNoCommand(Exception):
 class GParseErrorNumberFormat(Exception):
 	pass
 
+
 class gShifter:
-	reXparam = re.compile('(.*X *)(-{0,1}\d*\.\d+)(.*)')
-	reYparam = re.compile('(.*Y *)(-{0,1}\d*\.\d+)(.*)')
+	reXparam = re.compile(r'(.*X *)(-{0,1}\d*\.\d+)(.*)')
+	reYparam = re.compile(r'(.*Y *)(-{0,1}\d*\.\d+)(.*)')
 
 	def __init__(self, dx, dy):
 		self.dx = dx
@@ -143,8 +148,8 @@ class gShifter:
 		
 
 class gMirror:
-	reXparam = re.compile('(.*X *)(-{0,1}\d*\.\d+)(.*)')
-	reYparam = re.compile('(.*Y *)(-{0,1}\d*\.\d+)(.*)')
+	reXparam = re.compile(r'(.*X *)(-{0,1}\d*\.\d+)(.*)')
+	reYparam = re.compile(r'(.*Y *)(-{0,1}\d*\.\d+)(.*)')
 
 	def __init__(self):
 		pass
@@ -195,8 +200,8 @@ class gMirror:
 		
 
 class gParser:
-	gcmd = re.compile('^([GMT]\d+)(.*)')
-	gparm = re.compile('^([XYZFIJKS] *-{0,1}\d*\.{0,1}\d+)(.*)')
+	gcmd = re.compile(r'^([GMT]\d+)(.*)')
+	gparm = re.compile(r'^([XYZFIJKS] *-{0,1}\d*\.{0,1}\d+)(.*)')
 
 	def __init__(self):
 		self.lastCmd = None
